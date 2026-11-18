@@ -1,0 +1,30 @@
+name: Publicar módulo Liquid Glass
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths: [ 'modules/liquid-glass/module/**' ]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Empaquetar
+        run: ./modules/liquid-glass/build.sh
+      - name: Publicar release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(python3 -c "import json;print(json.load(open('modules/liquid-glass/module/manifest.json'))['version'])")
+          TAG="liquid-glass-v$VERSION"
+          ZIP=modules/liquid-glass/build/liquid-glass.mochyymodule.zip
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ZIP" --clobber
+          else
+            gh release create "$TAG" "$ZIP" --title "Liquid Glass $VERSION" --notes "Módulo Liquid Glass para Aesthetic Music"
+          fi

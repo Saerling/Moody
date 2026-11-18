@@ -1,0 +1,69 @@
+uniform shader content;
+uniform float2 size;
+uniform float margin;
+uniform float radius;
+uniform float density;
+uniform float quality;
+layout(color) uniform half4 chrome;
+
+uniform float tintAlpha;
+uniform float bevel;
+uniform float strength;
+uniform float spread;
+uniform float saturation;
+uniform float rimAlpha;
+uniform float sheen;
+
+float roundedBox(float2 p, float2 b, float r) {
+    float2 q = abs(p) - b + r;
+    return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
+}
+
+half4 main(float2 p) {
+    float2 c = size * 0.5;
+    float2 box = c - margin;
+    float r = min(radius, min(box.x, box.y));
+    float2 local = p - c;
+    float d = roundedBox(local, box, r);
+    // past the bar's edge: mochy clips it away, it only had to be there to be read
+    if (d > 0.0) { return content.eval(p); }
+
+    // 1. the lens: flat in the middle, bending more toward the rim
+    float bev = max(bevel * density, 1.0);
+    float t = clamp(1.0 + d / bev, 0.0, 1.0);
+    float bend = 1.0 - sqrt(1.0 - t * t);
+    float2 n = float2(
+        roundedBox(local + float2(1.0, 0.0), box, r) - roundedBox(local - float2(1.0, 0.0), box, r),
+        roundedBox(local + float2(0.0, 1.0), box, r) - roundedBox(local - float2(0.0, 1.0), box, r));
+    n = n / max(length(n), 0.0001);
+    float2 offset = n * bend * strength * density;
+
+    // 2. a thin colour fringe where it bends, only on high quality since it reads three times
+    float4 color;
+    if (quality > 0.5 && spread > 0.0 && bend > 0.001) {
+        float4 red = float4(content.eval(p + offset * (1.0 + spread)));
+        float4 mid = float4(content.eval(p + offset));
+        float4 blue = float4(content.eval(p + offset * (1.0 - spread)));
+        color = float4(red.r, mid.g, blue.b, mid.a);
+    } else {
+        color = float4(content.eval(p + offset));
+    }
+
+    // 3. a little richer, the way light through glass looks
+    float luma = dot(color.rgb, float3(0.2126, 0.7152, 0.0722));
+    color.rgb = mix(float3(luma), color.rgb, saturation);
+
+    // 4. mochy's bar colour as the tint, a bit deeper with pure black on
+    float4 tint = float4(chrome);
+    float deeper = (tint.r + tint.g + tint.b) < 0.01 ? 0.15 : 0.0;
+    color.rgb = mix(color.rgb, tint.rgb * color.a, clamp(tintAlpha + deeper, 0.0, 0.95));
+
+    // 5. the lit rim, brightest facing the top left, and a soft sheen from the top
+    float edge = 1.0 - smoothstep(0.0, 1.4 * density, -d);
+    float facing = clamp(dot(n, normalize(float2(-1.0, -1.2))) * 0.5 + 0.5, 0.0, 1.0);
+    float lit = clamp(edge * rimAlpha * mix(0.3, 1.0, facing), 0.0, 1.0);
+    float down = (local.y + box.y) / max(box.y * 2.0, 1.0);
+    float glow = sheen * (1.0 - smoothstep(0.0, 0.45, down));
+    color.rgb = mix(color.rgb, float3(color.a), lit) + glow * color.a;
+    return half4(color);
+}

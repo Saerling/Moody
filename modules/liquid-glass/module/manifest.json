@@ -1,0 +1,129 @@
+{
+  "id": "liquid-glass",
+  "name": "Liquid Glass",
+  "version": "1.0",
+  "description": "Turns the nav bar and the mini player into glass that bends what's under it",
+  "author": "Saerling (basado en el ejemplo de Mochy)",
+  "icon": "icon.png",
+  "banner": "banner.webp",
+  "glass": {
+    "shader": "glass.agsl",
+    "blur": 7,
+    "margin": 22,
+    "uniforms": {
+      "tintAlpha": 0.42,
+      "bevel": 18,
+      "strength": 14,
+      "spread": 0,
+      "saturation": 1.35,
+      "rimAlpha": 0.55,
+      "sheen": 0.1
+    }
+  },
+  "settings": [
+    {
+      "key": "style",
+      "label": "Glass",
+      "type": "select",
+      "default": "liquid",
+      "options": [
+        {
+          "value": "liquid",
+          "label": "Liquid glass",
+          "description": "A light tint, with a lens along the edges.",
+          "glass": {
+            "blur": 7,
+            "uniforms": {
+              "tintAlpha": 0.42,
+              "bevel": 18,
+              "strength": 14,
+              "saturation": 1.35,
+              "rimAlpha": 0.55
+            }
+          }
+        },
+        {
+          "value": "clear",
+          "label": "Clear glass",
+          "description": "Almost no tint, lovely over bright covers.",
+          "glass": {
+            "blur": 2.5,
+            "uniforms": {
+              "tintAlpha": 0.16,
+              "bevel": 22,
+              "strength": 18,
+              "saturation": 1.2,
+              "rimAlpha": 0.7
+            }
+          }
+        },
+        {
+          "value": "frost",
+          "label": "Mochy's frost",
+          "description": "The usual frosted bars, keeping the rest of this look.",
+          "look": {
+            "bottomBar": "FROSTED"
+          }
+        }
+      ]
+    },
+    {
+      "key": "fringe",
+      "label": "Colour fringe",
+      "type": "toggle",
+      "default": "true",
+      "description": "A thin rainbow where the rim bends light. Left out on Low blur quality.",
+      "glass": {
+        "uniforms": {
+          "spread": 0.06
+        }
+      }
+    },
+    {
+      "key": "softCovers",
+      "label": "Softer covers",
+      "type": "toggle",
+      "default": "false",
+      "description": "Rounder cover corners, to match the glass.",
+      "look": {
+        "thumbnailCornerRadius": "22"
+      }
+    }
+  ],
+  "pages": [
+    {
+      "id": "glass",
+      "title": "Liquid Glass",
+      "subtitle": "How your glass looks",
+      "inSettings": true,
+      "blocks": [
+        {
+          "type": "image",
+          "image": "banner.webp",
+          "height": 150
+        },
+        {
+          "type": "heading",
+          "text": "Your glass"
+        },
+        {
+          "type": "text",
+          "text": "Pick how the nav bar and the mini player look. Turn the module off and your frosted glass comes back."
+        },
+        {
+          "type": "setting",
+          "key": "style"
+        },
+        {
+          "type": "setting",
+          "key": "fringe"
+        },
+        {
+          "type": "setting",
+          "key": "softCovers"
+        }
+      ]
+    }
+  ],
+  "actions": []
+}
