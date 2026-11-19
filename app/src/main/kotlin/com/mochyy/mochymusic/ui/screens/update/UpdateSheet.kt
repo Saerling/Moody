@@ -234,7 +234,7 @@ private fun ColumnScope.UpdateSheetContent(
             }
 
             Spacer(Modifier.height(14.dp))
-            Text("Mochy", fontSize = 17.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp)
+            Text("Moody", fontSize = 17.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     installed,

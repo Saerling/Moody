@@ -157,7 +157,7 @@ fun ImportSyncScreen(
                     detail = stringResource(R.string.import_sync_export_csv_detail),
                     icon = painterResource(R.drawable.backup),
                     iconShape = CircleShape,
-                    onClick = { exportLauncher.launch("mochy-library-${LocalDate.now()}.csv") },
+                    onClick = { exportLauncher.launch("moody-library-${LocalDate.now()}.csv") },
                 ),
             ),
         )

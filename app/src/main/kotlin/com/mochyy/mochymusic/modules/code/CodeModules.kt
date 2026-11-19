@@ -43,11 +43,11 @@ internal object CodeModules {
         return null
     }
 
-    /** true when the apk is signed with exactly the keys this copy of mochy is signed with */
+    /** true when the apk is signed with exactly the keys this copy of moody is signed with */
     fun signedLikeMochy(context: Context, apk: File): Boolean =
         signedLikeMochy(context, context.packageManager.getPackageArchiveInfo(apk.path, SignatureFlags))
 
-    /** puts a checked apk in place under [key] and starts it; null when its code can't run in this mochy */
+    /** puts a checked apk in place under [key] and starts it; null when its code can't run in this moody */
     fun install(context: Context, key: String, apk: File): Loaded? {
         // each copy gets a folder of its own, since a native library stays open in the class loader that loaded it and one path can't be loaded twice
         val folder = "${safe(key)}/${System.currentTimeMillis()}"

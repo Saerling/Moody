@@ -353,7 +353,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         playerConnection?.isUiVisible?.value = true
-        // paired phones are checked on, and a steered device asked what it plays, only while mochy is on screen
+        // paired phones are checked on, and a steered device asked what it plays, only while moody is on screen
         if (!isTelevision()) phoneLink.get().appShown()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

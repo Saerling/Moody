@@ -1,4 +1,4 @@
-// every module mochy has: built in, installed as its own app, added from a link or from a zip (a look, or code of its own), with each one's switch and choices
+// every module moody has: built in, installed as its own app, added from a link or from a zip (a look, or code of its own), with each one's switch and choices
 
 package com.mochyy.mochymusic.modules
 
@@ -90,7 +90,7 @@ data class ModuleEntry(
     /** the module's own settings, and what each one is set to now */
     val fields: List<ModuleField> = emptyList(),
     val values: Map<String, String> = emptyMap(),
-    /** when it was added, null for built-in ones and ones added before mochy kept the date */
+    /** when it was added, null for built-in ones and ones added before moody kept the date */
     val addedAt: Long? = null,
     /** the github project or link it can update from, null for one added from a file */
     val source: ModuleSource? = null,
@@ -370,7 +370,7 @@ class ModuleRegistry @Inject constructor(
         LinkCheck.Ready(null, text, local.info.name, local.adds, module(local.info.id) != null, fileNameOf(uri), uri, root)
     }
 
-    // a zip that brings its own code: checked to be signed like mochy now, so the sheet can say so before anything is added
+    // a zip that brings its own code: checked to be signed like moody now, so the sheet can say so before anything is added
     private fun checkCode(uri: Uri, text: String, root: String, manifest: WebModuleManifest, code: String): LinkCheck {
         val apk = CodeModules.extract(context, uri, root + code.trimStart('/')) ?: return LinkCheck.NotAModule
         if (!CodeModules.signedLikeMochy(context, apk)) return LinkCheck.NotSigned
@@ -625,7 +625,7 @@ class ModuleRegistry @Inject constructor(
         override val folder: File by lazy { folderFor(module.info.id).also { it.mkdirs() } }
     }
 
-    /** module apps installed on the phone, signed like mochy and built for this api */
+    /** module apps installed on the phone, signed like moody and built for this api */
     @SuppressLint("QueryPermissionsNeeded")
     private fun discover(): List<Pair<MochyModule, ModuleOrigin>> = runCatching {
         val pm = context.packageManager

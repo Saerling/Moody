@@ -65,7 +65,7 @@ class PhoneLinkHost @Inject constructor(
     private var advert: LinkAdvert? = null
     private var advertPort = -1
 
-    // devices that said hello lately; a tv with mochy open says it every 20 seconds, a phone as long as it's on screen
+    // devices that said hello lately; a tv with moody open says it every 20 seconds, a phone as long as it's on screen
     private val _live = MutableStateFlow<Map<String, LiveDevice>>(emptyMap())
     val live: StateFlow<Map<String, LiveDevice>> = _live.asStateFlow()
 
@@ -79,7 +79,7 @@ class PhoneLinkHost @Inject constructor(
 
     private val _foreground = MutableStateFlow(false)
 
-    // mochy is on screen here: other phones are checked on and a steered device is asked what it plays
+    // moody is on screen here: other phones are checked on and a steered device is asked what it plays
     val foreground: StateFlow<Boolean> = _foreground.asStateFlow()
 
     private val _notifyShown = MutableStateFlow(prefs.getBoolean(NotifyKey, true))
@@ -141,7 +141,7 @@ class PhoneLinkHost @Inject constructor(
         }
         watchLibrary()
         val port = server.start(LinkWire.PhonePort)
-        // a phone paired while mochy is on screen is checked on straight away, not from the next launch
+        // a phone paired while moody is on screen is checked on straight away, not from the next launch
         if (_foreground.value) peers.start()
         // pairing opens the server before anything is saved, so the advert can't hang on the server being down
         if (advert != null && advertPort == port) return
@@ -150,7 +150,7 @@ class PhoneLinkHost @Inject constructor(
         advert = LinkAdvert(
             context,
             LinkWire.PhoneServiceType,
-            "Mochy ${LinkIdentity.name(context)}",
+            "Moody ${LinkIdentity.name(context)}",
             port,
             mapOf(
                 LinkWire.AttrId to LinkIdentity.id(context),
@@ -342,7 +342,7 @@ class PhoneLinkHost @Inject constructor(
 
     private fun route(request: LinkRequest): LinkResponse {
         // a device still on the old protocol sends its key in a header; told to update rather than turned away as unpaired, which made it forget this phone
-        if (request.header(LinkWire.OldKeyHeader) != null) return LinkResponse.status(426, "update mochy on that device")
+        if (request.header(LinkWire.OldKeyHeader) != null) return LinkResponse.status(426, "update moody on that device")
         // the call must be signed by a paired device's key; the key itself is never in the call
         val from = verifier.verify(request) { id -> _devices.value.firstOrNull { it.id == id }?.key }
         val device = from?.let { id -> _devices.value.firstOrNull { it.id == id } }
@@ -404,11 +404,11 @@ class PhoneLinkHost @Inject constructor(
         return LinkResponse.json(json.toString())
     }
 
-    // another phone steering this one: only while both allow it, and only while mochy has a screen up here or android auto is open
+    // another phone steering this one: only while both allow it, and only while moody has a screen up here or android auto is open
     private fun controlled(request: LinkRequest, device: PairedDevice): LinkResponse {
         if (device.kind.isTv) return LinkResponse.status(404)
         if (!device.remoteControl) return LinkResponse.status(403, "remote control is off on this phone")
-        val connection = LinkPlayer.current() ?: return LinkResponse.status(409, "mochy isn't open on this phone")
+        val connection = LinkPlayer.current() ?: return LinkResponse.status(409, "Moody isn't open on this phone")
         return control.handle(request, connection)
     }
 

@@ -295,7 +295,7 @@ internal class WebModule(
         val response = runCatching { host.http(HttpRequest("$base/stream/${enc(track.id)}?${paramsFor(tier, atmos)}", headers = headers)) }.getOrNull()
         if (response == null || !response.ok) return null
         val answer = runCatching { json.parseToJsonElement(response.text) as? JsonObject }.getOrNull() ?: return null
-        // a locked stream would need keys mochy doesn't have
+        // a locked stream would need keys moody doesn't have
         if ((answer["encrypted"] as? JsonPrimitive)?.let { it.booleanOrNull ?: (it.contentOrNull !in setOf(null, "", "false", "none")) } == true) return null
         val url = answer.string("url")?.takeIf { it.startsWith("http") } ?: return null
         return streamOf(url, answer, rowIsAtmos)
@@ -414,7 +414,7 @@ internal class WebModule(
     private companion object {
         const val MissMemoryMs = 30L * 60 * 1000
         const val UnreachableRetryMs = 10L * 60 * 1000
-        val headers = mapOf("Accept" to "application/json", "User-Agent" to "Mochy")
+        val headers = mapOf("Accept" to "application/json", "User-Agent" to "Moody")
 
         // the id the audio quality page looks for to list a module's qualities
         const val ChoiceQuality = "quality"
