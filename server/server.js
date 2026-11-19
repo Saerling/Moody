@@ -1,4 +1,4 @@
-// Mi servidor de música: fuente de canciones para Aesthetic Music (protocolo de módulos web de Mochy).
+// Mi servidor de música: fuente de canciones para Moody (protocolo de módulos web de Mochy).
 // Mochy llama: GET /manifest.json, GET /search?q=artista título, GET /stream/{id}
 // Sirve tu biblioteca (FLAC, MP3...) con byte-ranges y, si tienes yt-dlp, SoundCloud/YouTube a través de un proxy.
 require('dotenv').config();

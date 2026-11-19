@@ -1,4 +1,4 @@
-# Aesthetic Music
+# Moody
 
 App de música para Android basada en [Mochy Music](https://github.com/realidkroo/Mochy-Music) (GPL-3.0). Junta en una sola app:
 
@@ -13,7 +13,7 @@ App de música para Android basada en [Mochy Music](https://github.com/realidkro
 | Bit-perfect / USB DAC (estilo BitChord, LastWave) | Viene de Mochy (Audio Lab) |
 | Letras palabra a palabra y Replay (estilo Prism) | Vienen de Mochy |
 
-Se instala aparte de Mochy (`com.saerling.musichub`), así que puedes tener las dos.
+Se instala aparte de Mochy (`com.saerling.moody`), así que puedes tener las dos.
 
 ## Descargar el APK
 
@@ -37,8 +37,8 @@ Hace que, cuando pones una canción, la app use **tu archivo** si lo tienes (en 
    pkg update && pkg install nodejs-lts git python ffmpeg -y
    termux-setup-storage
    pip install -U yt-dlp        # opcional, para SoundCloud/YouTube
-   git clone https://github.com/Saerling/AestheticMusicHub --depth 1
-   cd AestheticMusicHub/server && ./start.sh
+   git clone https://github.com/Saerling/moody --depth 1
+   cd moody/server && ./start.sh
    ```
 2. Edita `server/.env` (carpeta de música, `ENABLE_YTDLP=true` si instalaste yt-dlp) y vuelve a correr `./start.sh`.
 3. Copia la dirección que imprime (ej. `http://192.168.1.20:3000`) y pégala en la app: **Ajustes → Módulos → Añadir**.

@@ -24,7 +24,7 @@ extensions.configure<ApplicationExtension> {
     ndkVersion = "27.0.12077973"
 
     defaultConfig {
-        applicationId = "com.saerling.musichub"
+        applicationId = "com.saerling.moody"
         minSdk = 24
         targetSdk = 37
         versionCode = 73
