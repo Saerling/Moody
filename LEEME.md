@@ -16,9 +16,18 @@ App de música para Android basada en [Mochy Music](https://github.com/realidkro
 
 Se instala aparte de Mochy (`com.saerling.moody`), así que puedes tener las dos.
 
-## Descargar el APK
+## Descargar e instalar
 
-Cada push a `main` compila la app en **Actions → CI & Debug Build**. Entra a la última ejecución y baja el artefacto.
+Cada push a `main` compila Moody y publica la versión en **[Releases](https://github.com/Saerling/moody/releases)** (`moody.apk`). Instálala una vez; después la app avisa sola cuando hay versión nueva y se actualiza desde la tarjeta de versión de tu perfil.
+
+Para que se publique hace falta la clave de firma (una sola vez, desde la carpeta del repo):
+
+```bash
+./scripts/crear-clave.sh   # crea app/keystore/release.keystore y el secreto MOODY_KEYSTORE_PASSWORD
+git add app/keystore/release.keystore && git commit -m "Clave de firma" && git push
+```
+
+Sin la clave, el APK queda solo como artefacto en **Actions → CI & Debug Build**.
 
 Para que funcionen Last.fm y Discord, agrega en **Settings → Secrets and variables → Actions**:
 `LASTFM_API_KEY`, `LASTFM_SECRET` (crea las claves en <https://www.last.fm/api/account/create>) y `DISCORD_CLIENT_ID` (<https://discord.com/developers/applications>).

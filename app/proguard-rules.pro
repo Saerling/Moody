@@ -176,3 +176,7 @@
 -keepclasseswithmembers class com.music.shazamkit.models.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
+
+# Moody: núcleo de Spotify por JNI
+-keep class com.mochyy.mochymusic.module.spotify.SpotifyNative { *; }
+-keepclasseswithmembernames class * { native <methods>; }

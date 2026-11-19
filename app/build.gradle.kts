@@ -27,8 +27,10 @@ extensions.configure<ApplicationExtension> {
         applicationId = "com.saerling.moody"
         minSdk = 24
         targetSdk = 37
-        versionCode = 73
-        versionName = "8.4.2.1 build#1265"
+        // cada compilación del CI sube el número: el actualizador de la app y Android la ven como más nueva
+        val moodyBuild = System.getenv("MOODY_BUILD")?.toIntOrNull() ?: 0
+        versionCode = 100 + moodyBuild
+        versionName = "8.5.0 build#$moodyBuild"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -136,10 +138,10 @@ extensions.configure<ApplicationExtension> {
     // used to make `assembleRelease` unbuildable and left debug as the only variant anyone ever
     // ran — and a debug Compose build is several times slower per frame than release, so all
     // local performance impressions were being formed against the wrong binary.
-    val hasReleaseSigning = System.getenv("STORE_PASSWORD") != null &&
-        System.getenv("KEY_ALIAS") != null &&
-        System.getenv("KEY_PASSWORD") != null &&
-        file("keystore/release.keystore").exists()
+    // Moody: la clave de publicación es app/keystore/release.keystore (PKCS12, alias "moody") y su
+    // contraseña el secreto MOODY_KEYSTORE_PASSWORD; ver scripts/crear-clave.sh
+    val moodyKeystorePassword = System.getenv("MOODY_KEYSTORE_PASSWORD")?.takeIf { it.isNotBlank() }
+    val hasReleaseSigning = moodyKeystorePassword != null && file("keystore/release.keystore").exists()
 
     signingConfigs {
         create("persistentDebug") {
@@ -151,9 +153,10 @@ extensions.configure<ApplicationExtension> {
         if (hasReleaseSigning) {
             create("release") {
                 storeFile = file("keystore/release.keystore")
-                storePassword = System.getenv("STORE_PASSWORD")
-                keyAlias = System.getenv("KEY_ALIAS")
-                keyPassword = System.getenv("KEY_PASSWORD")
+                storeType = "pkcs12"
+                storePassword = moodyKeystorePassword
+                keyAlias = "moody"
+                keyPassword = moodyKeystorePassword
             }
         }
         getByName("debug") {

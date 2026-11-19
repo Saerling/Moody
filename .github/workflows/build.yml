@@ -17,6 +17,13 @@ jobs:
     name: Build Universal GMS Debug
     runs-on: ubuntu-latest
     if: github.actor != 'dependabot[bot]'
+    permissions:
+      contents: write # para publicar cada versión en Releases (de ahí se actualiza la app)
+    env:
+      MOODY_BUILD: ${{ github.run_number }}
+      MOODY_KEYSTORE_PASSWORD: ${{ secrets.MOODY_KEYSTORE_PASSWORD }}
+      # en main y con la clave de firma se publica en Releases; si no, el APK queda como artefacto
+      PUBLISH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.MOODY_KEYSTORE_PASSWORD != '' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -67,7 +74,7 @@ jobs:
           cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 -P 24 -o ../../app/src/main/jniLibs build --release
           ls -la ../../app/src/main/jniLibs/*
 
-      - name: Build Debug APK
+      - name: Build release APK
         env:
           LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
           LASTFM_SECRET: ${{ secrets.LASTFM_SECRET }}
@@ -75,15 +82,32 @@ jobs:
           LIBREFM_SECRET: ${{ secrets.LIBREFM_SECRET }}
           DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
         run: |
-          ./gradlew assembleUniversalGmsDebug --no-configuration-cache --console=plain --warning-mode summary
+          ./gradlew assembleUniversalGmsRelease --no-configuration-cache --console=plain --warning-mode summary
+          mkdir -p dist
+          cp app/build/outputs/apk/universalGms/release/*.apk dist/moody.apk
 
-      - name: Name Debug APK for Moody updater
-        run: cp app/build/outputs/apk/universalGms/debug/*.apk app/build/outputs/apk/universalGms/debug/moody.apk
+      - name: Publish release (the app finds it and updates itself)
+        if: env.PUBLISH == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "Cambios:"
+            git log -1 --pretty=format:'%s%n%n%b' | sed '/^Co-Authored-By/d;/^Claude-Session/d'
+          } > notes.md
+          gh release create "moody-$MOODY_BUILD" dist/moody.apk \
+            --title "Moody 8.5.0 build#$MOODY_BUILD" \
+            --notes-file notes.md \
+            --target "$GITHUB_SHA"
 
-      - name: Upload Debug APK
+      - name: Aviso si falta la clave de firma
+        if: github.ref == 'refs/heads/main' && env.MOODY_KEYSTORE_PASSWORD == ''
+        run: echo "::warning::Falta el secreto MOODY_KEYSTORE_PASSWORD (ver scripts/crear-clave.sh): no se publicó la versión para el actualizador."
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-universal-gms-debug
-          path: app/build/outputs/apk/universalGms/debug/moody.apk
+          name: moody
+          path: dist/moody.apk
           # a debug apk is only for trying the build, after a week it's just eating actions storage
           retention-days: 7
