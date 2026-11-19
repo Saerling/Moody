@@ -288,4 +288,30 @@
     <string name="use_login_for_browse">Utilice el inicio de sesión para ver el contenido</string>
     <string name="use_login_for_browse_desc">Esto puede influir en el contenido que ve y, por ejemplo, muestra álbumes exclusivos si ha iniciado sesión con una cuenta Premium</string>
     <string name="action_login">Acceder</string>
+    <string name="home_greeting_morning">Buenos días</string>
+    <string name="home_greeting_afternoon">Buenas tardes</string>
+    <string name="home_greeting_evening">Buenas noches</string>
+    <string name="home_chip_moods">Ánimos</string>
+    <string name="home_chip_history">Historial</string>
+    <string name="home_view_all">Ver todo</string>
+
+    <!-- Library UX enhancements -->
+    <string name="lib_view_grid">Vista en cuadrícula</string>
+    <string name="lib_view_list">Vista en lista</string>
+    <string name="lib_new_playlist">Nueva lista</string>
+    <string name="lib_filter_all">Todos</string>
+    <string name="lib_filter_downloaded">Descargadas</string>
+    <string name="lib_filter_liked">Favoritas</string>
+    <string name="lib_empty_songs_title">Sin canciones</string>
+    <string name="lib_empty_songs_desc">Las canciones que agregues, te gusten o descargues aparecerán aquí.</string>
+    <string name="lib_empty_playlists_title">Aún no hay listas</string>
+    <string name="lib_empty_playlists_desc">Crea tu primera lista para organizar tus canciones favoritas.</string>
+    <string name="lib_empty_recent_title">Sin canciones recientes</string>
+    <string name="lib_empty_recent_desc">La música que agregues a tu biblioteca o descargues aparecerá aquí.</string>
+    <string name="lib_empty_search_desc">Comprueba la ortografía o intenta buscar otra canción, artista o lista.</string>
+    <string name="lib_action_clear_filter">Borrar filtro</string>
+    <string name="lib_action_clear_search">Borrar búsqueda</string>
+    <string name="lib_action_explore">Descubrir música</string>
+    <string name="lib_action_create_playlist">Crear lista</string>
+    <string name="lib_play_all">Reproducir todo</string>
 </resources>

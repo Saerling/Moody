@@ -70,5 +70,9 @@ fun LibraryRecentlyAddedScreen(
         onShuffle = { play(0, shuffle = true) },
         modifier = modifier,
         pureBlack = pureBlack,
+        emptyTitle = stringResource(R.string.lib_empty_recent_title),
+        emptyDescription = stringResource(R.string.lib_empty_recent_desc),
+        emptyActionLabel = stringResource(R.string.lib_action_explore),
+        onEmptyAction = { navController.navigate("search") },
     )
 }

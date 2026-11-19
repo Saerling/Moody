@@ -79,6 +79,10 @@ fun LibraryGridScreen(
     onShuffle: () -> Unit,
     modifier: Modifier = Modifier,
     pureBlack: Boolean = false,
+    emptyTitle: String? = null,
+    emptyDescription: String? = null,
+    emptyActionLabel: String? = null,
+    onEmptyAction: (() -> Unit)? = null,
 ) {
     var query by remember { mutableStateOf(TextFieldValue()) }
     val listState = rememberLazyListState()
@@ -114,7 +118,13 @@ fun LibraryGridScreen(
         }
 
         if (rows.isEmpty()) {
-            item(key = "empty") { LibraryEmptyState() }
+            item(key = "empty") {
+                if (emptyTitle != null && emptyDescription != null && emptyActionLabel != null && onEmptyAction != null) {
+                    LibraryEmptyMessage(emptyTitle, emptyDescription, emptyActionLabel, onEmptyAction)
+                } else {
+                    LibraryEmptyState()
+                }
+            }
             return@LibraryScaffold
         }
 

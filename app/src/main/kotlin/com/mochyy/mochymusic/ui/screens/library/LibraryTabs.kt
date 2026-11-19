@@ -1,24 +1,37 @@
 // LibraryTabs.kt
 //
 // The All / Local / Cached / Imported switch at the top of the Library, and the small pieces the
-// tabs share: the two-wide card grid, the caps section label and the "Manage" pill of a tab.
+// tabs share: the two-wide card grid, the section label and the "Manage" pill of a tab.
 
 package com.mochyy.mochymusic.ui.screens.library
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -28,19 +41,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.Placeable
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mochyy.mochymusic.R
-import com.mochyy.mochymusic.ui.screens.search.SearchColors
-import com.mochyy.mochymusic.ui.screens.search.SearchHorizontalPadding
-import com.mochyy.mochymusic.viewmodels.LibraryShelfKind
 import com.mochyy.mochymusic.ui.component.RemoteFocus
+import com.mochyy.mochymusic.ui.screens.search.SearchColors
+import com.mochyy.mochymusic.viewmodels.LibraryShelfKind
 
 /**
  * What the Library shows: everything, what plays from the phone, what the player has cached, or
@@ -53,136 +66,178 @@ enum class LibraryTab(val labelRes: Int, val shelf: LibraryShelfKind? = null) {
     Imported(R.string.library_tab_imported),
 }
 
-private val ChipTrack = Color(0xFF161618)
-private val Chip = Color(0xFF232326)
-private val ChipSelected = Color(0xFF3D3D41)
+private val TabChipActiveBackground = Color.White
+private val TabChipActiveContent = Color.Black
+private val TabChipInactiveBackground = Color(0xFF1E1E22)
+private val TabChipInactiveContent = Color.White.copy(alpha = 0.85f)
+private val TabChipBorder = Color(0xFF2E2E34)
 
-private val ChipTrackPadding = 3.dp
-private val ChipGap = 4.dp
-private val ChipRowGap = 6.dp
-
-/** The tabs as small pills in a dark track, the picked one a step lighter. */
+/**
+ * Modern Spotify / YouTube Music style filter chips bar.
+ * Horizontally scrollable, fluid, with accessible touch targets (>=48dp),
+ * high-contrast active state, and tactile press animation.
+ */
 @Composable
 fun LibraryTabChips(
     selected: LibraryTab,
     onSelect: (LibraryTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // with a big font or display size the pills that don't fit wrap to a row below, each row with its own track so no empty dark patch is left beside it
-    Layout(
-        modifier = modifier,
-        content = {
-            LibraryTab.entries.forEach { _ -> Box(Modifier.background(ChipTrack, RoundedCornerShape(percent = 50))) }
-            LibraryTab.entries.forEach { tab -> LibraryTabChip(tab, isSelected = tab == selected, onSelect = onSelect) }
-        },
-    ) { measurables, constraints ->
-        val tracks = measurables.take(LibraryTab.entries.size)
-        val pad = ChipTrackPadding.roundToPx()
-        val gap = ChipGap.roundToPx()
-        val rowGap = ChipRowGap.roundToPx()
-        val room = if (constraints.hasBoundedWidth) (constraints.maxWidth - pad * 2).coerceAtLeast(0) else Constraints.Infinity
-        val chips = measurables.drop(LibraryTab.entries.size).map { it.measure(Constraints(maxWidth = room)) }
-
-        // a pill stays on the current row while it fits, otherwise it starts the next one
-        val rows = mutableListOf(mutableListOf<Placeable>())
-        var rowWidth = 0
-        chips.forEach { chip ->
-            val row = rows.last()
-            val widthWithChip = if (row.isEmpty()) chip.width else rowWidth + gap + chip.width
-            if (row.isNotEmpty() && widthWithChip > room) {
-                rows += mutableListOf(chip)
-                rowWidth = chip.width
-            } else {
-                row += chip
-                rowWidth = widthWithChip
-            }
-        }
-
-        val rowHeights = rows.map { row -> row.maxOf { it.height } }
-        val trackPlaceables = rows.mapIndexed { index, row ->
-            val width = row.sumOf { it.width } + gap * (row.size - 1) + pad * 2
-            tracks[index].measure(Constraints.fixed(width, rowHeights[index] + pad * 2))
-        }
-        val width = trackPlaceables.maxOf { it.width }.coerceIn(constraints.minWidth, constraints.maxWidth)
-        val height = trackPlaceables.sumOf { it.height } + rowGap * (rows.size - 1)
-
-        layout(width, height) {
-            var y = 0
-            rows.forEachIndexed { index, row ->
-                trackPlaceables[index].placeRelative(0, y)
-                var x = pad
-                row.forEach { chip ->
-                    chip.placeRelative(x, y + pad + (rowHeights[index] - chip.height) / 2)
-                    x += chip.width + gap
-                }
-                y += trackPlaceables[index].height + rowGap
-            }
+    LazyRow(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 0.dp),
+    ) {
+        items(LibraryTab.entries, key = { it.name }) { tab ->
+            LibraryTabChip(
+                tab = tab,
+                isSelected = tab == selected,
+                onSelect = onSelect,
+            )
         }
     }
 }
 
 @Composable
-private fun LibraryTabChip(tab: LibraryTab, isSelected: Boolean, onSelect: (LibraryTab) -> Unit) {
-    val background by animateColorAsState(
-        targetValue = if (isSelected) ChipSelected else Chip,
-        animationSpec = tween(220),
-        label = "libraryTabChip",
+private fun LibraryTabChip(
+    tab: LibraryTab,
+    isSelected: Boolean,
+    onSelect: (LibraryTab) -> Unit,
+) {
+    val haptic = LocalHapticFeedback.current
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.94f else 1f,
+        animationSpec = spring(stiffness = 600f),
+        label = "tabChipScale",
     )
+
+    val background by animateColorAsState(
+        targetValue = if (isSelected) TabChipActiveBackground else TabChipInactiveBackground,
+        animationSpec = tween(180),
+        label = "libraryTabChipBg",
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (isSelected) TabChipActiveContent else TabChipInactiveContent,
+        animationSpec = tween(180),
+        label = "libraryTabChipContent",
+    )
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .clip(RoundedCornerShape(percent = 50))
-            .background(background)
-            .clickable(
-                role = Role.Tab,
-                interactionSource = remember { MutableInteractionSource() },
-                indication = RemoteFocus,
-                onClick = { onSelect(tab) },
-            )
-            .heightIn(min = 28.dp)
-            .padding(horizontal = 14.dp, vertical = 5.dp),
+            .heightIn(min = 48.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            },
     ) {
-        Text(
-            text = stringResource(tab.labelRes),
-            color = if (isSelected) SearchColors.Primary else SearchColors.Primary.copy(alpha = 0.72f),
-            fontSize = 13.sp,
-            fontWeight = FontWeight.SemiBold,
-        )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .height(36.dp)
+                .clip(CircleShape)
+                .background(background)
+                .then(
+                    if (!isSelected) {
+                        Modifier.border(BorderStroke(1.dp, TabChipBorder), CircleShape)
+                    } else {
+                        Modifier
+                    },
+                )
+                .clickable(
+                    role = Role.Tab,
+                    interactionSource = interactionSource,
+                    indication = RemoteFocus,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        onSelect(tab)
+                    },
+                )
+                .padding(horizontal = 16.dp),
+        ) {
+            Text(
+                text = stringResource(tab.labelRes),
+                color = contentColor,
+                fontSize = 13.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            )
+        }
     }
 }
 
-/** "ALL MUSIC", "PLAYLISTS": a small caps label over a group of cards. */
+/** "ALL MUSIC", "PLAYLISTS": an expressive section label over a group of cards. */
 @Composable
 fun LibraryCapsLabel(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text.uppercase(),
         color = SearchColors.Primary,
-        fontSize = 13.sp,
+        fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
-        letterSpacing = 0.4.sp,
-        modifier = modifier.padding(horizontal = SearchHorizontalPadding),
+        letterSpacing = 0.8.sp,
+        modifier = modifier.padding(horizontal = 16.dp, vertical = 4.dp),
     )
 }
 
-/** The small centred pill at the bottom of a tab that opens its Manage sheet. */
+/**
+ * The centered pill at the bottom of a tab that opens its Manage sheet.
+ * Enhanced with >=48dp touch target, settings/tune icon, and tactile press animation.
+ */
 @Composable
 fun LibraryManagePill(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(stiffness = 600f),
+        label = "managePillScale",
+    )
+
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center,
+    ) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .clip(RoundedCornerShape(percent = 50))
-                .background(Color(0xFF2E2E31))
-                .clickable(role = Role.Button, onClick = onClick)
-                .heightIn(min = 30.dp)
-                .padding(horizontal = 18.dp, vertical = 6.dp),
+                .heightIn(min = 48.dp)
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                },
         ) {
-            Text(
-                text = text,
-                color = SearchColors.Primary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .height(38.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF222226))
+                    .border(BorderStroke(1.dp, Color(0xFF34343A)), CircleShape)
+                    .clickable(
+                        role = Role.Button,
+                        interactionSource = interactionSource,
+                        indication = RemoteFocus,
+                        onClick = onClick,
+                    )
+                    .padding(horizontal = 18.dp),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.tune),
+                    contentDescription = null,
+                    tint = SearchColors.Secondary,
+                    modifier = Modifier.size(16.dp),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = text,
+                    color = SearchColors.Primary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
         }
     }
 }
@@ -198,15 +253,23 @@ class LibraryCardEntry(
     val icon: (@Composable () -> Unit)? = null,
 )
 
-/** Cards two to a row, the last one keeping its half width when it is alone. */
+/**
+ * Two cards to a row with 16dp horizontal padding and 12dp spacing (multiples of 4dp).
+ * The last one keeps its half width when alone.
+ */
 @Composable
 fun LibraryCardGrid(entries: List<LibraryCardEntry>, modifier: Modifier = Modifier) {
     Column(
-        modifier = modifier.fillMaxWidth().padding(horizontal = SearchHorizontalPadding),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         entries.chunked(2).forEach { pair ->
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
                 pair.forEach { entry ->
                     LibraryCategoryCard(
                         title = entry.title,
@@ -218,7 +281,9 @@ fun LibraryCardGrid(entries: List<LibraryCardEntry>, modifier: Modifier = Modifi
                         modifier = Modifier.weight(1f),
                     )
                 }
-                if (pair.size == 1) Spacer(modifier = Modifier.weight(1f))
+                if (pair.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
             }
         }
     }

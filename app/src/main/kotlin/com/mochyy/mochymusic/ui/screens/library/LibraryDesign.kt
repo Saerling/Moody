@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -52,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -60,6 +62,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -303,6 +307,45 @@ fun LibraryEmptyState(modifier: Modifier = Modifier, text: String = stringResour
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
         )
+    }
+}
+
+/** Rich empty state used by Library pages that can explain the empty collection and offer a next step. */
+@Composable
+fun LibraryEmptyMessage(
+    title: String,
+    description: String,
+    actionLabel: String,
+    onAction: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 40.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            modifier = Modifier.size(64.dp).clip(CircleShape).background(SearchColors.TileHigh),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(painter = painterResource(R.drawable.music_note), contentDescription = null,
+                tint = SearchColors.Secondary, modifier = Modifier.size(28.dp))
+        }
+        Spacer(Modifier.height(16.dp))
+        Text(title, color = SearchColors.Primary, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center)
+        Spacer(Modifier.height(8.dp))
+        Text(description, color = SearchColors.Secondary, fontSize = 13.sp, lineHeight = 18.sp,
+            textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 16.dp))
+        Spacer(Modifier.height(20.dp))
+        Box(
+            modifier = Modifier.clip(CircleShape).background(Color.White)
+                .heightIn(min = 48.dp)
+                .clickable(role = Role.Button, onClick = onAction)
+                .padding(horizontal = 24.dp, vertical = 12.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(actionLabel, color = Color.Black, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }
 

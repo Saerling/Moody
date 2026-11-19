@@ -150,6 +150,7 @@ import com.mochyy.mochymusic.ui.launch.launchRise
 import com.mochyy.mochymusic.ui.launch.rememberLaunchHold
 import com.mochyy.mochymusic.ui.launch.ReportLaunchHomeComposed
 import com.mochyy.mochymusic.ui.component.HomeSectionTitle
+import com.mochyy.mochymusic.ui.component.HomeSectionHeading
 import com.mochyy.mochymusic.ui.component.HomeTrackRow
 import com.mochyy.mochymusic.ui.component.HomeVideoCard
 import com.mochyy.mochymusic.utils.FeedVideoKind
@@ -299,6 +300,8 @@ private fun <T> HomeTrackGrid(
 private fun HomeCompactTop(
     glowCoverUrls: List<String>,
     glowVisibility: () -> Float,
+    onMoodClick: () -> Unit,
+    onHistoryClick: () -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val topInset = WindowInsets.stableSystemBars.asPaddingValues().calculateTopPadding()
@@ -312,8 +315,42 @@ private fun HomeCompactTop(
         )
         Column(modifier = Modifier.launchRise(order = 1)) {
             Spacer(Modifier.height(topInset + 78.dp))
+            Text(
+                text = stringResource(
+                    when (java.time.LocalTime.now().hour) {
+                        in 5..11 -> R.string.home_greeting_morning
+                        in 12..17 -> R.string.home_greeting_afternoon
+                        else -> R.string.home_greeting_evening
+                    }
+                ),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = HomeContentInset, vertical = 8.dp),
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(horizontal = HomeContentInset).padding(bottom = 12.dp),
+            ) {
+                listOf(
+                    R.string.home_chip_moods to onMoodClick,
+                    R.string.home_chip_history to onHistoryClick,
+                ).forEach { (label, action) ->
+                    Text(
+                        text = stringResource(label),
+                        modifier = Modifier
+                            .heightIn(min = 48.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f))
+                            .clickable(onClick = action)
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             content()
-            Spacer(Modifier.height(34.dp))
+            Spacer(Modifier.height(24.dp))
         }
     }
 }
@@ -506,12 +543,12 @@ private fun HomeShell() {
                 BonesHost(modifier = Modifier.launchRise(order = 1)) {
                     HomeCompactTopBones(isHopIn = homeStyle == HomeStyle.HOP_IN)
                 }
-                Spacer(Modifier.height(34.dp))
+                Spacer(Modifier.height(24.dp))
             }
             BonesHost(modifier = Modifier.launchRise(order = 2)) {
                 repeat(2) {
                     HomeSectionBones()
-                    Spacer(modifier = Modifier.height(34.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
         }
@@ -1342,7 +1379,10 @@ fun HomeScreen(
                             val glowCoverUrls = remember(startListeningSongs, launchHold) {
                                 if (launchHold) emptyList() else startListeningSongs.mapNotNull { it.thumbnailUrl }.take(2)
                             }
-                            HomeCompactTop(glowCoverUrls, topGlowVisibility) {
+                            HomeCompactTop(glowCoverUrls, topGlowVisibility,
+                                onMoodClick = { navController.navigate("mood_and_genres") },
+                                onHistoryClick = { navController.navigate("history") },
+                            ) {
                                 if (launchHold || (isFirstLoad && startListeningSongs.isEmpty())) {
                                     BonesHost {
                                         HomeCompactTopBones(isHopIn = false)
@@ -1368,7 +1408,10 @@ fun HomeScreen(
                                 if (launchHold) emptyList()
                                 else hopInLocalItems.mapNotNull { (it as? Playlist)?.thumbnails?.firstOrNull() ?: it.thumbnailUrl }.take(2)
                             }
-                            HomeCompactTop(glowCoverUrls, topGlowVisibility) {
+                            HomeCompactTop(glowCoverUrls, topGlowVisibility,
+                                onMoodClick = { navController.navigate("mood_and_genres") },
+                                onHistoryClick = { navController.navigate("history") },
+                            ) {
                                 if (launchHold || (isFirstLoad && hopInLocalItems.isEmpty())) {
                                     BonesHost {
                                         HomeCompactTopBones(isHopIn = true)
@@ -1397,7 +1440,7 @@ fun HomeScreen(
                                         }
                                     }
                                 }
-                                Spacer(Modifier.height(34.dp))
+                                Spacer(Modifier.height(24.dp))
                             }
                         }
                     }
@@ -1422,22 +1465,39 @@ fun HomeScreen(
                         HomeSection.RecentlyPlayed -> {
                             recentlyPlayed?.takeIf { it.isNotEmpty() }?.let { items ->
                                 homeItem("recently_played_title", revealSeen, "title") {
-                                    HomeSectionTitle(
+                                    HomeSectionHeading(
                                         title = stringResource(R.string.recently_played),
-                                        onClick = { navController.navigate("section_detail/recently_played") }
+                                        actionLabel = stringResource(R.string.home_view_all),
+                                        onAction = { navController.navigate("section_detail/recently_played") },
                                     )
                                 }
                                 homeItem("recently_played_list", revealSeen, "cardRow") {
-                                    HomeCardRow("recently_played", items, revealSeen, key = { it.id }, content = localItemCard)
+                                    Column(
+                                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = HomeContentInset),
+                                    ) {
+                                        items.take(6).chunked(2).forEach { rowItems ->
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                                modifier = Modifier.fillMaxWidth(),
+                                            ) {
+                                                rowItems.forEach { item -> hopInCard(item, Modifier.weight(1f)) }
+                                                if (rowItems.size == 1) Spacer(Modifier.weight(1f))
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
                         HomeSection.MostPlayed -> {
                             mostPlayedSongsForHome?.takeIf { it.isNotEmpty() }?.let { mostPlayed ->
                                 homeItem("most_played_title", revealSeen, "title") {
-                                    HomeSectionTitle(
+                                    HomeSectionHeading(
                                         title = stringResource(R.string.home_most_played),
-                                        onClick = { navController.navigate("section_detail/most_played") },
+                                        actionLabel = stringResource(R.string.home_view_all),
+                                        onAction = { navController.navigate("section_detail/most_played") },
                                     )
                                 }
                                 homeItem("most_played_list", revealSeen, "trackGrid") {
@@ -1703,7 +1763,7 @@ fun HomeScreen(
                     }
 
                     item(key = "section_spacer_${section.id}", contentType = "spacer") {
-                        Spacer(modifier = Modifier.height(34.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
                     }
                 }
 
@@ -1722,7 +1782,7 @@ fun HomeScreen(
                         ) {
                             repeat(2) {
                                 HomeSectionBones()
-                                Spacer(modifier = Modifier.height(34.dp))
+                                Spacer(modifier = Modifier.height(24.dp))
                             }
                         }
                     }

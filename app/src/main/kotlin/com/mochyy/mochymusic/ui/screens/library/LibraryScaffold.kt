@@ -5,19 +5,41 @@
 
 package com.mochyy.mochymusic.ui.screens.library
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,11 +54,11 @@ import com.mochyy.mochymusic.models.toMediaMetadata
 import com.mochyy.mochymusic.playback.queues.ListQueue
 import com.mochyy.mochymusic.playback.queues.YouTubeQueue
 import com.mochyy.mochymusic.ui.component.GlassState
+import com.mochyy.mochymusic.ui.component.RemoteFocus
 import com.mochyy.mochymusic.ui.component.glassRoot
 import com.mochyy.mochymusic.ui.screens.search.SearchColors
 import com.mochyy.mochymusic.ui.screens.search.SearchField
 import com.mochyy.mochymusic.ui.screens.search.SearchGlassTopBar
-import com.mochyy.mochymusic.ui.screens.search.SearchHorizontalPadding
 import com.mochyy.mochymusic.ui.screens.search.searchTopBarHeight
 import com.mochyy.mochymusic.viewmodels.ShelfAlbum
 import com.music.innertube.models.AlbumItem
@@ -50,8 +72,8 @@ import com.music.innertube.models.YTItem
  * Shared page frame for every Library screen: collapsing title/subtitle, a pinned search pill, and
  * the caller's content below.
  *
- * Every Library screen carries its own search that only covers that screen's contents, which is
- * why the field lives in the scaffold rather than in one global place.
+ * Designed with Material 3 Expressive guidelines: clean spacing (multiples of 4/8dp), consistent
+ * 16dp margins, accessible touch targets (>=48dp), and fluid glassmorphism transitions.
  */
 @Composable
 fun LibraryScaffold(
@@ -74,11 +96,6 @@ fun LibraryScaffold(
             .fillMaxSize()
             .background(SearchColors.page(pureBlack)),
     ) {
-        // Only the list is recorded. The top bar draws this recording as its glass, so recording
-        // the bar too made the node draw itself: a native stack overflow the moment a scroll
-        // settled with the title collapsed. The bar stays a sibling, as on Search.
-        // Recorded while scrolling too: the bar's blur stays up through a scroll instead of
-        // dropping out and coming back when the list settles.
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -86,13 +103,15 @@ fun LibraryScaffold(
         ) {
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .animateContentSize(),
                 contentPadding = PaddingValues(
                     top = searchTopBarHeight(
                         withTitle = true,
                         titleBlockHeight = if (subtitle != null) LibraryTitleBlockHeight else 62.dp,
                     ),
-                    bottom = bottomInset + 24.dp,
+                    bottom = bottomInset + 32.dp,
                 ),
                 content = content,
             )
@@ -121,29 +140,49 @@ fun LibraryScaffold(
 // Search within the library
 // ---------------------------------------------------------------------------------------------
 
+/**
+ * Displays search results inside the library scaffold.
+ * Includes category badge tags, accessible >=48dp touch targets, and a rich empty state with action.
+ */
 internal fun androidx.compose.foundation.lazy.LazyListScope.librarySearchResults(
     results: List<YTItem>,
     query: String,
     onOpen: (YTItem) -> Unit,
+    onClearQuery: (() -> Unit)? = null,
 ) {
     if (results.isEmpty()) {
         item(key = "no_results") {
-            Text(
-                text = stringResource(R.string.lib_no_results, query),
-                color = SearchColors.Secondary,
-                fontSize = 13.sp,
-                modifier = Modifier.padding(horizontal = SearchHorizontalPadding, vertical = 24.dp),
+            LibrarySearchEmptyState(
+                query = query,
+                onClear = onClearQuery,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 40.dp),
             )
         }
         return
     }
+
     items(results, key = { it.id }) { item ->
-        val subtitle = when (item) {
-            is SongItem -> item.artists.joinToString { it.name }
+        val typeLabel = when (item) {
+            is SongItem -> stringResource(R.string.songs)
             is AlbumItem -> stringResource(R.string.lib_album)
             is ArtistItem -> stringResource(R.string.lib_artist)
             is PlaylistItem -> stringResource(R.string.lib_playlist)
         }
+        val subtitle = when (item) {
+            is SongItem -> {
+                val artists = item.artists.joinToString { it.name }
+                if (artists.isNotBlank()) "$artists • $typeLabel" else typeLabel
+            }
+            is AlbumItem -> {
+                val artists = item.artists?.joinToString { it.name }.orEmpty()
+                if (artists.isNotBlank()) "$artists • $typeLabel" else typeLabel
+            }
+            is ArtistItem -> typeLabel
+            is PlaylistItem -> item.author?.name?.let { "$it • $typeLabel" } ?: typeLabel
+        }
+
         LibraryListRow(
             title = item.title,
             subtitle = subtitle,
@@ -152,9 +191,89 @@ internal fun androidx.compose.foundation.lazy.LazyListScope.librarySearchResults
             onLongClick = { onOpen(item) },
             round = item is ArtistItem,
             songId = (item as? SongItem)?.id,
-            // albums and playlists open growing out of their cover, as from Home
             sharedElementKey = com.mochyy.mochymusic.ui.component.coverTransitionKey(item),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp),
         )
+    }
+}
+
+/**
+ * Modern Spotify/YouTube Music style empty search state: icon + headline + descriptive text + action.
+ */
+@Composable
+fun LibrarySearchEmptyState(
+    query: String,
+    onClear: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .clip(CircleShape)
+                .background(SearchColors.TileHigh),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.search_off),
+                contentDescription = null,
+                tint = SearchColors.Secondary,
+                modifier = Modifier.size(28.dp),
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = stringResource(R.string.lib_no_results, query),
+            color = SearchColors.Primary,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 24.dp),
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = stringResource(R.string.lib_empty_search_desc),
+            color = SearchColors.Secondary,
+            fontSize = 13.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 18.sp,
+            modifier = Modifier.padding(horizontal = 32.dp),
+        )
+
+        if (onClear != null) {
+            Spacer(modifier = Modifier.height(20.dp))
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(percent = 50))
+                    .background(Color(0xFF2E2E32))
+                    .clickable(
+                        role = Role.Button,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = RemoteFocus,
+                        onClick = onClear,
+                    )
+                    .heightIn(min = 48.dp)
+                    .padding(horizontal = 24.dp, vertical = 10.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.lib_action_clear_search),
+                    color = SearchColors.Primary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
     }
 }
 
@@ -180,9 +299,8 @@ internal fun openLibraryItem(
         }
         is AlbumItem -> navController.navigate("album/${item.browseId}")
         is ArtistItem -> navController.navigate("artist/${item.id}")
-        // the Library's own playlists have local ids; only YouTube ones open as online playlists
         is PlaylistItem -> navController.navigate(
-            if (item.id.startsWith("LP")) "local_playlist/${item.id}" else "online_playlist/${item.id}"
+            if (item.id.startsWith("LP")) "local_playlist/${item.id}" else "online_playlist/${item.id}",
         )
     }
 }
@@ -240,8 +358,7 @@ internal fun searchLibrary(
 }
 
 /**
- * The library search, over one shelf's things only (the Local or Cached tab). An album whose only
- * trace is a file's tag has no page to open, so it isn't a result of its own - its songs are.
+ * The library search, over one shelf's things only (the Local or Cached tab).
  */
 internal fun searchShelf(
     query: String,
@@ -263,7 +380,6 @@ internal fun searchShelf(
                 thumbnail = it.thumbnailUrl ?: "",
             )
         }
-    // the same order as the Library's search: songs, artists, albums, playlists
     return searchLibrary(query, songs, artists, emptyList(), emptyList()) +
         albumHits +
         searchLibrary(query, emptyList(), emptyList(), emptyList(), playlists)

@@ -58,6 +58,10 @@ fun <T> LibraryEntityListScreen(
     rowWrapper: @Composable (item: T, row: @Composable () -> Unit) -> Unit = { _, row -> row() },
     // shown at the end of the header, where the Library home has its avatar
     trailing: (@Composable () -> Unit)? = null,
+    emptyTitle: String? = null,
+    emptyDescription: String? = null,
+    emptyActionLabel: String? = null,
+    onEmptyAction: (() -> Unit)? = null,
 ) {
     var query by remember { mutableStateOf(TextFieldValue()) }
     val listState = rememberLazyListState()
@@ -125,7 +129,13 @@ fun <T> LibraryEntityListScreen(
             }
 
             if (rows.isEmpty()) {
-                item(key = "empty") { LibraryEmptyState() }
+                item(key = "empty") {
+                    if (emptyTitle != null && emptyDescription != null && emptyActionLabel != null && onEmptyAction != null && query.text.isBlank()) {
+                        LibraryEmptyMessage(emptyTitle, emptyDescription, emptyActionLabel, onEmptyAction)
+                    } else {
+                        LibraryEmptyState()
+                    }
+                }
                 return@LibraryScaffold
             }
 

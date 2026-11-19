@@ -16,6 +16,7 @@ import androidx.navigation.NavController
 import com.mochyy.mochymusic.R
 import com.mochyy.mochymusic.importer.ImportSource
 import com.mochyy.mochymusic.ui.component.LocalMenuState
+import com.mochyy.mochymusic.ui.component.CreatePlaylistDialog
 import com.mochyy.mochymusic.ui.menu.PlaylistMenu
 import com.mochyy.mochymusic.viewmodels.LibraryHomeViewModel
 import com.mochyy.mochymusic.viewmodels.LibraryShelfKind
@@ -69,6 +70,10 @@ fun LibraryPlaylistsScreen(
                 )
             }
         },
+        emptyTitle = stringResource(R.string.lib_empty_playlists_title),
+        emptyDescription = stringResource(R.string.lib_empty_playlists_desc),
+        emptyActionLabel = stringResource(R.string.lib_action_create_playlist),
+        onEmptyAction = { menuState.show { CreatePlaylistDialog(onDismiss = menuState::dismiss) } },
         modifier = modifier,
         pureBlack = pureBlack,
     )

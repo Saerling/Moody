@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,16 +55,16 @@ import com.mochyy.mochymusic.ui.theme.InterFontFamily
 import coil3.compose.AsyncImage
 
 // spacing and type straight from the Figma home frames (13:11 / 14:212)
-val HomeContentInset = 36.dp
-val HomeCardSpacing = 15.dp
+val HomeContentInset = 16.dp
+val HomeCardSpacing = 12.dp
 
 private val HomeTracking = (-0.06).em
 
 val HomeLabelStyle = TextStyle(
     fontFamily = InterFontFamily,
     fontWeight = FontWeight.Bold,
-    fontSize = 16.sp,
-    lineHeight = 19.sp,
+    fontSize = 18.sp,
+    lineHeight = 22.sp,
     letterSpacing = HomeTracking,
 )
 
@@ -142,7 +144,8 @@ fun HomeSectionTitle(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = SectionTapMargin, end = SectionTapMargin, bottom = 6.dp)
+            .heightIn(min = 48.dp)
+            .padding(start = SectionTapMargin, end = SectionTapMargin, bottom = 8.dp)
             .then(
                 if (onClick != null) {
                     Modifier.clickable(
@@ -158,8 +161,8 @@ fun HomeSectionTitle(
             .padding(
                 start = HomeContentInset - SectionTapMargin,
                 end = HomeContentInset - SectionTapMargin,
-                top = 4.dp,
-                bottom = 4.dp,
+                top = 8.dp,
+                bottom = 8.dp,
             ),
     ) {
         if (thumbnail != null) {
@@ -187,6 +190,45 @@ fun HomeSectionTitle(
         if (onClick != null) {
             Spacer(Modifier.width(6.dp))
             SectionChevron()
+        }
+    }
+}
+
+/** Compact section heading with an optional trailing action, aligned to Home's 16dp content grid. */
+@Composable
+fun HomeSectionHeading(
+    title: String,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .padding(horizontal = HomeContentInset),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = title,
+            modifier = Modifier.weight(1f),
+            style = HomeLabelStyle,
+            color = SectionLabelColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        if (actionLabel != null && onAction != null) {
+            Text(
+                text = actionLabel,
+                modifier = Modifier
+                    .heightIn(min = 48.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = onAction)
+                    .padding(horizontal = 8.dp, vertical = 14.dp),
+                style = HomeCardSubtitleStyle,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1,
+            )
         }
     }
 }
@@ -255,7 +297,7 @@ fun HomeCoverCard(
                 )
             }
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(10.dp))
         Text(
             text = title,
             style = HomeCardTitleStyle,
