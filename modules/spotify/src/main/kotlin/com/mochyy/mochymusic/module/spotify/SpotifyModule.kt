@@ -99,7 +99,8 @@ class SpotifyModule : SourceModule {
     override fun accountState(): AccountState {
         user?.let { return AccountState.SignedIn("Spotify · $it") }
         if (!SpotifyNative.loaded) return AccountState.Expired("This build has no Spotify engine")
-        val saved = host.storage.get("user") ?: return AccountState.SignedOut
+        // a failed first sign-in has no saved user yet, but its reason still has to reach the screen
+        val saved = host.storage.get("user") ?: return lastError?.let { AccountState.Expired(it) } ?: AccountState.SignedOut
         return lastError?.let { AccountState.Expired(it) } ?: AccountState.SignedIn("Spotify · $saved")
     }
 
@@ -112,7 +113,10 @@ class SpotifyModule : SourceModule {
     }
 
     override suspend fun verifyAccount(): AccountState {
-        ensureStarted()
+        runCatching { ensureStarted() }.onFailure {
+            lastError = "Spotify engine crashed (${it::class.simpleName}: ${it.message})"
+            host.log("spotify: $lastError")
+        }
         return accountState()
     }
 
@@ -137,9 +141,13 @@ class SpotifyModule : SourceModule {
         val dir = File(host.folder, "librespot").apply { mkdirs() }.absolutePath
 
         var token = ""
+        lastError = null
         if (code != null) {
             pendingCode = null
-            val tokens = exchange(code) ?: return false
+            val tokens = exchange(code) ?: run {
+                if (lastError == null) lastError = "Spotify didn't hand over a token"
+                return false
+            }
             token = tokens.first
             tokens.second?.let { host.storage.set("refresh_token", it) }
         } else if (host.storage.get("user") == null) {
@@ -190,12 +198,16 @@ class SpotifyModule : SourceModule {
             host.http(HttpRequest(TOKEN_URL, method = "POST", body = body.toByteArray(), contentType = "application/x-www-form-urlencoded"))
         }.getOrNull()
         if (response == null || !response.ok) {
-            lastError = if (response?.text?.contains("invalid_grant") == true) "Signed out of Spotify, sign in again" else "Spotify's sign-in didn't answer"
+            val detail = response?.let { "HTTP ${it.code}: ${it.text.take(160)}" } ?: "no connection"
+            lastError = if (response?.text?.contains("invalid_grant") == true) "Signed out of Spotify, sign in again" else "Spotify's sign-in didn't answer ($detail)"
             if (response?.text?.contains("invalid_grant") == true) host.storage.set("refresh_token", null)
             return null
         }
-        val obj = runCatching { json.parseToJsonElement(response.text).jsonObject }.getOrNull() ?: return null
-        val access = obj["access_token"]?.jsonPrimitive?.contentOrNull ?: return null
+        val obj = runCatching { json.parseToJsonElement(response.text).jsonObject }.getOrNull()
+        val access = obj?.get("access_token")?.jsonPrimitive?.contentOrNull ?: run {
+            lastError = "Spotify's token answer made no sense (${response.text.take(160)})"
+            return null
+        }
         return access to obj["refresh_token"]?.jsonPrimitive?.contentOrNull
     }
 
