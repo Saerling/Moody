@@ -47,6 +47,26 @@ jobs:
             -validity 10000 \
             -dname "CN=Android Debug,O=Android,C=US"
 
+      - name: Set up Rust for Android
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
+          cargo install cargo-ndk --locked
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: native/spotify
+
+      # el núcleo de Spotify (librespot); sin él el módulo Spotify solo dice que no está disponible
+      - name: Build Spotify core
+        working-directory: native/spotify
+        run: |
+          export ANDROID_NDK_HOME="${ANDROID_NDK_LATEST_HOME:-$ANDROID_NDK_HOME}"
+          cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 -P 24 -o ../../app/src/main/jniLibs build --release
+          ls -la ../../app/src/main/jniLibs/*
+
       - name: Build Debug APK
         env:
           LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
@@ -57,10 +77,13 @@ jobs:
         run: |
           ./gradlew assembleUniversalGmsDebug --no-configuration-cache --console=plain --warning-mode summary
 
+      - name: Name Debug APK for Moody updater
+        run: cp app/build/outputs/apk/universalGms/debug/*.apk app/build/outputs/apk/universalGms/debug/moody.apk
+
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: app-universal-gms-debug
-          path: app/build/outputs/apk/universalGms/debug/*.apk
+          path: app/build/outputs/apk/universalGms/debug/moody.apk
           # a debug apk is only for trying the build, after a week it's just eating actions storage
           retention-days: 7

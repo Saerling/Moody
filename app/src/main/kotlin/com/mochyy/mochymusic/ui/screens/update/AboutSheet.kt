@@ -61,7 +61,6 @@ import com.mochyy.mochymusic.ui.component.PopupSheetState
 import com.mochyy.mochymusic.ui.component.RemoteFocus
 import com.mochyy.mochymusic.ui.component.pressBounce
 import com.mochyy.mochymusic.ui.player.menu.MenuRowSurface
-import com.mochyy.mochymusic.ui.screens.donate.showSupportSheet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -187,7 +186,7 @@ private val Licenses =
     listOf(
         LicenseEntry(
             tag = "GPL-3.0",
-            title = "Mochy Music · GNU General Public License v3.0",
+            title = "Basado en Mochy Music de realidkroo (GPL-3.0)",
             subtitle = "Free and open source software, source code on GitHub",
             url = "$GithubRepoUrl/blob/main/LICENSE",
         ),
@@ -428,10 +427,6 @@ private fun ColumnScope.AboutSheetContent(
             SectionHeader(stringResource(R.string.about_actions))
             Spacer(Modifier.height(8.dp))
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                AboutPillRow(
-                    text = stringResource(R.string.about_support_me),
-                    onClick = { popup.showSupportSheet() },
-                )
                 AboutPillRow(
                     text = stringResource(R.string.about_github),
                     onClick = { context.openUrl(GithubRepoUrl) },

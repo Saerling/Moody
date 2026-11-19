@@ -1,5 +1,6 @@
 package com.mochyy.mochymusic.ui.screens.settings.importsync
 
+import java.io.ByteArrayInputStream
 import android.view.ContextThemeWrapper
 import android.content.Context
 import android.view.ViewGroup
@@ -64,6 +65,11 @@ import com.mochyy.mochymusic.ui.utils.stableStatusBarsPadding
 internal const val BRIDGE_NAME = "MochyCapture"
 
 /** headers the web players send with their session: the token itself and spotify's client details */
+/** a sign-in that ends on a loopback redirect (oauth for native apps) reaches the module as this header, its value the whole link */
+const val LOOPBACK_HEADER = "x-loopback-redirect"
+private const val LOOPBACK_REDIRECT = "http://127.0.0.1:"
+private const val LOOPBACK_PAGE = "<html><body style='background:#1c1c1c;color:#fff;font-family:sans-serif;text-align:center;padding-top:40vh'>✓</body></html>"
+
 private val SESSION_HEADERS = setOf("authorization", "media-user-token", "client-token", "app-platform", "spotify-app-version")
 
 /** wraps fetch and xhr so the session headers and spotify's library queries the web player sends reach the app */
@@ -306,6 +312,11 @@ fun CaptureWebContent(
             // a second way to see request headers, for requests the page hook misses
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                 val url = request.url?.toString().orEmpty()
+                // an oauth sign-in comes back to a loopback address nothing listens on: the module reads the code off the link
+                if (url.startsWith(LOOPBACK_REDIRECT)) {
+                    currentOnHeader(LOOPBACK_HEADER, url, url)
+                    return WebResourceResponse("text/html", "utf-8", ByteArrayInputStream(LOOPBACK_PAGE.toByteArray()))
+                }
                 request.requestHeaders?.forEach { (name, value) ->
                     if (name.lowercase() in SESSION_HEADERS) currentOnHeader(name, value, url)
                 }

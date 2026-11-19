@@ -98,7 +98,6 @@ import com.mochyy.mochymusic.ui.component.PopupSheetState
 import com.mochyy.mochymusic.ui.component.pressBounce
 import com.mochyy.mochymusic.ui.player.menu.MenuRowSurface
 import com.mochyy.mochymusic.ui.player.menu.MenuSurface
-import com.mochyy.mochymusic.ui.screens.donate.showSupportSheet
 import kotlinx.coroutines.launch
 import com.mochyy.mochymusic.ui.component.RemoteFocus
 
@@ -307,11 +306,6 @@ private fun ColumnScope.UpdateSheetContent(
                     icon = R.drawable.info,
                     label = stringResource(R.string.about_app),
                     onClick = { popup.showAboutSheet(onOpenDevSpace = onOpenDevSpace) },
-                )
-                ActionRow(
-                    icon = R.drawable.favorite,
-                    label = stringResource(R.string.update_help_us),
-                    onClick = { popup.showSupportSheet() },
                 )
             }
             Spacer(Modifier.height(6.dp))
@@ -609,7 +603,7 @@ private fun ColumnScope.UpdateDetailContent(
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = release.apkName ?: "mochy.apk",
+                text = release.apkName ?: "moody.apk",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,

@@ -91,3 +91,7 @@ app/persistent-debug.keystore
 output-metadata.json
 vcs.xml
 lint/
+
+# núcleo de Spotify (lo compila el CI)
+native/spotify/target/
+app/src/main/jniLibs/*/libmoodyspotify.so

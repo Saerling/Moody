@@ -52,7 +52,7 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
             }
 
             val isZip = apkUrl.contains("nightly.link") || apkUrl.endsWith(".zip")
-            val downloadFile = if (isZip) File(downloadDir, "mochy_temp.zip") else File(downloadDir, "mochy.apk")
+            val downloadFile = if (isZip) File(downloadDir, "moody_temp.zip") else File(downloadDir, "moody.apk")
             val outputStream = FileOutputStream(downloadFile)
 
             val buffer = ByteArray(8192)
@@ -88,7 +88,7 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
             connection.disconnect()
 
             val finalFile = if (isZip) {
-                val targetApkFile = File(downloadDir, "mochy.apk")
+                val targetApkFile = File(downloadDir, "moody.apk")
                 var extracted = false
                 try {
                     ZipInputStream(downloadFile.inputStream()).use { zis ->

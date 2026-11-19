@@ -50,7 +50,7 @@ class CustomDownloadManager {
                     downloadDir.mkdirs()
                 }
 
-                val outputFile = File(downloadDir, "mochy.apk")
+                val outputFile = File(downloadDir, "moody.apk")
                 val outputStream = FileOutputStream(outputFile)
 
                 val buffer = ByteArray(8192)

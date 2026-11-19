@@ -13,6 +13,7 @@ import com.mochyy.mochymusic.module.StreamFormat
 import com.mochyy.mochymusic.module.TrackQuery
 import com.mochyy.mochymusic.module.applemusic.AppleMusicModule
 import com.mochyy.mochymusic.module.monochrome.MonochromeModule
+import com.mochyy.mochymusic.module.spotify.SpotifyModule
 import com.mochyy.mochymusic.utils.DataSaver
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
@@ -259,6 +260,6 @@ class SourceModules @Inject constructor(
         /** youtube music in the provider order: not a module, and needs no account */
         const val YouTubeId = "youtube"
         // modules added later (jiosaavn, link modules) aren't listed: refresh slots them in just ahead of youtube, where they get asked
-        private val KnownOrder = listOf(MonochromeModule.Id, AppleMusicModule.Id, YouTubeId)
+        private val KnownOrder = listOf(MonochromeModule.Id, SpotifyModule.Id, AppleMusicModule.Id, YouTubeId)
     }
 }

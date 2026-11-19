@@ -324,7 +324,7 @@ fun UpdateScreen(navController: NavHostController) {
                                                 ContextCompat.startActivity(context, installIntent, null)
                                             }
                                         } else {
-                                            val urlToDownload = currentStatus.apkUrl ?: "https://github.com/Saerling/moody/releases/download/${currentStatus.version}/mochy.apk"
+                                            val urlToDownload = currentStatus.apkUrl ?: "https://github.com/Saerling/moody/releases/download/${currentStatus.version}/moody.apk"
                                             val downloadRequest = OneTimeWorkRequestBuilder<UpdateDownloadWorker>()
                                                 .setInputData(workDataOf("apk_url" to urlToDownload, "version" to currentStatus.version, "file_size" to currentStatus.size))
                                                 .addTag("update_download")
@@ -802,7 +802,7 @@ suspend fun checkForUpdate(
                     for (j in 0 until assets.length()) {
                         val asset = assets.getJSONObject(j)
                         val assetName = asset.getString("name")
-                        if (assetName == "mochy.apk") {
+                        if (assetName == "moody.apk") {
                             val apkSizeInBytes = asset.getLong("size")
                             apkSizeInMB = String.format("%.1f", apkSizeInBytes / (1024.0 * 1024.0))
                             apkDownloadUrl = asset.getString("browser_download_url")

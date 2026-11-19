@@ -122,7 +122,7 @@ fun DonatePromptScheduler(enabled: Boolean) {
 private suspend fun showWhenFree(lifecycle: Lifecycle, sheet: PopupSheetState, otherSheets: List<PopupSheetState>) {
     lifecycle.currentStateFlow.first { it.isAtLeast(Lifecycle.State.RESUMED) }
     snapshotFlow { !sheet.isVisible && otherSheets.none { it.isVisible } }.first { it }
-    sheet.showSupportSheet()
+    // Support and donation prompts are disabled in Moody.
 }
 
 /** adds listening time for a new user, true once they've reached the first ask */

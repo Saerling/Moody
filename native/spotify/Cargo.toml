@@ -1,0 +1,38 @@
+# Núcleo de Spotify de Moody: abre una sesión de librespot y sirve cada pista ya
+# descifrada por HTTP en 127.0.0.1, para que el reproductor normal de la app
+# (ExoPlayer) la toque como cualquier otra fuente.
+#
+# La sesión y el parche de librespot-core vienen de Square
+# (https://github.com/Lelonio/Square, GPL-3.0); ver vendor/README-square.md.
+[package]
+name = "moodyspotify"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "GPL-3.0-or-later"
+
+[lib]
+name = "moodyspotify"
+crate-type = ["cdylib"]
+
+[dependencies]
+librespot-core = { version = "0.8", default-features = false, features = ["rustls-tls-webpki-roots"] }
+librespot-audio = { version = "0.8", default-features = false, features = ["rustls-tls-webpki-roots"] }
+librespot-metadata = { version = "0.8", default-features = false, features = ["rustls-tls-webpki-roots"] }
+tokio = { version = "1", features = ["rt-multi-thread", "sync", "macros", "time"] }
+jni = "0.21"
+log = "0.4"
+once_cell = "1"
+
+[target.'cfg(target_os = "android")'.dependencies]
+android_logger = "0.14"
+
+[patch.crates-io]
+librespot-core = { path = "vendor/librespot-core" }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+panic = "unwind"

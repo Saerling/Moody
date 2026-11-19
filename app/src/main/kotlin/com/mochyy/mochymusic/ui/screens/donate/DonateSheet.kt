@@ -47,8 +47,8 @@ import com.mochyy.mochymusic.ui.player.menu.MenuRowSurface
 import com.mochyy.mochymusic.ui.screens.update.VersionRing
 import com.mochyy.mochymusic.ui.screens.update.openUrl
 
-const val KofiUrl = "https://ko-fi.com/realidkroo"
-const val SocialBuzzUrl = "https://sociabuzz.com/realidkroo/tribe"
+const val KofiUrl = ""
+const val SocialBuzzUrl = ""
 const val BuyMeACoffeeUrl = "https://buymeacoffee.com/realkeichii"
 
 // the title tucks up over her faded bottom by this much, like the mock
