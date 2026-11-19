@@ -97,6 +97,8 @@ fn start(dir: &str, token: &str) -> Res<String> {
 
 fn connect(root: &Path, token: &str) -> Res<Session> {
     let rt = runtime()?;
+    // Session::new toma Handle::current(): fuera del runtime de tokio entra en pánico
+    let _runtime = rt.enter();
     let credentials_dir = root.join("credentials");
     let kept_dir = root.join("reusable");
     let audio_dir = root.join("audio");
@@ -400,7 +402,14 @@ fn guarded(f: impl FnOnce() -> Res<String> + std::panic::UnwindSafe) -> String {
     match std::panic::catch_unwind(f) {
         Ok(Ok(v)) => v,
         Ok(Err(e)) => format!("error:{e}"),
-        Err(_) => "error:panic".into(),
+        Err(panic) => {
+            let why = panic
+                .downcast_ref::<&str>()
+                .map(|s| s.to_string())
+                .or_else(|| panic.downcast_ref::<String>().cloned())
+                .unwrap_or_default();
+            format!("error:panic {why}")
+        }
     }
 }
 
