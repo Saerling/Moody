@@ -480,7 +480,7 @@
     <string name="eq_label_mid">Mids</string>
     <string name="eq_label_treble">Treble</string>
     <string name="eq_preset_flat">Flat</string>
-    <string name="eq_preset_Moody_signature">Moody Signature</string>
+    <string name="eq_preset_mochy_signature">Moody Signature</string>
     <string name="eq_preset_acoustic">Acoustic</string>
     <string name="eq_preset_spatial">3D Stage</string>
     <string name="eq_preset_bass_boost">Bass Boost</string>
@@ -499,7 +499,7 @@
     <string name="eq_preset_dirac_game">Dirac Game</string>
     <string name="eq_enable_title">MoodyEqualizer</string>
     <string name="eq_enable_summary">Toggle professional audio processing</string>
-    <string name="eq_label_Moody">Moody Signature</string>
+    <string name="eq_label_mochy">Moody Signature</string>
     <string name="eq_label_dolby">Dolby Atmos</string>
     <string name="eq_label_dirac">Dirac Audio</string>
     <string name="eq_reset">Reset</string>
@@ -516,9 +516,9 @@
     <string name="plays">plays</string>
     <string name="casting_to">转换为 %s</string>
     <string name="progress_percent">进度 %s%%</string>
-    <string name="listening_to_Moody">收听 Moody</string>
+    <string name="listening_to_mochy">收听 Moody</string>
     <string name="listen_on_youtube_music">在 YouTube Music 上收听</string>
-    <string name="visit_Moody">访问 Moody</string>
+    <string name="visit_mochy">访问 Moody</string>
     <string name="open">打开</string>
     <string name="failed_to_create_image">无法创建图片：%s</string>
     <string name="copied_title">已复制标题</string>
@@ -779,9 +779,9 @@
     <string name="discord_rpc_preview">Rich Presence 预览</string>
     <string name="discord_presence">在场</string>
     <string name="discord_connect_description">使用 Discord 登录来分享你正在收听的内容</string>
-    <string name="discord_playing_Moody">播放 Moody</string>
-    <string name="discord_watching_Moody">观看Moody</string>
-    <string name="discord_competing_Moody">参与Moody评选</string>
+    <string name="discord_playing_mochy">播放 Moody</string>
+    <string name="discord_watching_mochy">观看Moody</string>
+    <string name="discord_competing_mochy">参与Moody评选</string>
     <string name="discord_activity_name">活动名称</string>
     <string name="discord_activity_name_description">自定义活动名称（留空则使用默认值）</string>
     <string name="discord_advanced_mode">高级模式</string>

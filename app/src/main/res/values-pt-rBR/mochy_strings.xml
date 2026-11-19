@@ -486,7 +486,7 @@
     <string name="eq_label_mid">Mids</string>
     <string name="eq_label_treble">Treble</string>
     <string name="eq_preset_flat">Flat</string>
-    <string name="eq_preset_Moody_signature">Moody Signature</string>
+    <string name="eq_preset_mochy_signature">Moody Signature</string>
     <string name="eq_preset_acoustic">Acoustic</string>
     <string name="eq_preset_spatial">3D Stage</string>
     <string name="eq_preset_bass_boost">Bass Boost</string>
@@ -505,7 +505,7 @@
     <string name="eq_preset_dirac_game">Dirac Game</string>
     <string name="eq_enable_title">MoodyEqualizer</string>
     <string name="eq_enable_summary">Toggle professional audio processing</string>
-    <string name="eq_label_Moody">Moody Signature</string>
+    <string name="eq_label_mochy">Moody Signature</string>
     <string name="eq_label_dolby">Dolby Atmos</string>
     <string name="eq_label_dirac">Dirac Audio</string>
     <string name="eq_reset">Reset</string>
@@ -522,9 +522,9 @@
     <string name="plays">plays</string>
     <string name="casting_to">Transmitir para %s</string>
     <string name="progress_percent">Progresso %s%%</string>
-    <string name="listening_to_Moody">Ouvindo Moody</string>
+    <string name="listening_to_mochy">Ouvindo Moody</string>
     <string name="listen_on_youtube_music">Ouça no YouTube Music</string>
-    <string name="visit_Moody">Visite Moody</string>
+    <string name="visit_mochy">Visite Moody</string>
     <string name="open">Abrir</string>
     <string name="failed_to_create_image">Falha ao criar a imagem: %s</string>
     <string name="copied_title">Título Copiado</string>
@@ -785,9 +785,9 @@
     <string name="discord_rpc_preview">Visualização de rich presence</string>
     <string name="discord_presence">Presença</string>
     <string name="discord_connect_description">Entre com o Discord para compartilhar o que você está ouvindo</string>
-    <string name="discord_playing_Moody">Jogando Moody</string>
-    <string name="discord_watching_Moody">Assistindo Moody</string>
-    <string name="discord_competing_Moody">Competindo no Moody</string>
+    <string name="discord_playing_mochy">Jogando Moody</string>
+    <string name="discord_watching_mochy">Assistindo Moody</string>
+    <string name="discord_competing_mochy">Competindo no Moody</string>
     <string name="discord_activity_name">Nome da atividade</string>
     <string name="discord_activity_name_description">Nome personalizado para a atividade (deixe vazio para padrão)</string>
     <string name="discord_advanced_mode">Modo avançado</string>

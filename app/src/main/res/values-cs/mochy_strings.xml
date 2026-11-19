@@ -324,9 +324,9 @@
     <string name="wrapped_playlist_saved">Playlist uložen</string>
     <string name="casting_to">Přehrávání přes %s</string>
     <string name="progress_percent">Postup %s%%</string>
-    <string name="listening_to_Moody">Poslouchá Moody</string>
+    <string name="listening_to_mochy">Poslouchá Moody</string>
     <string name="listen_on_youtube_music">Poslouchat na YouTube Music</string>
-    <string name="visit_Moody">Navštívit Moody</string>
+    <string name="visit_mochy">Navštívit Moody</string>
     <string name="open">Otevřít</string>
     <string name="failed_to_create_image">Nepodařilo se vytvořit obrázek: %s</string>
     <string name="copied_title">Název zkopírován</string>
@@ -637,9 +637,9 @@
     <string name="discord_rpc_preview">Náhled stavu na Discordu</string>
     <string name="discord_presence">Stav</string>
     <string name="discord_connect_description">Přihlaste se k Discordu pro sdílení hudby, kterou posloucháte</string>
-    <string name="discord_playing_Moody">Hraje Moody</string>
-    <string name="discord_watching_Moody">Sleduje Moody</string>
-    <string name="discord_competing_Moody">Soupeří v Moody</string>
+    <string name="discord_playing_mochy">Hraje Moody</string>
+    <string name="discord_watching_mochy">Sleduje Moody</string>
+    <string name="discord_competing_mochy">Soupeří v Moody</string>
     <string name="discord_activity_name">Název aktivity</string>
     <string name="discord_activity_name_description">Vlastní název aktivity (ponechte prázdné pro výchozí)</string>
     <string name="discord_advanced_mode">Pokročilý režim</string>

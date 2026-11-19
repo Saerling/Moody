@@ -600,7 +600,7 @@
     <string name="eq_label_mid">Trung</string>
     <string name="eq_label_treble">Cao</string>
     <string name="eq_preset_flat">Phẳng</string>
-    <string name="eq_preset_Moody_signature">Moody Signature</string>
+    <string name="eq_preset_mochy_signature">Moody Signature</string>
     <string name="eq_preset_acoustic">Acoustic</string>
     <string name="eq_preset_spatial">Sân khấu 3D</string>
     <string name="eq_preset_bass_boost">Tăng trầm</string>
@@ -619,7 +619,7 @@
     <string name="eq_preset_dirac_game">Dirac Game</string>
     <string name="eq_enable_title">MoodyEqualizer</string>
     <string name="eq_enable_summary">Bật/tắt xử lý âm thanh chuyên nghiệp</string>
-    <string name="eq_label_Moody">Moody Signature</string>
+    <string name="eq_label_mochy">Moody Signature</string>
     <string name="eq_label_dolby">Dolby Atmos</string>
     <string name="eq_label_dirac">Dirac Audio</string>
     <string name="eq_reset">Đặt lại</string>
@@ -635,9 +635,9 @@
     <string name="plays">lượt phát</string>
     <string name="casting_to">Đang truyền tới %s</string>
     <string name="progress_percent">Tiến độ %s%%</string>
-    <string name="listening_to_Moody">Đang nghe Moody</string>
+    <string name="listening_to_mochy">Đang nghe Moody</string>
     <string name="listen_on_youtube_music">Nghe trên YouTube Music</string>
-    <string name="visit_Moody">Truy cập Moody</string>
+    <string name="visit_mochy">Truy cập Moody</string>
     <string name="open">Mở</string>
     <string name="failed_to_create_image">Không tạo được ảnh: %s</string>
     <string name="copied_title">Đã sao chép tiêu đề</string>
@@ -755,9 +755,9 @@
     <string name="discord_rpc_preview">Xem trước Rich Presence</string>
     <string name="discord_presence">Trạng thái hiện diện</string>
     <string name="discord_connect_description">Đăng nhập Discord để chia sẻ bài bạn đang nghe</string>
-    <string name="discord_playing_Moody">Đang chơi Moody</string>
-    <string name="discord_watching_Moody">Đang xem Moody</string>
-    <string name="discord_competing_Moody">Đang thi đấu trong Moody</string>
+    <string name="discord_playing_mochy">Đang chơi Moody</string>
+    <string name="discord_watching_mochy">Đang xem Moody</string>
+    <string name="discord_competing_mochy">Đang thi đấu trong Moody</string>
     <string name="discord_activity_name">Tên hoạt động</string>
     <string name="discord_activity_name_description">Tên tùy chỉnh cho hoạt động (để trống để dùng mặc định)</string>
     <string name="discord_advanced_mode">Chế độ nâng cao</string>
