@@ -102,7 +102,8 @@ jobs:
 
       - name: Aviso si falta la clave de firma
         if: github.ref == 'refs/heads/main' && env.MOODY_KEYSTORE_PASSWORD == ''
-        run: echo "::warning::Falta el secreto MOODY_KEYSTORE_PASSWORD (ver scripts/crear-clave.sh): no se publicó la versión para el actualizador."
+        run: |
+          echo "::warning::Falta el secreto MOODY_KEYSTORE_PASSWORD (ver scripts/crear-clave.sh), no se publicó la versión para el actualizador."
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
