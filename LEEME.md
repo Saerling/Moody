@@ -7,6 +7,7 @@ App de música para Android basada en [Mochy Music](https://github.com/realidkro
 | YouTube Music (buscar, reproducir, tu biblioteca) | Viene de Mochy |
 | Tu música guardada en el celular | Viene de Mochy (Música local) |
 | Tu servidor propio (FLAC/MP3 de tu biblioteca + SoundCloud) | Carpeta [`server/`](server) → se agrega como módulo |
+| **Spotify directo** (Premium, como Spotifast) | Módulo [`modules/spotify`](modules/spotify) + núcleo [`native/spotify`](native/spotify) con librespot |
 | Playlists de Spotify, Apple Music y Tidal | Importar, viene de Mochy |
 | Last.fm y Discord | Viene de Mochy (necesitan las claves, ver abajo) |
 | Liquid Glass (estilo Convx) | Módulo [`modules/liquid-glass`](modules/liquid-glass) |
@@ -21,6 +22,18 @@ Cada push a `main` compila la app en **Actions → CI & Debug Build**. Entra a l
 
 Para que funcionen Last.fm y Discord, agrega en **Settings → Secrets and variables → Actions**:
 `LASTFM_API_KEY`, `LASTFM_SECRET` (crea las claves en <https://www.last.fm/api/account/create>) y `DISCORD_CLIENT_ID` (<https://discord.com/developers/applications>).
+
+## Spotify
+
+Moody reproduce canciones directamente de Spotify, igual que Spotifast en escritorio: abre una sesión de librespot con tu cuenta **Premium** y la canción suena por el reproductor de Moody (ecualizador, Audio Lab, crossfade, letras) en Ogg Vorbis de hasta 320 kbps.
+
+1. **Ajustes → Módulos → Spotify → Iniciar sesión** y entra con tu cuenta.
+2. Elige la calidad (96, 160 o 320 kbps) en la página del módulo.
+3. En **Audio Lab → Calidad de audio**, pon Spotify donde quieras (por ejemplo, después de Monochrome para que el FLAC tenga prioridad).
+
+Cómo funciona: `native/spotify` (Rust, compilado por el CI con `cargo-ndk`) inicia sesión con el client id de escritorio de librespot, guarda una credencial reutilizable y sirve cada pista ya descifrada en `http://127.0.0.1:<puerto>/track/<id>`. El módulo busca la canción en Spotify (primero por ISRC) y le pasa esa dirección al reproductor. La sesión y el parche de `librespot-core` vienen de [Square](https://github.com/Lelonio/Square) (GPL-3.0).
+
+> Aviso: usar librespot va contra los términos de Spotify. Sin Premium, Spotify no entrega el audio.
 
 ## Liquid Glass
 

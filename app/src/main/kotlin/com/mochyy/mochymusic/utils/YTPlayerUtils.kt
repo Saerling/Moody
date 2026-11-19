@@ -185,6 +185,8 @@ object YTPlayerUtils {
         ANDROID_CREATOR,
         MOBILE,
     )
+    private val clientFailuresUntil = java.util.concurrent.ConcurrentHashMap<String, Long>()
+    private const val CLIENT_FAILURE_PENALTY_MS = 10 * 60_000L
     data class PlaybackData(
         val audioConfig: PlayerResponse.PlayerConfig.AudioConfig?,
         val videoDetails: PlayerResponse.VideoDetails?,
@@ -340,6 +342,11 @@ object YTPlayerUtils {
         }
         if (found == null) {
             PlaybackLogManager.log(PlaybackLogLevel.WARNING, "InnerTubeX found nothing, using the client walk", videoId)
+            return null
+        }
+        if (!validateStatus(found.streamUrl, found.streamHeaders, found.format.contentLength)) {
+            Timber.tag(logTag).w("InnerTubeX stream failed validation for $videoId, trying the client walk")
+            PlaybackLogManager.log(PlaybackLogLevel.WARNING, "InnerTubeX stream failed validation", videoId)
             return null
         }
         PlaybackLogManager.log(PlaybackLogLevel.INFO, "InnerTubeX found the stream", "$videoId via ${found.streamClient}")
@@ -514,10 +521,19 @@ object YTPlayerUtils {
         // the main client's answer is reused at index -1, so it isn't asked again as a fallback, and signed in the
         // account's clients come first when it couldn't serve: they're what plays age-restricted and premium-only songs
         val mainServed = currentStatus == "OK"
-        val fallbackClients: List<YouTubeClient> = buildList {
+        val allFallbackClients: List<YouTubeClient> = buildList {
             if (isLoggedIn && !mainServed) addAll(ACCOUNT_CLIENTS)
             STREAM_FALLBACK_CLIENTS.filterTo(this) { it != MAIN_CLIENT }
         }
+        val now = System.currentTimeMillis()
+        val fallbackClients = allFallbackClients.filterNot { client ->
+            clientFailuresUntil[client.clientName]?.let { until ->
+                if (until <= now) {
+                    clientFailuresUntil.remove(client.clientName, until)
+                    false
+                } else true
+            } ?: false
+        }.ifEmpty { allFallbackClients.takeLast(1) }
 
         val startIndex = if (mainPlayerResponse == null || isPrivateTrack || isAgeRestricted) 0 else -1
 
@@ -566,6 +582,11 @@ object YTPlayerUtils {
                     }
                 val result = YouTube.player(videoId, playlistId, client, clientSigTimestamp, clientPoToken)
                 result.exceptionOrNull()?.let { e ->
+                    if (client in STREAM_FALLBACK_CLIENTS &&
+                        (e.isRateLimit() || (e as? ResponseException)?.response?.status?.value == 403)
+                    ) {
+                        clientFailuresUntil[client.clientName] = System.currentTimeMillis() + CLIENT_FAILURE_PENALTY_MS
+                    }
                     // every client asks the same host: the rest would be refused too
                     if (e.isRateLimit()) throw YouTubeRateLimitedException()
                     failures += "${client.clientName}: ${e.shortReason()}"
@@ -687,6 +708,9 @@ object YTPlayerUtils {
                     break
                 } else {
                     Timber.tag(logTag).d("Stream validation failed for client: ${currentClient.clientName}")
+                    if (currentClient in STREAM_FALLBACK_CLIENTS) {
+                        clientFailuresUntil[currentClient.clientName] = System.currentTimeMillis() + CLIENT_FAILURE_PENALTY_MS
+                    }
 
                     if (currentClient.solvesN()) {
                         var nTransformWorked = false
@@ -1187,6 +1211,7 @@ object YTPlayerUtils {
 
     fun forceRefreshForVideo(videoId: String) {
         Timber.tag(logTag).d("Force refreshing for videoId: $videoId")
+        studioIds.remove(videoId)
     }
 
     /** Past the ~786 KB an untokened url serves; probed when the song's length isn't known. */

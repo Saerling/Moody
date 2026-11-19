@@ -1237,7 +1237,7 @@ class MusicService :
                 skipBlend = blend
                 studioForVideos = studio
                 blendAhead = ahead.coerceIn(1, SkipBlendAheadMax)
-                if (blend) prefetchNeighbours() else prefetchJob?.cancel()
+                prefetchNeighbours()
             }
 
         if (dataStore.get(PersistentQueueKey, true)) {
@@ -4723,7 +4723,7 @@ class MusicService :
     // with "blend skips" on, the songs either side get their first seconds fetched ahead, so a skip either way starts at once
     private fun prefetchNeighbours() {
         prefetchJob?.cancel()
-        if (!skipBlend || player.mediaItemCount == 0 || !canFetchAhead()) return
+        if (player.mediaItemCount == 0 || !canFetchAhead()) return
         // data saver keeps it to the next one, the extra songs are only worth it on a connection that doesn't count
         val ahead = if (com.mochyy.mochymusic.utils.DataSaver.isActive(this)) 1 else blendAhead
         val upcoming = upcomingIndices(ahead)
@@ -5525,7 +5525,7 @@ class MusicService :
         const val CrossfadeStartWaitMs = 12_000L
         // about the first 20 to 30 seconds of a song, enough for a skip to start straight from the cache
         const val PrefetchBytes = 512L * 1024L
-        const val PrefetchDelayMs = 4_000L
+        const val PrefetchDelayMs = 1_500L
 
         /** how long a provider that failed on a song is passed over for it (Force playback) */
         const val FailedSourceMemoryMs = 10L * 60 * 1000

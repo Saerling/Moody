@@ -51,6 +51,7 @@ import com.mochyy.mochymusic.module.ModuleFeature
 import com.mochyy.mochymusic.module.jiosaavn.JioSaavnModule
 import com.mochyy.mochymusic.module.applemusic.AppleMusicModule
 import com.mochyy.mochymusic.module.monochrome.MonochromeModule
+import com.mochyy.mochymusic.module.spotify.SpotifyModule
 import com.mochyy.mochymusic.modules.SourceModules
 import com.mochyy.mochymusic.viewmodels.ModulesViewModel
 import com.mochyy.mochymusic.R
@@ -122,6 +123,10 @@ fun AudioQualityScreen(navController: NavController, modules: ModulesViewModel =
     val effective = when (first) {
         null -> Effective(AudioQuality.LOW, stringResource(R.string.aq_nothing_on), stringResource(R.string.aq_turn_provider_on))
         MonochromeModule.Id -> Effective(AudioQuality.LOSSLESS, "Monochrome", "FLAC · lossless")
+        SpotifyModule.Id -> {
+            val pick = entries.firstOrNull { it.module.info.id == first }?.picks?.get("quality") ?: "320"
+            Effective(if (pick == "320") AudioQuality.HIGH else AudioQuality.MEDIUM, "Spotify", "Ogg Vorbis $pick")
+        }
         AppleMusicModule.Id -> {
             val pick = entries.firstOrNull { it.module.info.id == first }?.picks?.get(AppleMusicModule.ChoiceQuality)
             if (pick == AppleMusicModule.OptionHe64) Effective(AudioQuality.MEDIUM, "Apple Music", "HE-AAC 64")
@@ -270,6 +275,7 @@ private fun Footnote(text: String) {
 internal fun providerLogo(id: String): Int? = when (id) {
     AppleMusicModule.Id -> R.drawable.provider_apple_music
     MonochromeModule.Id -> R.drawable.provider_monochrome
+    SpotifyModule.Id -> R.drawable.provider_spotify
     SourceModules.YouTubeId -> R.drawable.provider_youtube_music
     else -> null
 }
