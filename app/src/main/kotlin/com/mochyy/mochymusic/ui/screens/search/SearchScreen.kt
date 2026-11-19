@@ -318,17 +318,20 @@ fun SearchScreen(
                 },
                 trailing = if (query.text.isNotEmpty()) {
                     {
-                        Icon(
-                            painter = painterResource(R.drawable.close),
-                            contentDescription = null,
-                            tint = SearchColors.Secondary,
-                            modifier = Modifier
-                                .size(20.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = RemoteFocus,
-                                ) { query = TextFieldValue("") },
-                        )
+                        Box(
+                            modifier = Modifier.size(48.dp).clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = RemoteFocus,
+                            ) { query = TextFieldValue("") },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.close),
+                                contentDescription = stringResource(R.string.clear),
+                                tint = SearchColors.Secondary,
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
                     }
                 } else {
                     null
@@ -395,8 +398,8 @@ private fun SearchBrowseContent(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = SearchHorizontalPadding, vertical = 5.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            .padding(horizontal = SearchHorizontalPadding, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         row.forEach { item ->
 
@@ -420,7 +423,7 @@ private fun SearchBrowseContent(
                         repeat(columns - row.size) { Spacer(modifier = Modifier.weight(1f)) }
                     }
                 }
-                item(key = "gap_${sectionIndex}") { Spacer(modifier = Modifier.height(22.dp)) }
+                item(key = "gap_${sectionIndex}") { Spacer(modifier = Modifier.height(24.dp)) }
             }
         }
     }

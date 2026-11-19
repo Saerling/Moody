@@ -87,7 +87,7 @@ import com.mochyy.mochymusic.ui.component.containerTransformSource
 import com.mochyy.mochymusic.ui.utils.stableStatusBars
 import com.mochyy.mochymusic.ui.component.RemoteFocus
 
-val SearchHorizontalPadding = 24.dp
+val SearchHorizontalPadding = 16.dp
 
 val SearchFieldHeight = 48.dp
 
@@ -539,7 +539,9 @@ fun SearchField(
         }
         if (trailing != null) {
             Spacer(modifier = Modifier.width(10.dp))
-            trailing()
+            Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                trailing()
+            }
         }
     }
 }

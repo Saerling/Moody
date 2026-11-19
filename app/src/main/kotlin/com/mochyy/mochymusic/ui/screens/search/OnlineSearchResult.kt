@@ -335,11 +335,23 @@ fun OnlineSearchResult(
                                 modifier = Modifier.fillMaxWidth().height(220.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Text(
-                                    text = stringResource(R.string.search_no_results),
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp),
-                                    color = SearchColors.Secondary,
-                                )
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 32.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.search_no_results),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = SearchColors.Primary,
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.lib_empty_search_desc),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = SearchColors.Secondary,
+                                    )
+                                }
                             }
                         }
                     } else {
