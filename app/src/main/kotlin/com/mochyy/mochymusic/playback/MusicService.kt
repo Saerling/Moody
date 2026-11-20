@@ -5230,6 +5230,8 @@ class MusicService :
     private inner class ProviderSwitchHost : ProviderSwitch.Host {
         override fun currentMediaId(): String? = player.currentMediaItem?.mediaId?.takeIf { !it.startsWith("LOCAL_") }
 
+        override fun availableProviders(): List<String> = sourceModules.order.value.filter { sourceModules.isUsable(it) }
+
         override fun holdPlayback(): Boolean {
             val wasPlaying = player.playWhenReady
             player.pause()
@@ -5238,14 +5240,24 @@ class MusicService :
 
         override fun resumePlayback() = player.play()
 
-        override suspend fun resolve(providerId: String, mediaId: String): ForcedRoute? = withContext(Dispatchers.IO) {
+        override suspend fun resolve(providerId: String, mediaId: String): SwitchResolution = withContext(Dispatchers.IO) {
             if (providerId == com.mochyy.mochymusic.modules.SourceModules.YouTubeId) {
-                YTPlayerUtils.playerResponseForPlayback(mediaId, null, audioQuality, connectivityManager).getOrNull()
-                    ?: return@withContext null
-                return@withContext ForcedRoute(providerId, null)
+                val answer = YTPlayerUtils.playerResponseForPlayback(mediaId, null, audioQuality, connectivityManager)
+                return@withContext if (answer.isSuccess) SwitchResolution.Found(ForcedRoute(providerId, null))
+                else SwitchResolution.Failed(answer.exceptionOrNull()?.message ?: "YouTube Music no encontró una reproducción disponible")
             }
-            val module = sourceModules.module(providerId) ?: return@withContext null
-            resolveWith(module, mediaId)?.let { ForcedRoute(providerId, it) }
+            val module = sourceModules.module(providerId) ?: return@withContext SwitchResolution.Failed("Fuente no disponible", true)
+            val track = trackQueryOf(mediaId) ?: return@withContext SwitchResolution.Failed("No se encontró la información de la canción", true)
+            when (val result = module.resolve(track, sourceModules.picks(providerId))) {
+                is com.mochyy.mochymusic.module.ResolveResult.Found -> {
+                    if (!com.mochyy.mochymusic.modules.DeviceDecoders.canPlay(result.stream)) SwitchResolution.Failed("Este dispositivo no puede reproducir ${result.stream.codec}", true)
+                    else SwitchResolution.Found(ForcedRoute(providerId, result.stream))
+                }
+                is com.mochyy.mochymusic.module.ResolveResult.NotFound -> SwitchResolution.Failed(result.reason, true)
+                is com.mochyy.mochymusic.module.ResolveResult.Unavailable -> SwitchResolution.Failed(result.reason,
+                    listOf("sign in", "sign-in", "signed out", "premium", "session expired", "no credentials", "no spotify engine")
+                        .any { result.reason.contains(it, true) })
+            }
         }
 
         override fun switchTo(mediaId: String, route: ForcedRoute, play: Boolean) {

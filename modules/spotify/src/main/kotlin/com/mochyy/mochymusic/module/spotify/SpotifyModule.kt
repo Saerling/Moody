@@ -255,15 +255,23 @@ class SpotifyModule : SourceModule {
             for (q in queries) {
                 val response = runCatching {
                     host.http(HttpRequest("$API/search?type=track&limit=10&q=${enc(q)}", headers = mapOf("Authorization" to "Bearer $token")))
-                }.getOrNull()
-                if (response == null) {
-                    report(DiagnosticStep("Find the song", false, "Spotify didn't answer"))
-                    return ResolveResult.Unavailable("Spotify didn't answer")
+                }.getOrElse {
+                    host.log("spotify search failed: ${it::class.simpleName}: ${it.message}")
+                    report(DiagnosticStep("Find the song", false, "Spotify search didn't answer"))
+                    return ResolveResult.Unavailable("Spotify search didn't answer (${it.message ?: it::class.simpleName})")
                 }
-                if (response.code == 401) webToken = null
+                if (response.code == 401) {
+                    webToken = null
+                    report(DiagnosticStep("Find the song", false, "Spotify search session expired; sign in again"))
+                    return ResolveResult.Unavailable("Spotify search session expired; sign in again")
+                }
                 if (response.code == 429) {
                     report(DiagnosticStep("Find the song", false, "Spotify asked to slow down"))
                     return ResolveResult.Unavailable("Spotify asked to slow down")
+                }
+                if (response.code >= 500) {
+                    report(DiagnosticStep("Find the song", false, "Spotify search returned ${response.code}"))
+                    return ResolveResult.Unavailable("Spotify search returned HTTP ${response.code}")
                 }
                 if (!response.ok) continue
                 best = TrackMatcher.best(track, tracksIn(response.text))?.track

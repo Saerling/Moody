@@ -165,13 +165,17 @@ private fun SwitchStatus(state: ProviderSwitchState, nameOf: (String) -> String)
                 is ProviderSwitchState.Failed -> {
                     Text(stringResource(R.string.pc_force_unavailable), color = Color(0xFFFF7A7A), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     Text(
-                        stringResource(R.string.pc_force_failed, nameOf(state.providerId), ProviderSwitch.MaxTries),
+                        stringResource(R.string.pc_force_failed, nameOf(state.providerId), state.reason),
                         color = InfoMuted,
                         fontSize = 12.sp,
                     )
                 }
                 is ProviderSwitchState.Done -> {
-                    Text(stringResource(R.string.pc_force_now_playing, nameOf(state.providerId)), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        if (state.failedProviderId == null) stringResource(R.string.pc_force_now_playing, nameOf(state.providerId))
+                        else stringResource(R.string.pc_force_fallback, nameOf(state.failedProviderId), state.reason.orEmpty(), nameOf(state.providerId)),
+                        color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold,
+                    )
                 }
                 ProviderSwitchState.Idle -> Unit
             }

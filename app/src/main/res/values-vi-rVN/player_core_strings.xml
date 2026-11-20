@@ -88,9 +88,10 @@
     <string name="pc_force_title">Phát từ</string>
     <string name="pc_force_hint">Bài hát sẽ dừng trong lúc được lấy từ nguồn bạn chọn.</string>
     <string name="pc_force_fetching">Đang lấy từ %1$s…</string>
-    <string name="pc_force_try_of">Lần thử %1$d/%2$d, tối đa một phút</string>
+    <string name="pc_force_try_of">Lần thử %1$d/%2$d</string>
     <string name="pc_force_unavailable">Nguồn không khả dụng</string>
-    <string name="pc_force_failed">%1$s không phản hồi sau %2$d lần thử nên bài hát vẫn phát tiếp tại chỗ. Hãy thử nguồn khác.</string>
+    <string name="pc_force_failed">%1$s: %2$s</string>
+    <string name="pc_force_fallback">%1$s không khả dụng (%2$s). Đang phát từ %3$s.</string>
     <string name="pc_force_now_playing">Đang phát từ %1$s</string>
     <string name="pc_force_playing_here">Đang phát từ nguồn này</string>
     <string name="pc_force_tap_here">Chạm để phát từ nguồn này</string>

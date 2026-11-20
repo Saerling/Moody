@@ -88,9 +88,10 @@
     <string name="pc_force_title">Play from</string>
     <string name="pc_force_hint">The song stops while it\'s fetched from the one you pick.</string>
     <string name="pc_force_fetching">Fetching from %1$s…</string>
-    <string name="pc_force_try_of">Try %1$d of %2$d, up to a minute</string>
+    <string name="pc_force_try_of">Try %1$d of %2$d</string>
     <string name="pc_force_unavailable">Source unavailable</string>
-    <string name="pc_force_failed">%1$s didn\'t answer after %2$d tries, so the song kept playing where it was. Try another one.</string>
+    <string name="pc_force_failed">%1$s: %2$s</string>
+    <string name="pc_force_fallback">%1$s failed (%2$s). Now playing from %3$s.</string>
     <string name="pc_force_now_playing">Now playing from %1$s</string>
     <string name="pc_force_playing_here">Playing from here now</string>
     <string name="pc_force_tap_here">Tap to play from here</string>

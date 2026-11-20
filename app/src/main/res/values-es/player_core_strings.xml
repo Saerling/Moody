@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pc_force_title">Reproducir desde</string>
+    <string name="pc_force_hint">La canción se pausa mientras se busca en la fuente elegida.</string>
+    <string name="pc_force_fetching">Buscando en %1$s…</string>
+    <string name="pc_force_try_of">Intento %1$d de %2$d</string>
+    <string name="pc_force_unavailable">Fuente no disponible</string>
+    <string name="pc_force_failed">%1$s: %2$s</string>
+    <string name="pc_force_fallback">%1$s falló (%2$s). Reproduciendo desde %3$s.</string>
+    <string name="pc_force_now_playing">Reproduciendo desde %1$s</string>
+    <string name="pc_force_playing_here">Reproduciendo desde aquí</string>
+    <string name="pc_force_tap_here">Toca para reproducir desde aquí</string>
+</resources>
