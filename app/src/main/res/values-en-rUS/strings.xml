@@ -74,6 +74,7 @@
     <string name="you_might_also_like">Related Playlist</string>
     <!-- Button -->
     <string name="retry">Retry</string>
+    <string name="detail_load_failed">Could not load this page</string>
     <string name="radio">Radio</string>
     <string name="shuffle">Shuffle</string>
     <string name="shuffle_content_desc">Shuffle</string>

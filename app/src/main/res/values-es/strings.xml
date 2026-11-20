@@ -54,6 +54,7 @@
     <string name="remove_download_playlist_confirm">¿Realmente quiere quitar todas las canciones de la lista de reproducción «%s» del almacenamiento de canciones descargadas?</string>
     <string name="delete_playlist_confirm">¿Confirma que quiere eliminar la lista de reproducción «%s»?</string>
     <string name="retry">Reintentar</string>
+    <string name="detail_load_failed">No se pudo cargar esta página</string>
     <string name="radio">Radio</string>
     <string name="shuffle">Aleatorio</string>
     <string name="reset">Restablecer</string>

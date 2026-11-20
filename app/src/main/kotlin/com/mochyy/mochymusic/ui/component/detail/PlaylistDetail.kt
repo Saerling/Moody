@@ -1162,7 +1162,7 @@ internal fun PlayPill(isPlaying: Boolean, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .pressBounce(interaction)
-            .height(33.dp)
+            .heightIn(min = 48.dp)
             .clip(RoundedCornerShape(50))
             .background(PillFill)
             .clickable(interactionSource = interaction, indication = RemoteFocus, onClick = onClick)
@@ -1211,9 +1211,7 @@ internal fun CircleAction(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .pressBounce(interaction)
-            .size(33.dp)
-            .clip(CircleShape)
-            .background(PillFill)
+            .size(48.dp)
             .clickable(interactionSource = interaction, indication = RemoteFocus) {
                 if (spinOnClick) {
                     scope.launch {
@@ -1224,19 +1222,27 @@ internal fun CircleAction(
                 onClick()
             }
     ) {
-        AnimatedContent(
-            targetState = icon,
-            transitionSpec = { glyphSwap() },
-            label = "circleActionIcon",
-        ) { res ->
-            Icon(
-                painter = painterResource(res),
-                contentDescription = contentDescription,
-                tint = PillContent,
-                modifier = Modifier
-                    .size(17.dp)
-                    .graphicsLayer { rotationZ = spin.value * 360f },
-            )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(PillFill),
+            contentAlignment = Alignment.Center,
+        ) {
+            AnimatedContent(
+                targetState = icon,
+                transitionSpec = { glyphSwap() },
+                label = "circleActionIcon",
+            ) { res ->
+                Icon(
+                    painter = painterResource(res),
+                    contentDescription = contentDescription,
+                    tint = PillContent,
+                    modifier = Modifier
+                        .size(17.dp)
+                        .graphicsLayer { rotationZ = spin.value * 360f },
+                )
+            }
         }
     }
 }

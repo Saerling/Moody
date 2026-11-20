@@ -454,7 +454,7 @@ private fun SubscribePill(subscribed: Boolean, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .pressBounce(interaction)
-            .height(33.dp)
+            .height(48.dp)
             .clip(RoundedCornerShape(50))
             .drawBehind { drawRect(fill) }
             .border(1.dp, Color.White.copy(alpha = if (subscribed) 0.22f else 0f), RoundedCornerShape(50))

@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -126,6 +127,7 @@ fun OnlinePlaylistScreen(
     val relatedItems by viewModel.relatedItems.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val isLoadingMore by viewModel.isLoadingMore.collectAsState()
+    val loadError by viewModel.error.collectAsState()
 
     val lazyListState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -257,6 +259,24 @@ fun OnlinePlaylistScreen(
                 }
                 item(key = "loading_tracks") {
                     PlaylistTrackBones()
+                }
+            } else if (loadError != null) {
+                item(key = "load_error") {
+                    androidx.compose.foundation.layout.Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 24.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.detail_load_failed),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        TextButton(onClick = viewModel::retry) {
+                            Text(stringResource(R.string.retry))
+                        }
+                    }
                 }
             }
             return@PlaylistDetailScaffold
