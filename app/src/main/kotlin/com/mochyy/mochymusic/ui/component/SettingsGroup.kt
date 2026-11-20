@@ -2,6 +2,7 @@
 
 package com.mochyy.mochymusic.ui.component
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -44,7 +46,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
@@ -140,10 +141,12 @@ private fun GroupedItems(items: List<SettingsItem>) {
     val clusters = clusterItems(items)
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize(),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = com.mochyy.mochymusic.ui.screens.search.SearchColors.Field
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -176,8 +179,8 @@ private fun ClusterRows(cluster: ItemCluster) {
         label = "pillInset"
     )
 
-    // Expanded sub-menu background slightly brighter than accent surface
-    val pillColor = Color(0xFF282830).copy(alpha = pillAlpha)
+    // Expanded sub-menu background slightly brighter than the card
+    val pillColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = pillAlpha)
 
     Box(
         modifier = Modifier
@@ -260,16 +263,18 @@ private fun SettingsItemRow(
                     { TopToaster.show(full, iconRes = R.drawable.info) }
                 },
             )
-            .padding(horizontal = 20.dp, vertical = 14.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .heightIn(min = 56.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
 
         item.icon?.let { icon ->
+            val iconTint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = if (item.enabled) 1f else 0.38f)
             Box(
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(36.dp)
                     .clip(androidx.compose.foundation.shape.CircleShape)
-                    .background(Color(0xFFE5E5EA)),
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 if (item.showBadge) {
@@ -284,10 +289,7 @@ private fun SettingsItemRow(
                             Icon(
                                 painter = icon,
                                 contentDescription = null,
-                                tint = if (!item.enabled)
-                                    Color(0xFF1C1C1E).copy(alpha = 0.38f)
-                                else
-                                    Color(0xFF1C1C1E),
+                                tint = iconTint,
                                 modifier = Modifier.size(20.dp)
                             )
                         } else {
@@ -304,10 +306,7 @@ private fun SettingsItemRow(
                         Icon(
                             painter = icon,
                             contentDescription = null,
-                            tint = if (!item.enabled)
-                                Color(0xFF1C1C1E).copy(alpha = 0.38f)
-                            else
-                                Color(0xFF1C1C1E),
+                            tint = iconTint,
                             modifier = Modifier.size(16.dp)
                         )
                     } else {

@@ -70,16 +70,16 @@ fun PlayerControls(
     Column(modifier = modifier.fillMaxWidth()) {
 
         Column(modifier = Modifier.offset(y = (-64).dp)) {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             SongInfoRow(onTitlePositioned = onTitlePositioned)
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             PlayerProgressSlider()
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         PlayerTransportRow()
     }

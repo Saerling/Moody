@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,15 +36,13 @@ internal fun SettingsSection(title: String?, items: List<SettingsItem>) {
     if (title != null) {
         Text(
             text = title,
-            fontFamily = InterFontFamily,
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
-            color = Color.White,
-            modifier = Modifier.padding(bottom = 10.dp, start = 4.dp),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
         )
     }
     SettingsGroup(style = SettingsGroupStyle.Grouped, items = items)
-    Spacer(Modifier.height(18.dp))
+    Spacer(Modifier.height(16.dp))
 }
 
 internal fun List<SettingsItem>.matching(query: String): List<SettingsItem> {

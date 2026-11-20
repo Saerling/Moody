@@ -72,6 +72,7 @@ import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.layout
@@ -1383,6 +1384,7 @@ private fun MiniSongLines(title: String, artist: String, album: String, modifier
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
             softWrap = false,
+            overflow = TextOverflow.Ellipsis,
         )
         val subtitle = listOf(artist, album)
             .filter { it.isNotBlank() }
@@ -1394,6 +1396,7 @@ private fun MiniSongLines(title: String, artist: String, album: String, modifier
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 softWrap = false,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
