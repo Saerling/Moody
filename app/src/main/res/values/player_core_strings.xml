@@ -265,4 +265,11 @@
         <item quantity="one">%1$d older import needs its link, so re-sync it from its own menu.</item>
         <item quantity="other">%1$d older imports need their link, so re-sync them from their own menus.</item>
     </plurals>
+    <string name="pc_quality_very_high">Very high</string>
+    <string name="pc_quality_high">High</string>
+    <string name="pc_quality_normal">Normal</string>
+    <string name="pc_provider_available">Available</string>
+    <string name="pc_provider_loading">Loading</string>
+    <string name="pc_provider_failed">Failed</string>
+    <string name="pc_provider_playing">Playing</string>
 </resources>
