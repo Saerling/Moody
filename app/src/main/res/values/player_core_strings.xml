@@ -269,6 +269,7 @@
     <string name="pc_quality_high">High</string>
     <string name="pc_quality_normal">Normal</string>
     <string name="pc_provider_available">Available</string>
+    <string name="pc_provider_limited">Limited · retry in %1$ds</string>
     <string name="pc_provider_loading">Loading</string>
     <string name="pc_provider_failed">Failed</string>
     <string name="pc_provider_playing">Playing</string>

@@ -145,11 +145,6 @@ private fun ProviderRow(service: MusicService, from: PlayingFrom?, onForce: () -
             Spacer(Modifier.height(8.dp))
             // side by side when they fit, the second one on its own line when they don't
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                // only a module that publishes its code gets the star; others say nothing rather than a dead button
-                val sourceUrl = service.sourceModules.module(from.providerId)?.info?.sourceUrl
-                if (sourceUrl != null) {
-                    InfoPill(text = stringResource(R.string.pc_star_github), filled = false, onClick = { runCatching { uriHandler.openUri(sourceUrl) } })
-                }
                 // a file on the phone has nowhere else to come from
                 if (from.providerId != PlayingFrom.Device) {
                     InfoPill(text = stringResource(R.string.pc_info_force_change), filled = true, onClick = onForce)

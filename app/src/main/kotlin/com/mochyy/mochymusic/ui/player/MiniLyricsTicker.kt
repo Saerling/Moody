@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,22 +31,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
@@ -55,6 +48,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
@@ -67,7 +61,6 @@ import com.mochyy.mochymusic.constants.LyricsHighBloomKey
 import com.mochyy.mochymusic.constants.LyricsMotionStyle
 import com.mochyy.mochymusic.constants.LyricsMotionStyleKey
 import com.mochyy.mochymusic.lyrics.LyricsEntry
-import com.mochyy.mochymusic.lyrics.RubyToken
 import com.mochyy.mochymusic.lyrics.LyricsUtils
 import com.mochyy.mochymusic.utils.rememberEnumPreference
 import com.mochyy.mochymusic.utils.rememberPreference
@@ -84,17 +77,8 @@ private val TickerLineHeight = 22.sp
 /** The letter motion is sized for 32sp lines; scaled down to match. */
 private const val TickerMotionScale = 17f / 32f
 
-/** Soft edges where the line runs past the card. */
-private val TickerEdgeFade = 18.dp
-
-/**
- * How far into the card the sweep is kept while a long line slides. Past the middle, so the reader
- * still sees a little of what's coming.
- */
-private const val SweepKeepFraction = 0.62f
-
-/** Critically damped follow time of the sideways slide: it trails the sweep, never jumps. */
-private const val SlideFollowSec = 0.32f
+/** A long line wraps into at most this many lines, centred in the card, instead of running off its sides. */
+private const val TickerMaxLines = 2
 
 /** Interlude dots at card size. */
 private const val DotsScale = 0.5f
@@ -287,7 +271,6 @@ internal fun MiniLyricsTicker(
                         TickerLine(
                             entry = entry,
                             dim = current.kind == TickerSlot.END,
-                            lineEndMs = LyricsUtils.lineEndMs(lines, current.index),
                             positionProvider = positionProvider,
                             motionStyle = motionStyle,
                             waveEnabled = waveEnabled,
@@ -484,7 +467,6 @@ private fun UpcomingLine(text: String, alpha: Float, blur: Dp) {
 private fun TickerLine(
     entry: LyricsEntry,
     dim: Boolean,
-    lineEndMs: Long,
     positionProvider: () -> Long,
     motionStyle: LyricsMotionStyle,
     waveEnabled: Boolean,
@@ -498,111 +480,51 @@ private fun TickerLine(
     val words = parts.leadWords
     val karaoke = !dim && !words.isNullOrEmpty() && text.isNotEmpty()
 
-    val probe = remember(entry) { SweepProbe() }
-    val viewport = remember { mutableFloatStateOf(0f) }
-    val scroll = remember(entry) { mutableFloatStateOf(0f) }
-
-    // The sideways slide: follows the sweep for a word-synced line, the clock for a line-synced
-    // one. A critically damped follow, so a sweep that jumps (a seek) still glides.
-    LaunchedEffect(entry, karaoke) {
-        var value = 0f
-        var velocity = 0f
-        var lastMs = -1L
-        while (true) {
-            withFrameMillis { frameMs ->
-                val dt = if (lastMs < 0L) 0.016f else ((frameMs - lastMs) / 1000f).coerceIn(0f, 0.064f)
-                lastMs = frameMs
-                val overflow = (probe.textWidth - viewport.floatValue).coerceAtLeast(0f)
-                val target = when {
-                    overflow <= 0f -> 0f
-                    karaoke -> (probe.headX - viewport.floatValue * SweepKeepFraction).coerceIn(0f, overflow)
-                    else -> {
-                        val span = (lineEndMs - entry.time).coerceAtLeast(1L).toFloat()
-                        val through = (positionProvider() - entry.time) / span
-                        overflow * smoothstepF((through - 0.1f) / 0.75f)
-                    }
-                }
-                val omega = 1f / SlideFollowSec
-                val y = value - target
-                val e = kotlin.math.exp(-omega * dt)
-                val tmp = (velocity + omega * y) * dt
-                value = target + (y + tmp) * e
-                velocity = (velocity - omega * tmp) * e
-                if (kotlin.math.abs(value - target) < 0.05f && kotlin.math.abs(velocity) < 1f) {
-                    value = target
-                    velocity = 0f
-                }
-                if (value != scroll.floatValue) scroll.floatValue = value
-                morph.cardLyricScroll = value
-            }
-        }
-    }
+    // Long lines used to slide sideways inside the card, leaving their first and last words cut
+    // off for most of the song. They wrap, centred, so the whole line stays readable instead.
+    LaunchedEffect(entry) { morph.cardLyricScroll = 0f }
 
     Box(
-        contentAlignment = Alignment.CenterStart,
+        contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxSize()
-            .onSizeChanged { viewport.floatValue = it.width.toFloat() }
-            .clipToBounds()
-            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
-            .drawWithContent {
-                drawContent()
-                // Fade only the edge the line actually runs past, and only as far as it does.
-                val overflow = (probe.textWidth - size.width).coerceAtLeast(0f)
-                if (overflow <= 0f) return@drawWithContent
-                val fade = TickerEdgeFade.toPx()
-                val left = (scroll.floatValue / fade).coerceIn(0f, 1f)
-                val right = ((overflow - scroll.floatValue) / fade).coerceIn(0f, 1f)
-                val edge = (fade / size.width).coerceIn(0f, 0.5f)
-                drawRect(
-                    brush = Brush.horizontalGradient(
-                        0f to Color.Black.copy(alpha = 1f - left),
-                        edge to Color.Black,
-                        1f - edge to Color.Black,
-                        1f to Color.Black.copy(alpha = 1f - right),
-                    ),
-                    blendMode = BlendMode.DstIn,
-                )
-            },
+            .clipToBounds(),
     ) {
-        Box(
-            modifier = Modifier
-                .wrapContentWidth(align = Alignment.Start, unbounded = true)
-                .graphicsLayer { translationX = -scroll.floatValue },
-        ) {
-            if (karaoke) {
-                KaraokeSweepText(
-                    text = text,
-                    words = words!!,
-                    positionProvider = positionProvider,
-                    waveAmplitudeProvider = { if (waveEnabled) 1f else 0f },
-                    riseAmplitudeProvider = { 1f },
-                    baseColor = { Color.White.copy(alpha = UnsungAlpha) },
-                    highlightColor = Color.White,
+        if (karaoke) {
+            KaraokeSweepText(
+                text = text,
+                words = words!!,
+                positionProvider = positionProvider,
+                waveAmplitudeProvider = { if (waveEnabled) 1f else 0f },
+                riseAmplitudeProvider = { 1f },
+                baseColor = { Color.White.copy(alpha = UnsungAlpha) },
+                highlightColor = Color.White,
+                fontSize = TickerFontSize,
+                lineHeight = TickerLineHeight,
+                highBloom = highBloom,
+                textAlign = TextAlign.Center,
+                motionStyle = motionStyle,
+                singleLine = false,
+                maxLines = TickerMaxLines,
+                overflow = TextOverflow.Ellipsis,
+                motionScale = TickerMotionScale,
+            )
+        } else {
+            Text(
+                text = text,
+                // the same letter features as the sung line, so the words keep their width when the line goes dim
+                style = MaterialTheme.typography.headlineSmall.copy(
                     fontSize = TickerFontSize,
                     lineHeight = TickerLineHeight,
-                    highBloom = highBloom,
-                    motionStyle = motionStyle,
-                    singleLine = true,
-                    motionScale = TickerMotionScale,
-                    probe = probe,
-                )
-            } else {
-                Text(
-                    text = text,
-                    // the same letter features as the sung line, so the words keep their width when the line goes dim
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontSize = TickerFontSize,
-                        lineHeight = TickerLineHeight,
-                    ).withLetterMotionFeatures(motionStyle.risesWords),
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White.copy(alpha = if (dim) 0.55f else 1f),
-                    maxLines = 1,
-                    softWrap = false,
-                    overflow = TextOverflow.Clip,
-                    onTextLayout = { probe.textWidth = it.size.width.toFloat() },
-                )
-            }
+                ).withLetterMotionFeatures(motionStyle.risesWords),
+                fontWeight = FontWeight.Bold,
+                color = Color.White.copy(alpha = if (dim) 0.55f else 1f),
+                textAlign = TextAlign.Center,
+                maxLines = TickerMaxLines,
+                softWrap = true,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }

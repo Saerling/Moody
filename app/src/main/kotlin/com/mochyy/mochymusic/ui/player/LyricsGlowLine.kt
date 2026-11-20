@@ -1006,8 +1006,8 @@ half4 main(float2 coord) {
 
 
 /**
- * Where the sweep is, for a caller that has to follow it - the bottom card slides a long line
- * sideways to keep the sung part in view. Written from draw, so reading it costs nothing.
+ * Where the sweep is, for a caller that has to follow it and move a long line sideways.
+ * Written from draw, so reading it costs nothing.
  */
 internal class SweepProbe {
     /** The sweep's x in the text's own coordinates, 0 before it starts. */
@@ -1040,8 +1040,11 @@ internal fun KaraokeSweepText(
      * without the shader, so it keeps working.
      */
     riseAmplitudeProvider: () -> Float = waveAmplitudeProvider,
-    /** One line that never wraps: the bottom card scrolls it sideways instead. */
+    /** One line that never wraps, for callers that move a long line sideways themselves. */
     singleLine: Boolean = false,
+    /** How many lines a wrapping line may take; the extra is cut with [overflow]. */
+    maxLines: Int = Int.MAX_VALUE,
+    overflow: TextOverflow = TextOverflow.Clip,
     /** Letter rise and swell distances, relative to the full-size line. */
     motionScale: Float = 1f,
     probe: SweepProbe? = null,
@@ -1113,9 +1116,9 @@ internal fun KaraokeSweepText(
                 text = text,
                 style = style.copy(fontWeight = FontWeight.Bold, textAlign = textAlign),
                 color = baseColor,
-                overflow = TextOverflow.Clip,
+                overflow = overflow,
                 softWrap = !singleLine,
-                maxLines = if (singleLine) 1 else Int.MAX_VALUE,
+                maxLines = if (singleLine) 1 else maxLines,
                 onTextLayout = {
                     layoutHolder[0] = it
                     probe?.textWidth = it.size.width.toFloat()
@@ -1129,9 +1132,9 @@ internal fun KaraokeSweepText(
                     color = highlightColor,
                     fontWeight = FontWeight.Bold,
                     textAlign = textAlign,
-                    overflow = TextOverflow.Clip,
+                    overflow = overflow,
                     softWrap = !singleLine,
-                    maxLines = if (singleLine) 1 else Int.MAX_VALUE,
+                    maxLines = if (singleLine) 1 else maxLines,
                     modifier = Modifier
                         // Room around the text, as for the effect layer: an offscreen layer keeps only
                         // what's inside it, and glyph ink that reaches past the line's ends (a "y"

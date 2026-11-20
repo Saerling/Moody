@@ -33,6 +33,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
+import kotlinx.serialization.json.put
 
 /**
  * Songs straight from Spotify, like Spotifast does on the desktop: a librespot session (Premium)
@@ -67,9 +68,19 @@ class SpotifyModule : SourceModule {
     @Volatile private var lastError: String? = null
     @Volatile private var webToken: Pair<String, Long>? = null
     private val startLock = Any()
+    private var limitedUntil: Long = 0L
 
     override fun attach(host: ModuleHost) {
         this.host = host
+        limitedUntil = host.storage.get("search_limited_until")?.toLongOrNull() ?: 0L
+        runCatching {
+            val obj = json.parseToJsonElement(host.storage.get("search_cache") ?: "{}").jsonObject
+            obj["matches"]?.jsonObject?.forEach { (k, v) ->
+                val t = v.jsonObject
+                matches[k] = CatalogTrack(t["id"]!!.jsonPrimitive.content, t["title"]!!.jsonPrimitive.content, t["artist"]!!.jsonPrimitive.content, t["album"]?.jsonPrimitive?.contentOrNull, t["durationMs"]?.jsonPrimitive?.longOrNull, t["isrc"]?.jsonPrimitive?.contentOrNull)
+            }
+            obj["misses"]?.jsonObject?.forEach { (k, v) -> misses[k] = v.jsonPrimitive.longOrNull ?: 0L }
+        }
     }
 
     override val signIn: SignInSpec
@@ -98,7 +109,7 @@ class SpotifyModule : SourceModule {
 
     override fun accountState(): AccountState {
         user?.let { return AccountState.SignedIn("Spotify · $it") }
-        if (!SpotifyNative.loaded) return AccountState.Expired("This build has no Spotify engine")
+        if (!SpotifyNative.loaded) return AccountState.Expired("Esta versión no incluye el motor de Spotify")
         // a failed first sign-in has no saved user yet, but its reason still has to reach the screen
         val saved = host.storage.get("user") ?: return lastError?.let { AccountState.Expired(it) } ?: AccountState.SignedOut
         return lastError?.let { AccountState.Expired(it) } ?: AccountState.SignedIn("Spotify · $saved")
@@ -114,7 +125,7 @@ class SpotifyModule : SourceModule {
 
     override suspend fun verifyAccount(): AccountState {
         runCatching { ensureStarted() }.onFailure {
-            lastError = "Spotify engine crashed (${it::class.simpleName}: ${it.message})"
+            lastError = "El motor de Spotify falló (${it::class.simpleName}: ${it.message})"
             host.log("spotify: $lastError")
         }
         return accountState()
@@ -133,7 +144,7 @@ class SpotifyModule : SourceModule {
     /** a live session, signing in with the code the sign-in page brought back when there is one; null with [lastError] set otherwise */
     private fun ensureStarted(): Boolean = synchronized(startLock) {
         if (!SpotifyNative.loaded) {
-            lastError = "This build has no Spotify engine"
+            lastError = "Esta versión no incluye el motor de Spotify"
             return false
         }
         val code = pendingCode
@@ -145,7 +156,7 @@ class SpotifyModule : SourceModule {
         if (code != null) {
             pendingCode = null
             val tokens = exchange(code) ?: run {
-                if (lastError == null) lastError = "Spotify didn't hand over a token"
+                if (lastError == null) lastError = "Spotify no entregó un token"
                 return false
             }
             token = tokens.first
@@ -161,7 +172,7 @@ class SpotifyModule : SourceModule {
         }
         if (answer.startsWith("error:")) {
             val why = answer.removePrefix("error:")
-            lastError = if (why.startsWith("not premium")) "Spotify only streams to Premium accounts" else "Couldn't connect to Spotify ($why)"
+            lastError = if (why.startsWith("not premium")) "Spotify solo reproduce con cuentas Premium" else "No se pudo conectar con Spotify ($why)"
             host.log("spotify: $why")
             return false
         }
@@ -199,13 +210,13 @@ class SpotifyModule : SourceModule {
         }.getOrNull()
         if (response == null || !response.ok) {
             val detail = response?.let { "HTTP ${it.code}: ${it.text.take(160)}" } ?: "no connection"
-            lastError = if (response?.text?.contains("invalid_grant") == true) "Signed out of Spotify, sign in again" else "Spotify's sign-in didn't answer ($detail)"
+            lastError = if (response?.text?.contains("invalid_grant") == true) "Sesión de Spotify cerrada, inicia sesión de nuevo" else "El inicio de sesión de Spotify no respondió ($detail)"
             if (response?.text?.contains("invalid_grant") == true) host.storage.set("refresh_token", null)
             return null
         }
         val obj = runCatching { json.parseToJsonElement(response.text).jsonObject }.getOrNull()
         val access = obj?.get("access_token")?.jsonPrimitive?.contentOrNull ?: run {
-            lastError = "Spotify's token answer made no sense (${response.text.take(160)})"
+            lastError = "Respuesta de token de Spotify no válida (${response.text.take(160)})"
             return null
         }
         return access to obj["refresh_token"]?.jsonPrimitive?.contentOrNull
@@ -225,27 +236,29 @@ class SpotifyModule : SourceModule {
     override suspend fun resolve(track: TrackQuery, picks: Map<String, String>): ResolveResult = diagnose(track, picks) {}
 
     override suspend fun diagnose(track: TrackQuery, picks: Map<String, String>, report: (DiagnosticStep) -> Unit): ResolveResult {
-        report(DiagnosticStep("Spotify engine", null, "Connecting…"))
+        val remaining = limitedUntil - System.currentTimeMillis()
+        if (remaining > 0) return ResolveResult.Unavailable("Spotify está saturado, intenta en un momento", remaining)
+        report(DiagnosticStep("Motor de Spotify", null, "Conectando…"))
         if (!ensureStarted()) {
-            val why = lastError ?: "Sign in to Spotify first"
-            report(DiagnosticStep("Spotify engine", false, why))
+            val why = lastError ?: "Inicia sesión en Spotify primero"
+            report(DiagnosticStep("Motor de Spotify", false, why))
             return ResolveResult.Unavailable(why)
         }
-        report(DiagnosticStep("Spotify engine", true, "Signed in as $user"))
+        report(DiagnosticStep("Motor de Spotify", true, "Conectado como $user"))
 
         val key = "${track.isrc.orEmpty()}|${track.title}|${track.artists.joinToString(",")}"
         misses[key]?.let { at ->
             if (System.currentTimeMillis() - at < MISS_MEMORY_MS) {
-                report(DiagnosticStep("Find the song", false, "Not on Spotify"))
-                return ResolveResult.NotFound("Not on Spotify")
+                report(DiagnosticStep("Buscar canción", false, "No está en Spotify"))
+                return ResolveResult.NotFound("No está en Spotify")
             }
         }
 
-        report(DiagnosticStep("Find the song", null, "Searching Spotify…"))
+        report(DiagnosticStep("Buscar canción", null, "Buscando en Spotify…"))
         val song = matches[key] ?: run {
             val token = apiToken() ?: run {
-                report(DiagnosticStep("Find the song", false, "No token for Spotify's search"))
-                return ResolveResult.Unavailable("No token for Spotify's search")
+                report(DiagnosticStep("Buscar canción", false, "Sin token para buscar en Spotify"))
+                return ResolveResult.Unavailable("Sin token para buscar en Spotify")
             }
             val queries = buildList {
                 track.isrc?.takeIf { it.isNotBlank() }?.let { add("isrc:$it") }
@@ -257,21 +270,25 @@ class SpotifyModule : SourceModule {
                     host.http(HttpRequest("$API/search?type=track&limit=10&q=${enc(q)}", headers = mapOf("Authorization" to "Bearer $token")))
                 }.getOrElse {
                     host.log("spotify search failed: ${it::class.simpleName}: ${it.message}")
-                    report(DiagnosticStep("Find the song", false, "Spotify search didn't answer"))
-                    return ResolveResult.Unavailable("Spotify search didn't answer (${it.message ?: it::class.simpleName})")
+                    report(DiagnosticStep("Buscar canción", false, "La búsqueda de Spotify no respondió"))
+                    return ResolveResult.Unavailable("La búsqueda de Spotify no respondió (${it.message ?: it::class.simpleName})")
                 }
                 if (response.code == 401) {
                     webToken = null
-                    report(DiagnosticStep("Find the song", false, "Spotify search session expired; sign in again"))
-                    return ResolveResult.Unavailable("Spotify search session expired; sign in again")
+                    report(DiagnosticStep("Buscar canción", false, "La sesión de búsqueda de Spotify expiró; inicia sesión de nuevo"))
+                    return ResolveResult.Unavailable("La sesión de búsqueda de Spotify expiró; inicia sesión de nuevo")
                 }
                 if (response.code == 429) {
-                    report(DiagnosticStep("Find the song", false, "Spotify asked to slow down"))
-                    return ResolveResult.Unavailable("Spotify asked to slow down")
+                    val seconds = response.headers.entries.firstOrNull { it.key.equals("Retry-After", true) }?.value?.toLongOrNull() ?: 30L
+                    val wait = (seconds.coerceAtLeast(1L) * 1000L).coerceAtMost(3_600_000L)
+                    limitedUntil = System.currentTimeMillis() + wait
+                    host.storage.set("search_limited_until", limitedUntil.toString())
+                    report(DiagnosticStep("Buscar canción", false, "Spotify está saturado, intenta en un momento"))
+                    return ResolveResult.Unavailable("Spotify está saturado, intenta en un momento", wait)
                 }
                 if (response.code >= 500) {
-                    report(DiagnosticStep("Find the song", false, "Spotify search returned ${response.code}"))
-                    return ResolveResult.Unavailable("Spotify search returned HTTP ${response.code}")
+                    report(DiagnosticStep("Buscar canción", false, "La búsqueda de Spotify devolvió ${response.code}"))
+                    return ResolveResult.Unavailable("La búsqueda de Spotify devolvió HTTP ${response.code}")
                 }
                 if (!response.ok) continue
                 best = TrackMatcher.best(track, tracksIn(response.text))?.track
@@ -279,21 +296,23 @@ class SpotifyModule : SourceModule {
             }
             if (best == null) {
                 misses[key] = System.currentTimeMillis()
-                report(DiagnosticStep("Find the song", false, "No matching recording of “${track.title}”"))
-                return ResolveResult.NotFound("No matching recording on Spotify")
+                persistSearchCache()
+                report(DiagnosticStep("Buscar canción", false, "No hay una grabación de “${track.title}”"))
+                return ResolveResult.NotFound("No se encontró la canción en Spotify")
             }
             matches[key] = best
+            persistSearchCache()
             best
         }
-        report(DiagnosticStep("Find the song", true, "${song.title} · ${song.artist}"))
+        report(DiagnosticStep("Buscar canción", true, "${song.title} · ${song.artist}"))
 
         val port = SpotifyNative.nativePort()
         if (port <= 0) {
-            report(DiagnosticStep("Stream", false, "The local stream isn't running"))
-            return ResolveResult.Unavailable("The local stream isn't running")
+            report(DiagnosticStep("Transmisión", false, "El flujo local no está activo"))
+            return ResolveResult.Unavailable("El flujo local no está activo")
         }
         val kbps = picks["quality"] ?: "320"
-        report(DiagnosticStep("Stream", true, "Ogg Vorbis $kbps kbps"))
+        report(DiagnosticStep("Transmisión", true, "Ogg Vorbis $kbps kbps"))
         return ResolveResult.Found(
             SourceStream(
                 url = "http://127.0.0.1:$port/track/${song.id}?kbps=$kbps",
@@ -305,6 +324,14 @@ class SpotifyModule : SourceModule {
                 sampleRateHz = 44_100,
             ),
         )
+    }
+
+    private fun persistSearchCache() {
+        val matchEntries = matches.entries.toList().take(500).associate { (k, v) -> k to kotlinx.serialization.json.buildJsonObject {
+            put("id", v.id); put("title", v.title); put("artist", v.artist); v.album?.let { put("album", it) }; v.durationMs?.let { put("durationMs", it) }; v.isrc?.let { put("isrc", it) }
+        } }
+        val missEntries = misses.entries.toList().take(500).associate { it.key to kotlinx.serialization.json.JsonPrimitive(it.value) }
+        host.storage.set("search_cache", kotlinx.serialization.json.buildJsonObject { put("matches", kotlinx.serialization.json.JsonObject(matchEntries)); put("misses", kotlinx.serialization.json.JsonObject(missEntries)) }.toString())
     }
 
     private fun tracksIn(text: String): List<CatalogTrack> {

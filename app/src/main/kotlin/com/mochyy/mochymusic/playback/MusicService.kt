@@ -554,7 +554,7 @@ class MusicService :
             scope.launch {
                 switching.state.collect { state ->
                     if (state is ProviderSwitchState.Done && state.failedProviderId != null) {
-                        showBanner("${sourceModules.nameOf(state.failedProviderId)} no disponible · usando ${sourceModules.nameOf(state.providerId)}")
+                        showBanner("${sourceModules.nameOf(state.failedProviderId)} no disponible · usando ${sourceModules.nameOf(state.providerId)}", warning = true)
                     }
                 }
             }
@@ -4128,10 +4128,15 @@ class MusicService :
      * Mochy is on screen: one raised in the background would greet the user later, for a song
      * that's long gone.
      */
-    private fun showBanner(text: String) {
+    private fun showBanner(text: String, warning: Boolean = false) {
         val visible = androidx.lifecycle.ProcessLifecycleOwner.get().lifecycle.currentState
             .isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)
         if (!visible) return
+        // a fallback is a warning, and short: it sits over the cover
+        if (warning) {
+            com.mochyy.mochymusic.ui.component.TopToaster.warn(text, player.currentMediaItem?.mediaMetadata?.artworkUri?.toString())
+            return
+        }
         com.mochyy.mochymusic.ui.component.TopToaster.show(
             text = text,
             thumbnail = player.currentMediaItem?.mediaMetadata?.artworkUri?.toString(),
@@ -4157,7 +4162,8 @@ class MusicService :
         val skip = failedSources.getOrPut(mediaId) { java.util.concurrent.ConcurrentHashMap.newKeySet() }
         if (!skip.add(failed)) return false
         failedSourcesAt.putIfAbsent(mediaId, System.currentTimeMillis())
-        val next = sourceModules.order.value.firstOrNull { it !in skip && sourceModules.isUsable(it) } ?: return false
+        val limited = providerSwitch.limitedUntil.value
+        val next = sourceModules.order.value.firstOrNull { it !in skip && sourceModules.isUsable(it) && (limited[it] ?: 0L) <= System.currentTimeMillis() } ?: return false
         Timber.tag(TAG).i("Force playback: $mediaId failed from $failed, trying $next")
         android.util.Log.i("SourceModules", "Force playback: ${sourceModules.nameOf(failed)} failed on $mediaId, trying ${sourceModules.nameOf(next)}")
         resolvedStreamSources.remove(mediaId)
@@ -5266,8 +5272,8 @@ class MusicService :
                 }
                 is com.mochyy.mochymusic.module.ResolveResult.NotFound -> SwitchResolution.Failed(result.reason, true)
                 is com.mochyy.mochymusic.module.ResolveResult.Unavailable -> SwitchResolution.Failed(result.reason,
-                    listOf("sign in", "sign-in", "signed out", "premium", "session expired", "no credentials", "no spotify engine")
-                        .any { result.reason.contains(it, true) })
+                    listOf("sign in", "sign-in", "signed out", "premium", "session expired", "no credentials", "no spotify engine", "inicia sesión", "sesión de spotify cerrada", "no incluye el motor")
+                        .any { result.reason.contains(it, true) }, result.retryAfterMs ?: if (result.reason.contains("429") || result.reason.contains("rate limit", true)) 30_000L else null)
             }
         }
 

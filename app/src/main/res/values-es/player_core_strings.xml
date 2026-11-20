@@ -11,6 +11,7 @@
     <string name="pc_force_playing_here">Reproduciendo desde aquí</string>
     <string name="pc_force_tap_here">Toca para reproducir desde aquí</string>
     <string name="pc_provider_available">Disponible</string>
+    <string name="pc_provider_limited">Limitado · reintenta en %1$d s</string>
     <string name="pc_provider_loading">Cargando</string>
     <string name="pc_provider_failed">Falló</string>
     <string name="pc_provider_playing">Sonando</string>

@@ -173,7 +173,7 @@ sealed interface ResolveResult {
     /** the service doesn't have this song */
     data class NotFound(val reason: String) : ResolveResult
     /** the service couldn't be asked: signed out, offline, region */
-    data class Unavailable(val reason: String) : ResolveResult
+    data class Unavailable(val reason: String, val retryAfterMs: Long? = null) : ResolveResult
 }
 
 /** One line of a module's self-test. [ok] null while the step runs. */

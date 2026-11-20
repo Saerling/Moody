@@ -64,6 +64,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import com.mochyy.mochymusic.ui.utils.stableStatusBars
+import com.mochyy.mochymusic.ui.utils.stableSystemBars
 import com.mochyy.mochymusic.ui.component.RemoteFocus
 
 val MenuSurface = Color(0xFF0B0B0C)
@@ -257,6 +258,10 @@ fun MenuSheetSurface(
     val measuredHeightPx = remember { mutableFloatStateOf(0f) }
 
     val statusBarBottomPx = WindowInsets.stableStatusBars.getTop(density).toFloat() + with(density) { StatusBarGap.toPx() }
+    // The player draws edge to edge, so the sheet's parent can end above the screen's real bottom
+    // (the navigation bar's strip). A sheet has to travel that strip too, or its top sliver stays
+    // visible there after it closes.
+    val navigationBarBottomPx = WindowInsets.stableSystemBars.getBottom(density).toFloat()
     var parentTopInWindowPx by remember { mutableFloatStateOf(0f) }
 
     BoxWithConstraints(
@@ -286,8 +291,9 @@ fun MenuSheetSurface(
         fun centerLiftPx(sheetPx: Float): Float =
             if (floating) ((parentHeightPx - safeTopPx - floatingMarginPx - sheetPx) / 2f).coerceAtLeast(0f) else 0f
         val liftPx = centerLiftPx(fullHeightPx)
-        // how far down the sheet goes to be fully out of sight, its bottom gap and its lift included
-        val closedOffsetPx = fullHeightPx + floatingMarginPx + liftPx
+        // how far down the sheet goes to be fully out of sight: its measured height, its bottom
+        // gap and lift, and the navigation bar strip below its parent
+        val closedOffsetPx = fullHeightPx + floatingMarginPx + liftPx + navigationBarBottomPx
 
         val restingOffsetPx = if (wraps) {
             0f
@@ -331,7 +337,7 @@ fun MenuSheetSurface(
             withFrameNanos { }
 
             val startHeightPx = if (wraps) measuredHeightPx.floatValue else maxSheetPx
-            val start = startHeightPx + floatingMarginPx + centerLiftPx(startHeightPx)
+            val start = startHeightPx + floatingMarginPx + centerLiftPx(startHeightPx) + navigationBarBottomPx
             val target = if (wraps) 0f else restingOffsetPx
             setOffset(start)
             animate(
@@ -400,7 +406,7 @@ fun MenuSheetSurface(
             }
         }
 
-        val sheetNestedScroll = remember(fullHeightPx, restingOffsetPx) {
+        val sheetNestedScroll = remember(fullHeightPx, restingOffsetPx, closedOffsetPx) {
             object : NestedScrollConnection {
                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
 
@@ -420,7 +426,7 @@ fun MenuSheetSurface(
 
                     if (available.y > 0f && !dismissEnabled) return Offset.Zero
                     if (available.y > 0f) {
-                        setOffset((offsetPx.floatValue + available.y).coerceAtMost(fullHeightPx))
+                        setOffset((offsetPx.floatValue + available.y).coerceAtMost(closedOffsetPx))
                         return available
                     }
                     return Offset.Zero

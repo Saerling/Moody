@@ -85,6 +85,8 @@ data class TopToast(
     val actionLabel: String?,
     val onAction: (() -> Unit)?,
     val durationMs: Long,
+    /** a fallback or a source that failed: amber warning mark instead of the check */
+    val isWarning: Boolean = false,
 )
 
 object TopToaster {
@@ -107,6 +109,11 @@ object TopToaster {
         state.value = TopToast(ids.incrementAndGet(), text, false, thumbnail, iconRes, actionLabel, onAction, durationMs)
     }
 
+    /** something didn't go as asked but music keeps playing (a source that failed and another one taking over) */
+    fun warn(text: String, thumbnail: String? = null, durationMs: Long = 2200L) {
+        state.value = TopToast(ids.incrementAndGet(), text, false, thumbnail, R.drawable.warning, null, null, durationMs, isWarning = true)
+    }
+
     fun error(text: String, durationMs: Long = 4000L) {
         state.value = TopToast(ids.incrementAndGet(), text, true, null, R.drawable.close, null, null, durationMs)
     }
@@ -119,6 +126,7 @@ object TopToaster {
 private val ToastCard = Color(0xFF1E1E1E)
 private val ToastSquare = Color(0xFFD9D9D9)
 private val ToastError = Color(0xFFEE5A52)
+private val ToastWarning = Color(0xFFFFB648)
 private val ToastEase = CubicBezierEasing(0.2f, 0f, 0f, 1f)
 
 private val ToastTitle = TextStyle(
@@ -256,9 +264,9 @@ private fun ToastPill(toast: TopToast) {
         } else if (!toast.isError) {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.padding(start = 12.dp).size(26.dp).clip(CircleShape).background(ToastSquare),
+                modifier = Modifier.padding(start = 12.dp).size(26.dp).clip(CircleShape).background(if (toast.isWarning) ToastWarning else ToastSquare),
             ) {
-                Icon(painterResource(R.drawable.check), null, tint = Color(0xFF232323), modifier = Modifier.size(16.dp))
+                Icon(painterResource(if (toast.isWarning) R.drawable.warning else R.drawable.check), null, tint = Color(0xFF232323), modifier = Modifier.size(16.dp))
             }
         }
     }
