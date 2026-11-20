@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="aq_quality_auto">Automática</string>
+    <string name="aq_quality_high">Alta</string>
+    <string name="aq_quality_medium">Media</string>
+    <string name="aq_quality_low">Baja</string>
+</resources>

@@ -33,6 +33,8 @@ import com.mochyy.mochymusic.ui.screens.setup.onboarding.SquircleShape
 internal fun ProviderLogo(providerId: String, name: String, size: Dp) {
     when (providerId) {
         SourceModules.YouTubeId -> ProviderSquircle(service = AccountService.YOUTUBE_MUSIC, size = size)
+        "spotify" -> Image(painter = painterResource(R.drawable.provider_spotify), contentDescription = name, contentScale = ContentScale.Crop, modifier = Modifier.size(size).clip(SquircleShape))
+        "jiosaavn" -> Image(painter = painterResource(R.drawable.provider_jiosaavn), contentDescription = name, contentScale = ContentScale.Crop, modifier = Modifier.size(size).clip(SquircleShape))
         "applemusic" -> ProviderSquircle(service = AccountService.APPLE_MUSIC, size = size)
         "monochrome" -> Image(
             painter = painterResource(R.drawable.provider_monochrome),

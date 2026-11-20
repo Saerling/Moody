@@ -3,8 +3,11 @@
 package com.mochyy.mochymusic.ui.player.info
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -19,17 +22,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -41,6 +45,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -51,13 +57,13 @@ import com.mochyy.mochymusic.constants.AudioQuality
 import com.mochyy.mochymusic.constants.AudioQualityKey
 import com.mochyy.mochymusic.module.StreamOption
 import com.mochyy.mochymusic.modules.SourceModules
-import com.mochyy.mochymusic.playback.ProviderSwitch
 import com.mochyy.mochymusic.playback.ProviderSwitchState
 import com.mochyy.mochymusic.ui.player.menu.LocalMenuSheetClose
 import com.mochyy.mochymusic.ui.player.menu.MenuRowSurface
 import com.mochyy.mochymusic.ui.player.menu.MenuSheetSurface
 import com.mochyy.mochymusic.utils.rememberPreference
 import kotlinx.coroutines.delay
+import androidx.compose.ui.graphics.graphicsLayer
 import com.mochyy.mochymusic.ui.component.RemoteFocus
 
 private val YouTubeQualities = listOf(AudioQuality.AUTO, AudioQuality.HIGH, AudioQuality.MEDIUM, AudioQuality.LOW)
@@ -78,6 +84,9 @@ fun ForceProviderSheet(currentProviderId: String?, onDismiss: () -> Unit) {
     val youTubeOn by modules.youTubeEnabled.collectAsState()
     val entries by modules.entries.collectAsState()
     val state by service.providerSwitch.state.collectAsState()
+    val playingFrom by service.playingFrom.collectAsState()
+    val currentMediaId = service.player.currentMediaItem?.mediaId
+    val activeProviderId = currentMediaId?.let { playingFrom[it]?.providerId } ?: currentProviderId
     val (youTubeQuality, setYouTubeQuality) = rememberPreference(AudioQualityKey, AudioQuality.AUTO.name)
     // only what's switched on (and signed in) is offered: a provider that's off couldn't play it anyway
     val providers = remember(order, youTubeOn, entries) { order.filter { modules.isUsable(it) } }
@@ -115,9 +124,18 @@ fun ForceProviderSheet(currentProviderId: String?, onDismiss: () -> Unit) {
                     ProviderChoiceRow(
                         providerId = id,
                         name = modules.nameOf(id),
-                        isCurrent = id == currentProviderId,
+                        isCurrent = id == activeProviderId,
+                        isLoading = state is ProviderSwitchState.Working && (state as ProviderSwitchState.Working).providerId == id,
+                        isFailed = state is ProviderSwitchState.Failed && (state as ProviderSwitchState.Failed).providerId == id,
                         busy = state is ProviderSwitchState.Working,
                         options = when {
+                            choice != null && id == "spotify" -> choice.options.map { option ->
+                                option.copy(label = when (option.id) {
+                                    "320" -> stringResource(R.string.pc_quality_very_high)
+                                    "160" -> stringResource(R.string.pc_quality_high)
+                                    else -> stringResource(R.string.pc_quality_normal)
+                                })
+                            }
                             choice != null -> choice.options
                             id == SourceModules.YouTubeId -> YouTubeQualities.map { StreamOption(it.name, stringResource(qualityLabelRes(it)), "") }
                             else -> emptyList()
@@ -155,20 +173,10 @@ private fun SwitchStatus(state: ProviderSwitchState, nameOf: (String) -> String)
             when (state) {
                 is ProviderSwitchState.Working -> {
                     Text(stringResource(R.string.pc_force_fetching, nameOf(state.providerId)), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Text(stringResource(R.string.pc_force_try_of, state.attempt, state.of), color = InfoMuted, fontSize = 12.sp)
-                    Spacer(Modifier.height(10.dp))
-                    val progress by animateFloatAsState(state.attempt / state.of.toFloat(), label = "switchTries")
-                    Box(Modifier.fillMaxWidth().height(4.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.12f))) {
-                        Box(Modifier.fillMaxWidth(progress).fillMaxHeight().clip(CircleShape).background(Color.White))
-                    }
+                    Text(stringResource(R.string.pc_force_fetching, nameOf(state.providerId)), color = InfoMuted, fontSize = 12.sp)
                 }
                 is ProviderSwitchState.Failed -> {
-                    Text(stringResource(R.string.pc_force_unavailable), color = Color(0xFFFF7A7A), fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Text(
-                        stringResource(R.string.pc_force_failed, nameOf(state.providerId), state.reason),
-                        color = InfoMuted,
-                        fontSize = 12.sp,
-                    )
+                    Text(stringResource(R.string.pc_force_failed, nameOf(state.providerId), state.reason), color = Color(0xFFFF7A7A), fontSize = 13.sp)
                 }
                 is ProviderSwitchState.Done -> {
                     Text(
@@ -188,6 +196,8 @@ private fun ProviderChoiceRow(
     providerId: String,
     name: String,
     isCurrent: Boolean,
+    isLoading: Boolean,
+    isFailed: Boolean,
     busy: Boolean,
     options: List<StreamOption>,
     selectedOption: String?,
@@ -198,30 +208,31 @@ private fun ProviderChoiceRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
-            .background(MenuRowSurface)
+            .background(if (isCurrent) Color(0x332BC5B4) else MenuRowSurface)
+            .then(if (isCurrent) Modifier.border(1.dp, Color(0xFF2BC5B4), RoundedCornerShape(18.dp)) else Modifier)
             .clickable(
                 enabled = !busy,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = RemoteFocus,
             ) { onPick(null) }
-            .padding(horizontal = 14.dp, vertical = 12.dp),
+            .padding(horizontal = 14.dp, vertical = 12.dp).semantics { contentDescription = name },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             ProviderLogo(providerId, name, 44.dp)
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = name, color = Color.White, fontSize = 15.sp, lineHeight = 19.sp, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(
-                    text = stringResource(if (isCurrent) R.string.pc_force_playing_here else R.string.pc_force_tap_here),
-                    color = InfoMuted,
-                    fontSize = 12.sp,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = name, color = Color.White, fontSize = 15.sp, lineHeight = 19.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    if (isCurrent) { Spacer(Modifier.width(8.dp)); EqualizerMark() }
+                    Spacer(Modifier.width(8.dp))
+                    ProviderStatusChip(isCurrent, isLoading, isFailed)
+                }
             }
         }
         if (options.size > 1) {
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(8.dp))
             Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
             ) {
                 options.forEach { option ->
@@ -237,18 +248,39 @@ private fun ProviderChoiceRow(
     }
 }
 
+@Composable private fun ProviderStatusChip(current: Boolean, loading: Boolean, failed: Boolean) {
+    val label = when { current -> stringResource(R.string.pc_provider_playing); loading -> stringResource(R.string.pc_provider_loading); failed -> stringResource(R.string.pc_provider_failed); else -> stringResource(R.string.pc_provider_available) }
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clip(CircleShape).background(if (failed) Color(0x33FF5555) else Color.White.copy(alpha = 0.10f)).padding(horizontal = 8.dp, vertical = 4.dp)) {
+        if (loading) { CircularProgressIndicator(Modifier.size(12.dp), strokeWidth = 2.dp, color = Color(0xFF2BC5B4)); Spacer(Modifier.width(4.dp)) }
+        Text(label, color = if (failed) Color(0xFFFF7777) else if (current) Color(0xFF63E3D3) else InfoMuted, fontSize = 10.sp, maxLines = 1)
+    }
+}
+
+@Composable private fun EqualizerMark() {
+    val transition = rememberInfiniteTransition(label = "providerEqualizer")
+    Row(horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.CenterVertically) {
+        repeat(3) { index ->
+            val scale by transition.animateFloat(0.35f, 1f, infiniteRepeatable(tween(360 + index * 100), RepeatMode.Reverse), label = "bar$index")
+            Box(Modifier.width(3.dp).height(12.dp).graphicsLayer { scaleY = scale }.clip(CircleShape).background(Color(0xFF2BC5B4)))
+        }
+    }
+}
+
 @Composable
 private fun QualityChip(label: String, selected: Boolean, enabled: Boolean, onClick: () -> Unit) {
     val shape = RoundedCornerShape(50)
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .height(28.dp)
+            .height(48.dp)
             .clip(shape)
             .then(if (selected) Modifier.background(Color.White) else Modifier.border(1.dp, Color.White.copy(alpha = 0.25f), shape))
             .clickable(enabled = enabled, interactionSource = remember { MutableInteractionSource() }, indication = RemoteFocus, onClick = onClick)
             .padding(horizontal = 12.dp),
     ) {
-        Text(text = label, color = if (selected) Color.Black else Color.White.copy(alpha = 0.8f), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(text = label, color = if (selected) Color.Black else Color.White.copy(alpha = 0.8f), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+            if (selected) Text("✓", color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }

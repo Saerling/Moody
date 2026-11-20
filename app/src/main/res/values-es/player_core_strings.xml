@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="pc_force_title">Reproducir desde</string>
-    <string name="pc_force_hint">La canción se pausa mientras se busca en la fuente elegida.</string>
+    <string name="pc_force_hint">Elige una fuente para reproducir esta canción.</string>
     <string name="pc_force_fetching">Buscando en %1$s…</string>
     <string name="pc_force_try_of">Intento %1$d de %2$d</string>
     <string name="pc_force_unavailable">Fuente no disponible</string>
     <string name="pc_force_failed">%1$s: %2$s</string>
-    <string name="pc_force_fallback">%1$s falló (%2$s). Reproduciendo desde %3$s.</string>
+    <string name="pc_force_fallback">%1$s falló (%2$s). Ahora suena desde %3$s.</string>
     <string name="pc_force_now_playing">Reproduciendo desde %1$s</string>
     <string name="pc_force_playing_here">Reproduciendo desde aquí</string>
     <string name="pc_force_tap_here">Toca para reproducir desde aquí</string>
+    <string name="pc_provider_available">Disponible</string>
+    <string name="pc_provider_loading">Cargando</string>
+    <string name="pc_provider_failed">Falló</string>
+    <string name="pc_provider_playing">Sonando</string>
+    <string name="pc_info_nerds">DATOS TÉCNICOS</string>
+    <string name="pc_info_provider">Proveedor</string>
+    <string name="pc_info_format_about">Formato y detalles</string>
+    <string name="pc_info_force_change">Cambiar fuente</string>
+    <string name="pc_star_github">Dar estrella en GitHub</string>
+    <string name="pc_quality_very_high">Muy alta</string>
+    <string name="pc_quality_high">Alta</string>
+    <string name="pc_quality_normal">Normal</string>
 </resources>
