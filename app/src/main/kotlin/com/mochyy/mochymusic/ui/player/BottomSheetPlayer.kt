@@ -317,6 +317,7 @@ private fun PlayerSheet(
     // The title and artist's sheet: the artists, the album, about the song
     var showSongDetails by remember { mutableStateOf(false) }
     var showStreamInfo by remember { mutableStateOf(false) }
+    var forceProviderFrom by remember { mutableStateOf<String?>(null) }
 
     var showActionMenu by remember { mutableStateOf(false) }
     // Which surface opened the menu. The lyrics tools only appear when it came from the lyrics
@@ -1808,7 +1809,16 @@ private fun PlayerSheet(
         }
 
         if (showStreamInfo) {
-            com.mochyy.mochymusic.ui.player.info.StreamInfoSheet(onDismiss = { showStreamInfo = false })
+            com.mochyy.mochymusic.ui.player.info.StreamInfoSheet(
+                onDismiss = { showStreamInfo = false },
+                onForce = { providerId -> showStreamInfo = false; forceProviderFrom = providerId },
+            )
+        }
+        if (forceProviderFrom != null) {
+            com.mochyy.mochymusic.ui.player.info.ForceProviderSheet(
+                currentProviderId = forceProviderFrom,
+                onDismiss = { forceProviderFrom = null },
+            )
         }
 
         if (showActionMenu) {

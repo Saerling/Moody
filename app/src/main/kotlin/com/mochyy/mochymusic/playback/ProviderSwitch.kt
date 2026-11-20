@@ -24,7 +24,7 @@ sealed interface SwitchResolution {
 sealed interface ProviderSwitchState {
     data object Idle : ProviderSwitchState
     data class Working(val providerId: String, val attempt: Int, val of: Int) : ProviderSwitchState
-    data class Failed(val providerId: String, val reason: String) : ProviderSwitchState
+    data class Failed(val providerId: String, val reason: String, val fallbackProviderId: String? = null) : ProviderSwitchState
     data class Done(val providerId: String, val failedProviderId: String? = null, val reason: String? = null) : ProviderSwitchState
 }
 
@@ -48,7 +48,8 @@ class ProviderSwitch(private val scope: () -> CoroutineScope, private val host: 
         job = scope().launch {
             val wasPlaying = host.holdPlayback()
             val candidates = listOf(providerId) + host.availableProviders().filter { it != providerId }
-            var failedId = providerId
+            val requestedProviderId = providerId
+            var fallbackProviderId: String? = null
             var failure = "No se pudo obtener la canción"
             for (candidate in candidates) {
                 var result: SwitchResolution? = null
@@ -69,12 +70,16 @@ class ProviderSwitch(private val scope: () -> CoroutineScope, private val host: 
                 if (host.currentMediaId() != mediaId) { _state.value = ProviderSwitchState.Idle; return@launch }
                 if (result is SwitchResolution.Found) {
                     host.switchTo(mediaId, result.route, wasPlaying)
-                    _state.value = ProviderSwitchState.Done(candidate, failedId.takeIf { it != candidate }, failure.takeIf { it.isNotBlank() })
+                    _state.value = ProviderSwitchState.Done(
+                        providerId = candidate,
+                        failedProviderId = requestedProviderId.takeIf { it != candidate },
+                        reason = failure.takeIf { requestedProviderId != candidate },
+                    )
                     return@launch
                 }
-                failedId = candidate
+                if (candidate != requestedProviderId) fallbackProviderId = candidate
             }
-            _state.value = ProviderSwitchState.Failed(failedId, failure)
+            _state.value = ProviderSwitchState.Failed(requestedProviderId, failure, fallbackProviderId)
             if (wasPlaying) host.resumePlayback()
         }
     }
@@ -85,6 +90,7 @@ class ProviderSwitch(private val scope: () -> CoroutineScope, private val host: 
         private const val Tag = "ProviderSwitch"
         const val MaxTries = 3
         const val DeadlineMs = 20_000L
-        const val AttemptTimeoutMs = 12_000L
+        // Spotify's first librespot login plus Web API search can exceed 12 seconds on cold start.
+        const val AttemptTimeoutMs = 40_000L
     }
 }

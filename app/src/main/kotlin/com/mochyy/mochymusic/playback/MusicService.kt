@@ -549,7 +549,17 @@ class MusicService :
     /** where each song played from, for stream info's provider row */
     val playingFrom = _playingFrom.asStateFlow()
     /** stream info's "force change": stops, asks the picked provider up to 20 times, then reloads from it */
-    val providerSwitch by lazy { ProviderSwitch({ scope }, ProviderSwitchHost()) }
+    val providerSwitch by lazy {
+        ProviderSwitch({ scope }, ProviderSwitchHost()).also { switching ->
+            scope.launch {
+                switching.state.collect { state ->
+                    if (state is ProviderSwitchState.Done && state.failedProviderId != null) {
+                        showBanner("${sourceModules.nameOf(state.failedProviderId)} no disponible · usando ${sourceModules.nameOf(state.providerId)}")
+                    }
+                }
+            }
+        }
+    }
     /** what each song is playing as, by media id, for the player's format badge */
     val streamFacts = MutableStateFlow<Map<String, StreamFacts>>(emptyMap())
     /**
@@ -5173,7 +5183,8 @@ class MusicService :
         scope.launch(Dispatchers.IO) { recoverSong(mediaId) }
         val cacheKey = "$ModuleCacheKeyPrefix${module.info.id}|$mediaId"
         moduleStreamHeaders[cacheKey] = stream.headers
-        streamFacts.update { it + (mediaId to StreamFacts(codec = stream.codec, fromModule = true)) }
+        streamFacts.update { it + (mediaId to StreamFacts(codec = stream.codec, sampleRate = stream.sampleRateHz, fromModule = true)) }
+        inspectorOf(player)?.invalidate(mediaId)
         notePlayingFrom(mediaId, PlayingFrom(module.info.id, module.info.name, stream.qualityLabel, stream.matched.id))
         Timber.tag("StreamFetch").i("$mediaId plays from ${module.info.name}: ${stream.matched.title} · ${stream.qualityLabel}")
         return com.mochyy.mochymusic.playback.custom.CustomStreamResult(

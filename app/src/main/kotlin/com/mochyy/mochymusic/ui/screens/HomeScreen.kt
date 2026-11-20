@@ -1349,7 +1349,7 @@ fun HomeScreen(
                         ),
                         state = lazylistState,
                         contentPadding = PaddingValues(
-                            bottom = LocalPlayerAwareWindowInsets.current.asPaddingValues().calculateBottomPadding()
+                            bottom = LocalPlayerAwareWindowInsets.current.asPaddingValues().calculateBottomPadding() + 16.dp
                         )
                     ) {
                 when (homeStyle) {

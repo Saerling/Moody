@@ -65,8 +65,8 @@ class MiniPillFrame(
     val height: Dp = NavBarHeight,
 )
 
-// the phone's mini player: the full width less 24dp each side, in its own glass
-val PhoneMiniPill = MiniPillFrame(start = 24.dp, end = 24.dp, merged = false, withPrevious = false)
+// the phone's mini player lines up with the app content, in its own glass
+val PhoneMiniPill = MiniPillFrame(start = 16.dp, end = 16.dp, merged = false, withPrevious = false)
 
 val LocalMiniPillFrame = staticCompositionLocalOf { PhoneMiniPill }
 

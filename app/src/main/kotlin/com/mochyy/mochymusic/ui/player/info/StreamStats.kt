@@ -74,8 +74,10 @@ private fun formatCard(c: Context, input: StatsInput): StatCard {
     val codec = input.facts?.codec ?: StreamFacts.codecOf(d.sampleMime, d.codecs)
     val lossless = codec in LosslessCodecs
     val sampleRate = d.sampleRate ?: input.facts?.sampleRate ?: input.youtubeFormat?.sampleRate
-    val fileSize = d.fileSizeBytes ?: input.youtubeFormat?.contentLength?.takeIf { it > 0 }
-    val statedBitrate = d.bitrate ?: input.youtubeFormat?.bitrate?.takeIf { it > 0 }
+    val youtubeOwnsStream = input.from?.providerId == com.mochyy.mochymusic.modules.SourceModules.YouTubeId
+    val fileSize = d.fileSizeBytes?.takeIf { input.from?.providerId !in setOf(null, com.mochyy.mochymusic.modules.SourceModules.YouTubeId) }
+        ?: input.youtubeFormat?.contentLength?.takeIf { youtubeOwnsStream && it > 0 }
+    val statedBitrate = d.bitrate ?: input.youtubeFormat?.bitrate?.takeIf { youtubeOwnsStream && it > 0 }
     // a flac file says nothing of its bitrate: its size over its length does
     val averageBitrate = if (statedBitrate == null && fileSize != null && input.durationMs > 0) {
         (fileSize * 8_000 / input.durationMs).toInt()

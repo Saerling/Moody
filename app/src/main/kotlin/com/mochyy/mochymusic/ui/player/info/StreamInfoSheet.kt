@@ -67,12 +67,11 @@ import java.util.concurrent.ConcurrentHashMap
 
 /** "stream info": where the playing song comes from, and its whole road to the speaker */
 @Composable
-fun StreamInfoSheet(onDismiss: () -> Unit) {
+fun StreamInfoSheet(onDismiss: () -> Unit, onForce: (String?) -> Unit = {}) {
     val playerConnection = LocalPlayerConnection.current ?: return
     val service = playerConnection.service
     val metadata by playerConnection.mediaMetadata.collectAsState()
     val song = metadata ?: return
-    var showForce by remember { mutableStateOf(false) }
     val stack = LocalMenuSheetStack.current ?: rememberMenuSheetStack()
 
     val from by remember(song.id) { service.playingFrom.map { it[song.id] }.distinctUntilChanged() }.collectAsState(initial = null)
@@ -94,7 +93,7 @@ fun StreamInfoSheet(onDismiss: () -> Unit) {
                     InfoDivider()
                     InfoSectionTitle(stringResource(R.string.pc_info_provider))
                     Spacer(Modifier.height(12.dp))
-                    ProviderRow(service, from, onForce = { showForce = true })
+                    ProviderRow(service, from, onForce = { onDismiss(); onForce(from?.providerId) })
                     NerdsDivider()
                     InfoSectionTitle(stringResource(R.string.pc_info_format_about))
                     Spacer(Modifier.height(14.dp))
@@ -106,9 +105,6 @@ fun StreamInfoSheet(onDismiss: () -> Unit) {
             }
         }
 
-        if (showForce) {
-            ForceProviderSheet(currentProviderId = from?.providerId, onDismiss = { showForce = false })
-        }
     }
 }
 
@@ -188,9 +184,9 @@ private fun rememberStatCards(service: MusicService, mediaId: String, durationMs
     val details by remember(player) {
         player?.let(service::inspectorOf)?.details ?: MutableStateFlow(StreamDetails())
     }.collectAsState()
-    val facts by remember(mediaId) { playerConnection.streamFacts(mediaId) }.collectAsState(initial = null)
+    val from by remember(mediaId) { service.playingFrom.map { it[mediaId] }.distinctUntilChanged() }.collectAsState(initial = null)
+    val facts by remember(mediaId, from?.providerId) { playerConnection.streamFacts(mediaId) }.collectAsState(initial = null)
     val format by playerConnection.currentFormat.collectAsState(initial = null)
-    val from by remember(mediaId) { service.playingFrom.map { it[mediaId] } }.collectAsState(initial = null)
     val devices by service.audioOutputs.devices.collectAsState()
     val mixer by service.audioOutputs.mixer.collectAsState()
     val volume by service.playerVolume.collectAsState()

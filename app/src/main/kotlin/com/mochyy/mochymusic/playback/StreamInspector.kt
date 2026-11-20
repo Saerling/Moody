@@ -68,6 +68,15 @@ class StreamInspector : AnalyticsListener {
     private val window = Timeline.Window()
     private val main = Handler(Looper.getMainLooper())
 
+    /** A provider switch reuses the media id, so discard the outgoing stream's measurements. */
+    fun invalidate(mediaId: String) {
+        main.post {
+            songs.remove(mediaId)
+            if (playingId == mediaId) _details.value = StreamDetails(mediaId = mediaId)
+            if (readingId == mediaId) readingId = null
+        }
+    }
+
     override fun onMediaItemTransition(eventTime: AnalyticsListener.EventTime, mediaItem: MediaItem?, reason: Int) {
         playingId = mediaItem?.mediaId
         _details.value = playingId?.let(::entryFor) ?: StreamDetails()

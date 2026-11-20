@@ -1861,6 +1861,11 @@ private fun SheetPillGlass(
     Box(
         modifier = Modifier
             .sheetShapeLayout(progressProvider, endpointsPx, startPx, endPx)
+            .graphicsLayer {
+                // At rest the mini player is a real surface; let the sheet backdrop take over as it opens.
+                alpha = 1f - sheetBackdropAlpha(progressProvider())
+            }
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .then(
                 if (merged) Modifier.graphicsLayer { alpha = smoothstep(progressProvider() / MergedGlassInBy) }
                 else Modifier
