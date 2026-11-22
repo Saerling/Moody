@@ -188,6 +188,7 @@ fun SongInfoRow(
                         infoAlpha = infoAlpha,
                         badgeAlpha = badgeAlpha,
                         onBadgeClick = onStreamInfoClick,
+                        onSourcesClick = onSourcesClick,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 } else {
@@ -202,6 +203,7 @@ fun SongInfoRow(
                                 infoAlpha = infoAlpha,
                                 badgeAlpha = badgeAlpha,
                                 onBadgeClick = onStreamInfoClick,
+                        onSourcesClick = onSourcesClick,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .carouselText(carousel, slot),
@@ -297,6 +299,7 @@ private fun SongLines(
     badgeAlpha: () -> Float,
     onBadgeClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    onSourcesClick: ((String?) -> Unit)? = null,
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
     Column(modifier = modifier) {
