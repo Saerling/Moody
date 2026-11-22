@@ -117,6 +117,7 @@ fun MusicDatabase.toggleSavedPlaylist(
                 playEndpointParams = playlist.playEndpoint?.params,
                 shuffleEndpointParams = playlist.shuffleEndpoint?.params,
                 radioEndpointParams = playlist.radioEndpoint?.params
+            )
             coroutineScope.launch(Dispatchers.IO) {
                 librarySync.saveRemotePlaylist(playlistEntity)
                 songs.ifEmpty {

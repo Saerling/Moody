@@ -48,6 +48,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import com.mochyy.mochymusic.di.librarySync
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -321,7 +322,7 @@ fun OnlinePlaylistScreen(
                     },
                     isSaved = if (isEditableRemote) null else dbPlaylist?.playlist?.bookmarkedAt != null,
                     onSaveClick = {
-                        database.toggleSavedPlaylist(currentPlaylist, dbPlaylist, songs, coroutineScope)
+                        database.toggleSavedPlaylist(currentPlaylist, dbPlaylist, songs, coroutineScope, context.librarySync())
                     },
                 )
             }
