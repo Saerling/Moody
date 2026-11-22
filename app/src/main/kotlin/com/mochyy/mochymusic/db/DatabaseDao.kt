@@ -73,6 +73,14 @@ import java.util.Locale
 
 @Dao
 interface DatabaseDao {
+
+    /** las canciones que una playlist inteligente puede elegir: de la biblioteca, con me gusta o ya escuchadas */
+    @Transaction
+    @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL OR liked = 1 OR totalPlayTime > 0")
+    fun smartPlaylistCandidates(): Flow<List<Song>>
+
+    @Query("SELECT songId, COUNT(*) AS plays, MAX(timestamp) AS lastPlayed FROM event GROUP BY songId")
+    fun songPlayStats(): Flow<List<com.mochyy.mochymusic.db.entities.SongPlayStat>>
     @Insert
     suspend fun enqueuePlaylistSyncOp(op: PlaylistSyncOpEntity): Long
 

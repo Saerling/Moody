@@ -2,6 +2,7 @@
 
 package com.mochyy.mochymusic.ui.screens.library
 
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -77,5 +78,16 @@ fun LibraryPlaylistsScreen(
         modifier = modifier,
         pureBlack = pureBlack,
         onRefresh = if (shelf == null && source == null) viewModel::refreshPlaylists else null,
+        // las playlists inteligentes viven en su propia página, a un toque desde aquí
+        trailing = if (shelf == null && source == null) {
+            {
+                androidx.compose.material3.IconButton(onClick = { navController.navigate(SmartPlaylistsRoute) }) {
+                    androidx.compose.material3.Icon(
+                        androidx.compose.material.icons.Icons.Rounded.AutoAwesome,
+                        contentDescription = "Playlists inteligentes",
+                    )
+                }
+            }
+        } else null,
     )
 }

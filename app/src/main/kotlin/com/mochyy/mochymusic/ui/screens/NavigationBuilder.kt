@@ -754,6 +754,22 @@ fun NavGraphBuilder.navigationBuilder(
         }
     }
 
+    composable(com.mochyy.mochymusic.ui.screens.library.SmartPlaylistsRoute) {
+        com.mochyy.mochymusic.ui.screens.library.SmartPlaylistsScreen(navController)
+    }
+    composable(
+        route = "smart_playlist/{id}",
+        arguments = listOf(navArgument("id") { type = NavType.StringType }),
+    ) { entry ->
+        com.mochyy.mochymusic.ui.screens.library.SmartPlaylistScreen(navController, entry.arguments?.getString("id").orEmpty())
+    }
+    composable(
+        route = "smart_playlist_edit/{id}",
+        arguments = listOf(navArgument("id") { type = NavType.StringType }),
+    ) { entry ->
+        com.mochyy.mochymusic.ui.screens.library.SmartPlaylistEditorScreen(navController, entry.arguments?.getString("id") ?: "new")
+    }
+
     composable(
         route = "auto_playlist/{playlist}",
         arguments = listOf(

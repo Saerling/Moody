@@ -737,6 +737,7 @@ class MainActivity : ComponentActivity() {
                         currentRoute!!.startsWith("local_playlist/") ||
                         currentRoute!!.startsWith("online_playlist/") ||
                         currentRoute!!.startsWith("auto_playlist/") ||
+                        currentRoute!!.startsWith("smart_playlist") ||
                         // the bar stays while a page from the Library, an album or an artist is open
                         currentRoute!!.startsWith("library/") ||
                         currentRoute!!.startsWith("album/") ||
