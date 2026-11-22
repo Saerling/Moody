@@ -52,6 +52,10 @@ import com.mochyy.mochymusic.link.isTelevision
 private const val PoTokenAfterIntroMillis = 2_500L
 
 // one character from each system fallback font titles commonly reach for: japanese, chinese, korean, emoji
+// imported playlists re-read their source at most this often, a while after launch
+private const val AutoResyncEveryMillis = 6 * 60 * 60 * 1000L
+private const val AutoResyncAfterLaunchMillis = 20_000L
+
 private const val FallbackFontWarmup = "あ漢한😀"
 
 @HiltAndroidApp
@@ -70,9 +74,35 @@ class App : Application(), SingletonImageLoader.Factory {
     @Inject
     lateinit var syncUtils: com.mochyy.mochymusic.utils.SyncUtils
 
+    // imported playlists (spotify, apple music...) follow their source on their own
+    @Inject
+    lateinit var playlistResync: dagger.Lazy<com.mochyy.mochymusic.importer.PlaylistResync>
+
     // only built once a tv is paired, it pulls in the downloads
     @Inject
     lateinit var phoneLink: dagger.Lazy<com.mochyy.mochymusic.link.phone.PhoneLinkHost>
+
+    /**
+     * Pulls the songs of imported playlists again from where they came from (Spotify...), so
+     * what changed there shows up here without a manual re-sync. Quietly, once every few hours,
+     * after the app has settled; only playlists readable without signing in again start.
+     */
+    private fun autoResyncImportedPlaylists() {
+        applicationScope.launch(Dispatchers.IO) {
+            try {
+                val prefs = getSharedPreferences("imported_playlist_sync", MODE_PRIVATE)
+                val last = prefs.getLong("last_auto_resync", 0L)
+                if (System.currentTimeMillis() - last < AutoResyncEveryMillis) return@launch
+                kotlinx.coroutines.delay(AutoResyncAfterLaunchMillis)
+                val started = playlistResync.get().startAll()
+                if (!started.busy) prefs.edit().putLong("last_auto_resync", System.currentTimeMillis()).apply()
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.w(e, "auto re-sync of imported playlists failed")
+            }
+        }
+    }
 
     override fun onCreate() {
         // before super, because that's where hilt builds the database and the player caches
@@ -93,6 +123,7 @@ class App : Application(), SingletonImageLoader.Factory {
         PreferencesCache.start(this, applicationScope)
         librarySync.resumePendingWrites()
         syncUtils.tryAutoSync()
+        autoResyncImportedPlaylists()
         // tokens saved before the vault existed are sealed on the first start after the update
         applicationScope.launch(kotlinx.coroutines.Dispatchers.IO) { (dataStore as? com.mochyy.mochymusic.utils.SecretPreferences)?.sealLeftovers() }
         com.mochyy.mochymusic.utils.NotRecommended.init(this)

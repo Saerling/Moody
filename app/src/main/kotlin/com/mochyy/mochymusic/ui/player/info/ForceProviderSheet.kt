@@ -15,11 +15,12 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,7 +30,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -187,6 +187,7 @@ private fun SwitchStatus(state: ProviderSwitchState, nameOf: (String) -> String)
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ProviderChoiceRow(
     providerId: String,
@@ -219,7 +220,8 @@ private fun ProviderChoiceRow(
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = name, color = Color.White, fontSize = 15.sp, lineHeight = 19.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    // the name gives way (ellipsis) so the status chip is never cut
+                    Text(text = name, color = Color.White, fontSize = 15.sp, lineHeight = 19.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                     if (isCurrent) { Spacer(Modifier.width(8.dp)); EqualizerMark() }
                     Spacer(Modifier.width(8.dp))
                     ProviderStatusChip(isCurrent, isLoading, isFailed, limitedUntil)
@@ -228,9 +230,10 @@ private fun ProviderChoiceRow(
         }
         if (options.size > 1) {
             Spacer(Modifier.height(8.dp))
-            Row(
+            // wraps onto a new line instead of running off the card's edge
+            FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 options.forEach { option ->
                     QualityChip(
@@ -253,7 +256,7 @@ private fun ProviderChoiceRow(
     val label = when { limited -> stringResource(R.string.pc_provider_limited, seconds); current -> stringResource(R.string.pc_provider_playing); loading -> stringResource(R.string.pc_provider_loading); failed -> stringResource(R.string.pc_provider_failed); else -> stringResource(R.string.pc_provider_available) }
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clip(CircleShape).background(if (limited) Color(0x33FFB020) else if (failed) Color(0x33FF5555) else Color.White.copy(alpha = 0.10f)).padding(horizontal = 8.dp, vertical = 4.dp)) {
         if (loading) { CircularProgressIndicator(Modifier.size(12.dp), strokeWidth = 2.dp, color = Color(0xFF2BC5B4)); Spacer(Modifier.width(4.dp)) }
-        Text(label, color = if (limited) Color(0xFFFFC04D) else if (failed) Color(0xFFFF7777) else if (current) Color(0xFF63E3D3) else InfoMuted, fontSize = 10.sp, maxLines = 1)
+        Text(label, color = if (limited) Color(0xFFFFC04D) else if (failed) Color(0xFFFF7777) else if (current) Color(0xFF63E3D3) else InfoMuted, fontSize = 10.sp, maxLines = 1, softWrap = false)
     }
 }
 
@@ -273,14 +276,14 @@ private fun QualityChip(label: String, selected: Boolean, enabled: Boolean, onCl
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .height(48.dp)
+            .height(36.dp)
             .clip(shape)
             .then(if (selected) Modifier.background(Color.White) else Modifier.border(1.dp, Color.White.copy(alpha = 0.25f), shape))
             .clickable(enabled = enabled, interactionSource = remember { MutableInteractionSource() }, indication = RemoteFocus, onClick = onClick)
             .padding(horizontal = 12.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(text = label, color = if (selected) Color.Black else Color.White.copy(alpha = 0.8f), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+            Text(text = label, color = if (selected) Color.Black else Color.White.copy(alpha = 0.8f), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false)
             if (selected) Text("✓", color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         }
     }

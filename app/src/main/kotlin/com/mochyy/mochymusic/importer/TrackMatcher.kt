@@ -60,8 +60,15 @@ class TrackMatcher(
     private suspend fun findBest(track: ImportedTrack): SongItem? {
         val query = searchQuery(track)
 
-        val songs = search(query, YouTube.SearchFilter.FILTER_SONG).map { it to score(track, it) }
+        var songs = search(query, YouTube.SearchFilter.FILTER_SONG).map { it to score(track, it) }
         pick(track, songs, SONG_ACCEPT)?.let { return it }
+
+        // a common title by a lesser-known artist: every artist and the album narrow the search down to the right recording
+        val wideQuery = wideSearchQuery(track)
+        if (wideQuery != query) {
+            songs = (songs + search(wideQuery, YouTube.SearchFilter.FILTER_SONG).map { it to score(track, it) }).distinctBy { it.first.id }
+            pick(track, songs, SONG_ACCEPT)?.let { return it }
+        }
 
         // some tracks only exist as uploads/videos on youtube
         val videos = search(query, YouTube.SearchFilter.FILTER_VIDEO).map { it to score(track, it) }
@@ -85,6 +92,13 @@ class TrackMatcher(
     private fun searchQuery(track: ImportedTrack): String {
         val firstArtist = splitArtists(track.artist).firstOrNull().orEmpty()
         return "${cleanTitleForSearch(track.title)} $firstArtist".trim()
+    }
+
+    private fun wideSearchQuery(track: ImportedTrack): String {
+        val artists = splitArtists(track.artist).take(3).joinToString(" ")
+        val album = track.album?.takeIf { it.isNotBlank() && normalizeTitle(it) != normalizeTitle(track.title) }
+            ?.let { cleanTitleForSearch(it) }.orEmpty()
+        return "${cleanTitleForSearch(track.title)} $artists $album".replace(Regex("\\s+"), " ").trim()
     }
 
     private suspend fun search(query: String, filter: YouTube.SearchFilter): List<SongItem> {
@@ -128,8 +142,16 @@ class TrackMatcher(
         } * VERSION_PENALTY
 
         if (titleScore < MIN_TITLE) return 0.0
-        return titleScore * 0.5 + artistScore * 0.25 + durationScore * 0.25 +
-            albumScore(track.album, candidate.album?.name) + uploadScore(candidate) - versionPenalty
+        // the same title by somebody else is a cover or another song: the playlist has to come back with its own singers
+        val wrongArtist = targetArtists.isNotEmpty() && artistScore < MIN_ARTIST
+        // every one of the source's artists on the result (duets, features) is the exact recording
+        val allArtists = targetArtists.size > 1 && targetArtists.all { target ->
+            candidateArtists.any { similarity(target, it) >= 0.8 } || candidateTitle.contains(target)
+        }
+        val total = titleScore * 0.45 + artistScore * 0.3 + durationScore * 0.25 +
+            albumScore(track.album, candidate.album?.name) + uploadScore(candidate) - versionPenalty +
+            (if (allArtists) 0.05 else 0.0)
+        return if (wrongArtist) total - WRONG_ARTIST_PENALTY else total
     }
 
     /** small lift for the same album and a penalty for a live or tour album the source isn't on, live albums often title tracks plainly so the title alone can't tell */
@@ -168,6 +190,8 @@ class TrackMatcher(
         private const val VIDEO_ACCEPT = 0.7
         private const val SONG_FALLBACK_ACCEPT = 0.5
         private const val MIN_TITLE = 0.45
+        private const val MIN_ARTIST = 0.5
+        private const val WRONG_ARTIST_PENALTY = 0.4
 
         /** within this many seconds of the source's length, a result is taken to be the same recording */
         const val CLOSE_SECONDS = 3.0
@@ -178,8 +202,10 @@ class TrackMatcher(
             "nightcore", "reverb", "8d", "stage", "dance practice", "practice", "performance", "fancam",
             "concert", "rehearsal", "reaction", "1 hour", "hour", "loop", "extended",
             "japanese", "korean", "english", "chinese",
+            "en vivo", "ao vivo", "en directo", "directo", "demo", "acustico", "sinfonico", "version acustica",
+            "radio edit", "mashup", "medley", "tribute", "tributo",
         )
-        private val LIVE_ALBUM_WORDS = listOf("live", "tour", "concert", "unplugged", "session", "sessions")
+        private val LIVE_ALBUM_WORDS = listOf("live", "tour", "concert", "unplugged", "session", "sessions", "en vivo", "ao vivo", "en directo", "tributo", "tribute", "karaoke")
 
         private val NOISE_IN_BRACKETS = Regex(
             "[(\\[][^)\\]]*\\b(feat|ft|with|remaster|remastered|version|edit|mono|stereo|deluxe|explicit|clean|bonus|from|official|audio|video|lyrics?|visuali[sz]er|hd|hq|4k)\\b[^)\\]]*[)\\]]",
@@ -190,7 +216,7 @@ class TrackMatcher(
             RegexOption.IGNORE_CASE,
         )
         private val FEAT_TAIL = Regex("\\s(feat\\.?|ft\\.?|featuring)\\s.*$", RegexOption.IGNORE_CASE)
-        private val ARTIST_SPLIT = Regex("\\s*(,|&|;|/|\\sx\\s|\\sand\\s|\\sfeat\\.?\\s|\\sft\\.?\\s|\\sfeaturing\\s|\\swith\\s)\\s*", RegexOption.IGNORE_CASE)
+        private val ARTIST_SPLIT = Regex("\\s*(,|&|;|/|\\sx\\s|\\sand\\s|\\sfeat\\.?\\s|\\sft\\.?\\s|\\sfeaturing\\s|\\swith\\s|\\sy\\s)\\s*", RegexOption.IGNORE_CASE)
         private val NON_WORD = Regex("[^\\p{L}\\p{N}]+")
         private val MARKS = Regex("\\p{M}+")
 

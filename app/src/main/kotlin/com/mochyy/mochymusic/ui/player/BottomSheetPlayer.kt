@@ -1444,6 +1444,7 @@ private fun PlayerSheet(
                             }
                     ) {
                         SongInfoRow(
+                            onSourcesClick = { providerId -> forceProviderFrom = providerId ?: "" },
                             // Only while the sheet is up: during a slide the title's root position
                             // moves every frame, and the header morph that reads it recomposed with
                             // it. Its place on the sheet itself doesn't change.

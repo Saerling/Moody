@@ -98,6 +98,8 @@ fun SongInfoRow(
     onSongInfoClick: (() -> Unit)? = null,
     /** A tap on the format badge: the playing stream's info, straight away. */
     onStreamInfoClick: (() -> Unit)? = null,
+    /** A tap on the "playing from" chip. Set by the player so the sources sheet opens full-screen, not clipped inside this row. */
+    onSourcesClick: ((String?) -> Unit)? = null,
     /**
      * How much of the title and artist shows. The page header's title takes their place as a page
      * opens, drawn exactly like them, so this hides them the moment it does. Read while drawing.
@@ -359,7 +361,7 @@ private fun SongLines(
                     .basicMarquee(iterations = 1, initialDelayMillis = 3000, velocity = 30.dp)
             )
         }
-        PlayingSourceChip(mediaId = mediaId, alpha = infoAlpha)
+        PlayingSourceChip(mediaId = mediaId, alpha = infoAlpha, onOpen = onSourcesClick)
     }
 }
 
@@ -368,7 +370,7 @@ private fun SongLines(
  * pastilla bajo el artista. Al tocarla se abre la hoja para cambiar de fuente.
  */
 @Composable
-private fun PlayingSourceChip(mediaId: String, alpha: () -> Float) {
+private fun PlayingSourceChip(mediaId: String, alpha: () -> Float, onOpen: ((String?) -> Unit)? = null) {
     val service = LocalPlayerConnection.current?.service ?: return
     val playingFrom by service.playingFrom.collectAsState()
     val from = playingFrom[mediaId]
@@ -392,7 +394,7 @@ private fun PlayingSourceChip(mediaId: String, alpha: () -> Float) {
                 .graphicsLayer { this.alpha = alpha() }
                 .clip(RoundedCornerShape(50))
                 .background(Color.White.copy(alpha = 0.12f))
-                .clickable { showSources = true }
+                .clickable { if (onOpen != null) onOpen(from?.providerId) else showSources = true }
                 .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
         ) {
             ProviderLogo(providerId = shown.providerId, name = name, size = 18.dp)

@@ -139,6 +139,8 @@ class MusicImportService @Inject constructor(
             val fresh = steps.record.newTracks(playlist.id, read.tracks)
             _progress.update { it.copy(totalTracks = it.totalTracks + fresh.size) }
             val added = steps.topUp(steps.newMatcher(), playlist, fresh, context.isUserLoggedIn(), intoLibrary = owner != null)
+            // a complete read also mirrors what was deleted there; a read with a warning (spotify's 100-song link cap) may be partial
+            if (read.note == null) steps.record.removeGone(playlist.id, read.tracks, ImportMatches.get(context))
             steps.record.remember(steps.source, playlist.id, read.tracks, read.origin)
             _progress.update { progress ->
                 progress.copy(resync = progress.resync?.let {

@@ -44,6 +44,40 @@ internal class PlaylistSourceRecord(private val database: MusicDatabase) {
         }
     }
 
+    /**
+     * Takes out of playlistId the songs that were deleted on the service since the last read, so
+     * the copy here stays the same as the original. Only a complete read may do this, and never
+     * when most of the playlist seems gone (a half-read page looks the same). Returns how many.
+     */
+    suspend fun removeGone(playlistId: String, tracks: List<ImportedTrack>, matches: ImportMatches): Int {
+        val known = database.importedPlaylistTrackKeys(playlistId).toHashSet()
+        if (known.isEmpty() || tracks.isEmpty()) return 0
+        val current = tracks.mapTo(HashSet()) { it.trackKey() }
+        val gone = known - current
+        if (gone.isEmpty() || gone.size * 2 > known.size) return 0
+        var removed = 0
+        database.playlistSongs(playlistId).first()
+            .filter { entry ->
+                val key = matches.forSong(entry.song.id)?.track?.trackKey() ?: youTubeKey(entry.song.id)
+                key in gone && key !in current
+            }
+            // from the bottom up so the positions still to remove don't shift
+            .sortedByDescending { it.map.position }
+            .forEach { entry ->
+                database.withTransaction {
+                    move(playlistId, entry.map.position, Int.MAX_VALUE)
+                    delete(entry.map.copy(position = Int.MAX_VALUE))
+                }
+                removed++
+            }
+        // what the service has now is what the next read compares against
+        database.withTransaction {
+            deleteImportedPlaylistTracks(playlistId)
+            insertImportedPlaylistTracks(current.map { ImportedPlaylistTrack(playlistId, it) })
+        }
+        return removed
+    }
+
     /** saves where the playlist lives on source and every song it has there now */
     suspend fun remember(source: ImportSource, playlistId: String, tracks: List<ImportedTrack>, origin: PlaylistOrigin?) {
         // one made here, or from another service, that an import topped up by name: nothing to re-sync with
