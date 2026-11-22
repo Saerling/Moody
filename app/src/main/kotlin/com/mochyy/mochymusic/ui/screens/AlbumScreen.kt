@@ -45,6 +45,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import com.mochyy.mochymusic.di.librarySync
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -97,6 +98,8 @@ import com.mochyy.mochymusic.utils.makeTimeString
 import com.mochyy.mochymusic.utils.rememberPreference
 import com.mochyy.mochymusic.viewmodels.AlbumViewModel
 import com.music.innertube.models.AlbumItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -107,6 +110,8 @@ fun AlbumScreen(
 ) {
     val menuState = LocalMenuState.current
     val database = LocalDatabase.current
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val syncUtils = LocalSyncUtils.current
     val haptic = LocalHapticFeedback.current
     val playerConnection = LocalPlayerConnection.current ?: return
@@ -298,7 +303,7 @@ fun AlbumScreen(
                 },
                 onShuffleClick = { play(shuffled = true) },
                 isSaved = album.album.bookmarkedAt != null,
-                onSaveClick = { database.query { update(album.album.toggleLike()) } },
+                onSaveClick = { coroutineScope.launch(Dispatchers.IO) { context.librarySync().toggleAlbumLike(album.album) } },
                 onCreatorClick = { creator -> creator.artistId?.let { navController.navigate("artist/$it") } },
             )
         }

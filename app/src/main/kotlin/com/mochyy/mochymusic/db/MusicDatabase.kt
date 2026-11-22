@@ -32,6 +32,7 @@ import com.mochyy.mochymusic.db.entities.ImportedPlaylistTrack
 import com.mochyy.mochymusic.db.entities.ImportedSong
 import com.mochyy.mochymusic.db.entities.PlaylistEvent
 import com.mochyy.mochymusic.db.entities.PlaylistSongMap
+import com.mochyy.mochymusic.db.entities.PlaylistSyncOpEntity
 import com.mochyy.mochymusic.db.entities.PlaylistSongMapPreview
 import com.mochyy.mochymusic.db.entities.RecognitionHistory
 import com.mochyy.mochymusic.db.entities.RelatedSongMap
@@ -107,7 +108,7 @@ class MusicDatabase(
 }
 
 // bump this with every schema change and add its migration to AllMigrations, the import checks old exports against it too
-const val MusicDatabaseVersion = 43
+const val MusicDatabaseVersion = 44
 
 @Database(
     entities = [
@@ -119,6 +120,7 @@ const val MusicDatabaseVersion = 43
         SongAlbumMap::class,
         AlbumArtistMap::class,
         PlaylistSongMap::class,
+        PlaylistSyncOpEntity::class,
         SearchHistory::class,
         FormatEntity::class,
         LyricsEntity::class,
@@ -158,7 +160,6 @@ abstract class InternalDatabase : RoomDatabase() {
                 Room
                     .databaseBuilder(context, InternalDatabase::class.java, DB_NAME)
                     .addMigrations(*AllMigrations)
-                    .fallbackToDestructiveMigration(dropAllTables = true)
                     .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
                     .setTransactionExecutor(java.util.concurrent.Executors.newFixedThreadPool(4))
                     .setQueryExecutor(java.util.concurrent.Executors.newFixedThreadPool(4))
@@ -200,7 +201,17 @@ val AllMigrations: Array<Migration>
         MIGRATION_40_41,
         MIGRATION_41_42,
         MIGRATION_42_43,
+        MIGRATION_43_44,
     )
+
+val MIGRATION_43_44 = object : Migration(43, 44) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `playlist` ADD COLUMN `suppress_pull_until` INTEGER")
+        db.execSQL("ALTER TABLE `album` ADD COLUMN `suppress_pull_until` INTEGER")
+        db.execSQL("CREATE TABLE IF NOT EXISTS `playlist_sync_op` (`seq` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `playlist_id` TEXT NOT NULL, `remote_id` TEXT, `kind` TEXT NOT NULL, `video_id` TEXT, `set_video_id` TEXT, `successor_set_video_id` TEXT, `name` TEXT, `attempts` INTEGER NOT NULL)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_playlist_sync_op_playlist_id_seq` ON `playlist_sync_op` (`playlist_id`, `seq`)")
+    }
+}
 
 val MIGRATION_1_2 =
     object : Migration(1, 2) {

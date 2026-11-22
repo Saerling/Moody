@@ -64,7 +64,11 @@ constructor(
     private val database: MusicDatabase,
     private val importService: MusicImportService,
     private val cachedSongs: CachedSongs,
+    private val syncUtils: com.mochyy.mochymusic.utils.SyncUtils,
 ) : ViewModel() {
+
+    fun refreshPlaylists() { syncUtils.syncSavedPlaylists() }
+    fun refreshAlbums() { syncUtils.syncLikedAlbums() }
 
     val pinnedItems = database.speedDialDao.getAll()
         .map { pinned -> pinned.map { it.toYTItem() } }

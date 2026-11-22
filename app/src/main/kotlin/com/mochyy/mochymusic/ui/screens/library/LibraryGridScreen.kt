@@ -35,6 +35,11 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import com.mochyy.mochymusic.LocalPlayerAwareWindowInsets
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
@@ -69,6 +74,7 @@ data class LibraryGridEntry(
 )
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 fun LibraryGridScreen(
     title: String,
     subtitle: String,
@@ -83,12 +89,14 @@ fun LibraryGridScreen(
     emptyDescription: String? = null,
     emptyActionLabel: String? = null,
     onEmptyAction: (() -> Unit)? = null,
+    onRefresh: (() -> Unit)? = null,
 ) {
     var query by remember { mutableStateOf(TextFieldValue()) }
     val listState = rememberLazyListState()
     val glassState = remember { GlassState() }
     val collapse = rememberCollapseProgress(listState)
     val bottomInset = LocalPlayerAwareWindowInsets.current.asPaddingValues().calculateBottomPadding()
+    val refreshState = rememberPullToRefreshState()
 
     val visible = remember(entries, query.text) {
         val q = query.text.trim()
@@ -110,8 +118,9 @@ fun LibraryGridScreen(
         collapseProvider = { collapse.value },
         pureBlack = pureBlack,
         bottomInset = bottomInset,
-        modifier = modifier,
+        modifier = if (onRefresh != null) modifier.pullToRefresh(state = refreshState, isRefreshing = false, onRefresh = { onRefresh() }) else modifier,
     ) {
+        if (onRefresh != null) item(key = "refresh_indicator") { PullToRefreshDefaults.LoadingIndicator(state = refreshState, isRefreshing = false) }
         item(key = "rule") {
             LibraryRule()
             Spacer(modifier = Modifier.height(16.dp))

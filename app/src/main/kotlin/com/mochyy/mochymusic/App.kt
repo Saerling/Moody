@@ -64,6 +64,12 @@ class App : Application(), SingletonImageLoader.Factory {
     @Inject
     lateinit var musicDatabase: com.mochyy.mochymusic.db.MusicDatabase
 
+    @Inject
+    lateinit var librarySync: com.mochyy.mochymusic.importer.LibrarySync
+
+    @Inject
+    lateinit var syncUtils: com.mochyy.mochymusic.utils.SyncUtils
+
     // only built once a tv is paired, it pulls in the downloads
     @Inject
     lateinit var phoneLink: dagger.Lazy<com.mochyy.mochymusic.link.phone.PhoneLinkHost>
@@ -85,6 +91,8 @@ class App : Application(), SingletonImageLoader.Factory {
         }
 
         PreferencesCache.start(this, applicationScope)
+        librarySync.resumePendingWrites()
+        syncUtils.tryAutoSync()
         // tokens saved before the vault existed are sealed on the first start after the update
         applicationScope.launch(kotlinx.coroutines.Dispatchers.IO) { (dataStore as? com.mochyy.mochymusic.utils.SecretPreferences)?.sealLeftovers() }
         com.mochyy.mochymusic.utils.NotRecommended.init(this)

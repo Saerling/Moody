@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import com.mochyy.mochymusic.di.librarySync
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -252,9 +253,7 @@ fun YouTubeAlbumMenu(
                 icon = if (album?.album?.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border,
                 tint = if (album?.album?.bookmarkedAt != null) MaterialTheme.colorScheme.error else Color.White,
                 onClick = {
-                    database.query {
-                        album?.album?.toggleLike()?.let(::update)
-                    }
+                    album?.album?.let { entity -> coroutineScope.launch(Dispatchers.IO) { context.librarySync().toggleAlbumLike(entity) } }
                 },
             )
         },

@@ -396,9 +396,6 @@ private fun SaveToPlaylist(song: MediaMetadata?, onDone: (Boolean) -> Unit) {
         onGetSong = { playlist ->
             val picked = song ?: return@AddToPlaylistDialog emptyList()
             database.withTransaction { insert(picked) }
-            playlist.playlist.browseId?.let { browseId ->
-                scope.launch(Dispatchers.IO) { runCatching { YouTube.addToPlaylist(browseId, picked.id) } }
-            }
             added = true
             listOf(picked.id)
         },

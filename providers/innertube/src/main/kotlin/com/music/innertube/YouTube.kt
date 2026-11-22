@@ -66,7 +66,6 @@ import com.music.innertube.pages.SearchSummaryPage
 import io.ktor.client.call.body
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Url
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
@@ -1214,8 +1213,7 @@ object YouTube {
     /** adds the videos in batches of batchSize, one edit_playlist call each instead of one per song */
     suspend fun addVideosToPlaylist(playlistId: String, videoIds: List<String>, batchSize: Int = 50) = runCatching {
         videoIds.chunked(batchSize).forEach { batch ->
-            val response = innerTube.addVideosToPlaylist(WEB_REMIX, playlistId, batch)
-            check(response.status.value in 200..299) { "edit_playlist failed with HTTP ${response.status.value}" }
+            innerTube.addVideosToPlaylist(WEB_REMIX, playlistId, batch)
         }
     }
 
@@ -1231,9 +1229,8 @@ object YouTube {
         innerTube.moveSongPlaylist(WEB_REMIX, playlistId, setVideoId, successorSetVideoId)
     }
 
-    fun createPlaylist(title: String) = runBlocking {
+    suspend fun createPlaylist(title: String) =
         innerTube.createPlaylist(WEB_REMIX, title).body<CreatePlaylistResponse>().playlistId
-    }
 
     suspend fun renamePlaylist(playlistId: String, name: String) = runCatching {
         innerTube.renamePlaylist(WEB_REMIX, playlistId, name)

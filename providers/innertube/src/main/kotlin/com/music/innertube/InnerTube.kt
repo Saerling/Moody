@@ -7,6 +7,8 @@ import com.music.innertube.models.YouTubeClient
 import com.music.innertube.models.YouTubeLocale
 import com.music.innertube.models.body.*
 import com.music.innertube.models.response.NextResponse
+import com.music.innertube.models.response.AddItemYouTubePlaylistResponse
+import com.music.innertube.models.response.EditPlaylistResponse
 import com.music.innertube.utils.parseCookieString
 import com.music.innertube.utils.sha1
 import com.music.innertube.models.IpVersion
@@ -534,8 +536,8 @@ class InnerTube {
         client: YouTubeClient,
         playlistId: String,
         videoId: String,
-    ) = withRetry {
-        httpClient.post("browse/edit_playlist") {
+    ): AddItemYouTubePlaylistResponse = withRetry {
+        val response = httpClient.post("browse/edit_playlist") {
             ytClient(client, setLogin = true)
             setBody(
                 EditPlaylistBody(
@@ -547,14 +549,17 @@ class InnerTube {
                 )
             )
         }
+        response.body<AddItemYouTubePlaylistResponse>().also { body ->
+            check(body.status == "STATUS_SUCCEEDED") { "YouTube rejected playlist edit: ${body.status}" }
+        }
     }
 
     suspend fun addVideosToPlaylist(
         client: YouTubeClient,
         playlistId: String,
         videoIds: List<String>,
-    ) = withRetry {
-        httpClient.post("browse/edit_playlist") {
+    ): AddItemYouTubePlaylistResponse = withRetry {
+        val response = httpClient.post("browse/edit_playlist") {
             ytClient(client, setLogin = true)
             setBody(
                 EditPlaylistBody(
@@ -563,6 +568,9 @@ class InnerTube {
                     actions = videoIds.map { Action.AddVideoAction(addedVideoId = it) }
                 )
             )
+        }
+        response.body<AddItemYouTubePlaylistResponse>().also { body ->
+            check(body.status == "STATUS_SUCCEEDED") { "YouTube rejected playlist edit: ${body.status}" }
         }
     }
 
@@ -582,6 +590,8 @@ class InnerTube {
                     )
                 )
             )
+        }.also { response ->
+            response.body<EditPlaylistResponse>().status?.let { check(it == "STATUS_SUCCEEDED") { "YouTube rejected playlist edit: $it" } }
         }
     }
 
@@ -605,6 +615,8 @@ class InnerTube {
                     )
                 )
             )
+        }.also { response ->
+            response.body<EditPlaylistResponse>().status?.let { check(it == "STATUS_SUCCEEDED") { "YouTube rejected playlist edit: $it" } }
         }
     }
 
@@ -628,6 +640,8 @@ class InnerTube {
                     )
                 )
             )
+        }.also { response ->
+            response.body<EditPlaylistResponse>().status?.let { check(it == "STATUS_SUCCEEDED") { "YouTube rejected playlist edit: $it" } }
         }
     }
 
@@ -664,6 +678,8 @@ class InnerTube {
                     )
                 )
             )
+        }.also { response ->
+            response.body<EditPlaylistResponse>().status?.let { check(it == "STATUS_SUCCEEDED") { "YouTube rejected playlist edit: $it" } }
         }
     }
 

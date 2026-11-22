@@ -64,6 +64,7 @@ import com.mochyy.mochymusic.ui.component.TopToaster
 import com.mochyy.mochymusic.LocalDownloadUtil
 import com.mochyy.mochymusic.LocalPlayerConnection
 import com.mochyy.mochymusic.LocalSyncUtils
+import com.mochyy.mochymusic.di.librarySync
 import com.mochyy.mochymusic.R
 import com.mochyy.mochymusic.constants.ListItemHeight
 import com.mochyy.mochymusic.constants.ListThumbnailSize
@@ -170,14 +171,7 @@ fun SongMenu(
 
     AddToPlaylistDialog(
         isVisible = showChoosePlaylistDialog,
-        onGetSong = { playlist ->
-            coroutineScope.launch(Dispatchers.IO) {
-                playlist.playlist.browseId?.let { browseId ->
-                    YouTube.addToPlaylist(browseId, song.id)
-                }
-            }
-            listOf(song.id)
-        },
+        onGetSong = { listOf(song.id) },
         onDismiss = {
             showChoosePlaylistDialog = false
         },
@@ -588,25 +582,7 @@ fun SongMenu(
                                     )
                                 },
                                 onClick = {
-                                    database.transaction {
-                                        coroutineScope.launch {
-                                            playlistBrowseId?.let { playlistId ->
-                                                if (playlistSong.map.setVideoId != null) {
-                                                    YouTube.removeFromPlaylist(
-                                                        playlistId,
-                                                        playlistSong.map.songId,
-                                                        playlistSong.map.setVideoId
-                                                    )
-                                                }
-                                            }
-                                        }
-                                        move(
-                                            playlistSong.map.playlistId,
-                                            playlistSong.map.position,
-                                            Int.MAX_VALUE
-                                        )
-                                        delete(playlistSong.map.copy(position = Int.MAX_VALUE))
-                                    }
+                                    coroutineScope.launch(Dispatchers.IO) { context.librarySync().removeSongFromPlaylist(playlistSong.map) }
                                     onDismiss()
                                 }
                             )

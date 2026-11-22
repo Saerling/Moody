@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,9 +20,6 @@ import com.mochyy.mochymusic.constants.SwipeRightActionKey
 import com.mochyy.mochymusic.extensions.metadata
 import com.mochyy.mochymusic.ui.menu.AddToPlaylistDialog
 import com.mochyy.mochymusic.utils.rememberEnumPreference
-import com.music.innertube.YouTube
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 // what sliding a song row can do, picked per side in Settings > Customisation
 enum class SongSwipeAction(
@@ -63,11 +59,6 @@ fun SongSwipeBox(
             onGetSong = { playlist ->
                 target.metadata?.let { meta ->
                     database.withTransaction { insert(meta) }
-                }
-                scope.launch(Dispatchers.IO) {
-                    playlist.playlist.browseId?.let { browseId ->
-                        YouTube.addToPlaylist(browseId, target.mediaId)
-                    }
                 }
                 listOf(target.mediaId)
             },

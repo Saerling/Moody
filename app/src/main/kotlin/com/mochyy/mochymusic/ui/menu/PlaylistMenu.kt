@@ -62,6 +62,7 @@ import com.mochyy.mochymusic.playback.queues.YouTubeQueue
 import com.mochyy.mochymusic.ui.component.DefaultDialog
 import com.mochyy.mochymusic.ui.component.LocalMenuState
 import com.mochyy.mochymusic.ui.component.showEditPlaylistSheet
+import com.mochyy.mochymusic.di.librarySync
 import com.mochyy.mochymusic.ui.component.Material3MenuGroup
 import com.mochyy.mochymusic.ui.component.Material3MenuItemData
 import com.mochyy.mochymusic.ui.component.NewAction
@@ -209,18 +210,8 @@ fun PlaylistMenu(
                     onClick = {
                         showDeletePlaylistDialog = false
                         onDismiss()
-                        database.transaction {
-
-                            if (playlist.playlist.bookmarkedAt != null) {
-
-                                update(playlist.playlist.toggleLike())
-                            }
-
-                            delete(playlist.playlist)
-                        }
-
                         coroutineScope.launch(Dispatchers.IO) {
-                            playlist.playlist.browseId?.let { YouTube.deletePlaylist(it) }
+                            context.librarySync().deletePlaylist(playlist.id)
                             // Its generated or picked cover is no use to anyone now.
                             PlaylistCoverStore.deleteStale(context.applicationContext, playlist.id, null)
                         }
@@ -243,9 +234,7 @@ fun PlaylistMenu(
                     icon = if (dbPlaylist?.playlist?.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border,
                     tint = if (dbPlaylist?.playlist?.bookmarkedAt != null) MaterialTheme.colorScheme.error else Color.White,
                     onClick = {
-                        database.query {
-                            dbPlaylist?.playlist?.toggleLike()?.let { update(it) }
-                        }
+                        dbPlaylist?.playlist?.let { entity -> coroutineScope.launch(Dispatchers.IO) { context.librarySync().togglePlaylistLike(entity) } }
                     },
                 )
             }

@@ -45,6 +45,7 @@ import com.mochyy.mochymusic.db.entities.ImportedSourceCount
 import com.mochyy.mochymusic.db.entities.PlaylistEvent
 import com.mochyy.mochymusic.db.entities.PlaylistSong
 import com.mochyy.mochymusic.db.entities.PlaylistSongMap
+import com.mochyy.mochymusic.db.entities.PlaylistSyncOpEntity
 import com.mochyy.mochymusic.db.entities.RecognitionHistory
 import com.mochyy.mochymusic.db.entities.RelatedSongMap
 import com.mochyy.mochymusic.db.entities.SearchHistory
@@ -72,6 +73,36 @@ import java.util.Locale
 
 @Dao
 interface DatabaseDao {
+    @Insert
+    suspend fun enqueuePlaylistSyncOp(op: PlaylistSyncOpEntity): Long
+
+    @Query("SELECT * FROM playlist_sync_op ORDER BY seq")
+    suspend fun pendingPlaylistSyncOps(): List<PlaylistSyncOpEntity>
+
+    @Query("SELECT COUNT(*) FROM playlist_sync_op WHERE playlist_id = :playlistId")
+    fun pendingPlaylistSyncCount(playlistId: String): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM playlist_sync_op WHERE playlist_id = :playlistId")
+    suspend fun pendingPlaylistSyncCountNow(playlistId: String): Int
+
+    @Query("SELECT COUNT(*) FROM playlist_sync_op WHERE playlist_id = :playlistId")
+    fun pendingPlaylistSyncCountValue(playlistId: String): Int
+
+    @Query("DELETE FROM playlist_sync_op WHERE seq = :seq")
+    suspend fun deletePlaylistSyncOp(seq: Long)
+
+    @Query("UPDATE playlist_sync_op SET attempts = attempts + 1 WHERE seq = :seq")
+    suspend fun incrementPlaylistSyncAttempts(seq: Long)
+
+    @Query("UPDATE playlist_sync_op SET name = :name WHERE seq = :seq")
+    suspend fun updatePlaylistSyncOpName(seq: Long, name: String)
+
+    @Query("UPDATE playlist_sync_op SET remote_id = :remoteId WHERE seq = :seq")
+    suspend fun updatePlaylistSyncOpRemoteId(seq: Long, remoteId: String)
+
+    @Query("UPDATE playlist_song_map SET setVideoId = :setVideoId WHERE playlistId = :playlistId AND songId = :songId")
+    suspend fun setPlaylistSongVideoId(playlistId: String, songId: String, setVideoId: String)
+
     @Transaction
     @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL ORDER BY rowId")
     fun songsByRowIdAsc(): Flow<List<Song>>
@@ -1060,6 +1091,9 @@ interface DatabaseDao {
     @Query("SELECT * FROM album WHERE id = :id")
     fun album(id: String): Flow<Album?>
 
+    @Query("SELECT * FROM album WHERE id = :id LIMIT 1")
+    fun albumEntity(id: String): AlbumEntity?
+
     // The outer ORDER BY is needed because SQLite can flatten the sorted view's join.
     @Transaction
     @Query("""
@@ -1523,6 +1557,9 @@ interface DatabaseDao {
     @Query("DELETE FROM playlist_song_map WHERE playlistId = :playlistId")
     fun clearPlaylist(playlistId: String)
 
+    @Query("DELETE FROM song_album_map WHERE albumId = :albumId")
+    fun clearAlbumSongs(albumId: String)
+
     @Transaction
     @Query("SELECT * FROM artist WHERE name = :name")
     fun artistByName(name: String): ArtistEntity?
@@ -1615,8 +1652,7 @@ interface DatabaseDao {
 
     @Transaction
     fun insert(albumPage: AlbumPage) {
-        if (insert(
-                AlbumEntity(
+        val fresh = AlbumEntity(
                     id = albumPage.album.browseId,
                     playlistId = albumPage.album.playlistId,
                     title = albumPage.album.title,
@@ -1626,11 +1662,18 @@ interface DatabaseDao {
                     duration = albumPage.songs.sumOf { it.duration ?: 0 },
                     explicit = albumPage.album.explicit || albumPage.songs.any { it.explicit },
                     description = albumPage.description,
-                ),
-            ) == -1L
-        ) {
-            return
-        }
+                )
+        val old = albumEntity(fresh.id)
+        if (pendingPlaylistSyncCountValue("album:${fresh.id}") > 0 || old?.suppressPullUntil?.isAfter(LocalDateTime.now(ZoneOffset.UTC)) == true) return
+        upsert(if (old == null) fresh else fresh.copy(
+            bookmarkedAt = old.bookmarkedAt,
+            likedDate = old.likedDate,
+            inLibrary = old.inLibrary,
+            isLocal = old.isLocal,
+            isUploaded = old.isUploaded,
+            suppressPullUntil = old.suppressPullUntil,
+        ))
+        clearAlbumSongs(fresh.id)
         albumPage.songs
             .map(SongItem::toMediaMetadata)
             .onEach(::insert)
@@ -2013,6 +2056,7 @@ interface DatabaseDao {
     fun update(playlistEntity: PlaylistEntity, playlistItem: PlaylistItem) {
         // read fresh: the sync walks every playlist slowly, and a copy from its start wrote over edits made meanwhile
         val current = playlistEntity(playlistEntity.id) ?: playlistEntity
+        if (pendingPlaylistSyncCountValue(current.id) > 0 || current.suppressPullUntil?.isAfter(LocalDateTime.now(ZoneOffset.UTC)) == true) return
         update(
             current.copy(
                 name = playlistItem.title,
@@ -2030,6 +2074,9 @@ interface DatabaseDao {
 
     @Upsert
     fun upsert(map: SongAlbumMap)
+
+    @Upsert
+    fun upsert(album: AlbumEntity)
 
     @Upsert
     fun upsert(lyrics: LyricsEntity)

@@ -60,6 +60,7 @@ fun LibraryAlbumsScreen(
         onShuffle = { albums.randomOrNull()?.let { navController.navigate("album/${it.id}") } },
         modifier = modifier,
         pureBlack = pureBlack,
+        onRefresh = viewModel::refreshAlbums,
     )
 }
 

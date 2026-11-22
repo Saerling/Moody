@@ -113,6 +113,7 @@ import com.mochyy.mochymusic.ui.component.EmptyPlaceholder
 import com.mochyy.mochymusic.playlistcover.PlaylistCoverStore
 import com.mochyy.mochymusic.ui.component.LocalMenuState
 import com.mochyy.mochymusic.ui.component.showEditPlaylistSheet
+import com.mochyy.mochymusic.di.librarySync
 import com.mochyy.mochymusic.ui.component.SongSwipeBox
 import com.mochyy.mochymusic.ui.component.TextFieldDialog
 import com.mochyy.mochymusic.ui.component.librarySwipeAction
@@ -169,6 +170,7 @@ fun LocalPlaylistScreen(
     val queueTitle by playerConnection.queueTitle.collectAsState()
 
     val playlist by viewModel.playlist.collectAsState()
+    val pendingEdits by remember(database, viewModel.playlistId) { database.pendingPlaylistSyncCount(viewModel.playlistId) }.collectAsState(initial = 0)
     val songs by viewModel.playlistSongs.collectAsState()
     val mutableSongs = remember { mutableStateListOf<com.mochyy.mochymusic.db.entities.PlaylistSong>() }
     val playlistLength = remember(songs) { songs.fastSumBy { it.song.song.duration } }
@@ -298,11 +300,8 @@ fun LocalPlaylistScreen(
                 TextButton(
                     onClick = {
                         showDeletePlaylistDialog = false
-                        database.query {
-                            playlist?.let { delete(it.playlist) }
-                        }
                         viewModel.viewModelScope.launch(Dispatchers.IO) {
-                            playlist?.playlist?.browseId?.let { YouTube.deletePlaylist(it) }
+                            playlist?.let { context.librarySync().deletePlaylist(it.id) }
                             // Its generated or picked cover is no use to anyone now.
                             PlaylistCoverStore.deleteStale(context.applicationContext, viewModel.playlistId, null)
                         }
@@ -341,25 +340,7 @@ fun LocalPlaylistScreen(
     LaunchedEffect(reorderableState.isAnyItemDragging) {
         if (!reorderableState.isAnyItemDragging) {
             dragInfo?.let { (from, to) ->
-                database.transaction {
-                    move(viewModel.playlistId, from, to)
-                }
-
-                if (viewModel.playlist.value?.playlist?.browseId != null) {
-                    viewModel.viewModelScope.launch(Dispatchers.IO) {
-                        val playlistSongMap = database.playlistSongMaps(viewModel.playlistId, 0)
-                        val successorIndex = if (from > to) to else to + 1
-                        val successorSetVideoId = playlistSongMap.getOrNull(successorIndex)?.setVideoId
-
-                        playlistSongMap.getOrNull(from)?.setVideoId?.let { setVideoId ->
-                            YouTube.moveSongPlaylist(
-                                viewModel.playlist.value?.playlist?.browseId!!,
-                                setVideoId,
-                                successorSetVideoId
-                            )
-                        }
-                    }
-                }
+                viewModel.viewModelScope.launch(Dispatchers.IO) { context.librarySync().moveSong(viewModel.playlistId, from, to) }
 
                 dragInfo = null
             }
@@ -560,6 +541,7 @@ fun LocalPlaylistScreen(
             item(key = "playlist_header") {
                 val isThisQueue = queueTitle == currentPlaylist.playlist.name
                 val savedRemote = currentPlaylist.playlist.browseId != null && !currentPlaylist.playlist.isEditable
+                Column {
                 PlaylistHeader(
                     onSearchClick = { isSearching = true },
                     title = currentPlaylist.playlist.name,
@@ -574,9 +556,7 @@ fun LocalPlaylistScreen(
                     },
                     onShuffleClick = { play(songs.shuffled()) },
                     isSaved = if (savedRemote) currentPlaylist.playlist.bookmarkedAt != null else null,
-                    onSaveClick = {
-                        database.query { update(currentPlaylist.playlist.toggleLike()) }
-                    },
+                    onSaveClick = { coroutineScope.launch(Dispatchers.IO) { context.librarySync().togglePlaylistLike(currentPlaylist.playlist) } },
                     sortControl = {
                         PlaylistSortControl(
                             current = sortType,
@@ -589,6 +569,13 @@ fun LocalPlaylistScreen(
                         )
                     },
                 )
+                if (pendingEdits > 0) Text(
+                    text = stringResource(R.string.library_sync_pending, pendingEdits),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 20.dp, top = 4.dp, bottom = 8.dp),
+                )
+                }
             }
         }
 
@@ -604,18 +591,7 @@ fun LocalPlaylistScreen(
                 val currentItem by rememberUpdatedState(song)
 
                 fun deleteFromPlaylist() {
-                    database.transaction {
-                        coroutineScope.launch {
-                            playlist?.playlist?.browseId?.let { browseId ->
-                                val setVideoId = getSetVideoId(currentItem.map.songId)
-                                setVideoId?.setVideoId?.let { setVideoIdValue ->
-                                    YouTube.removeFromPlaylist(browseId, currentItem.map.songId, setVideoIdValue)
-                                }
-                            }
-                        }
-                        move(currentItem.map.playlistId, currentItem.map.position, Int.MAX_VALUE)
-                        delete(currentItem.map.copy(position = Int.MAX_VALUE))
-                    }
+                    coroutineScope.launch { context.librarySync().removeSongFromPlaylist(currentItem.map) }
                 }
 
                 // takes the song out, with a few seconds to put it back exactly where it was
@@ -639,7 +615,7 @@ fun LocalPlaylistScreen(
                                     move(removed.map.playlistId, Int.MAX_VALUE, removed.map.position)
                                 }
                                 // a synced playlist gets it back on YouTube too (at the end there)
-                                browseId?.let { launch(Dispatchers.IO) { YouTube.addToPlaylist(it, removed.map.songId) } }
+                                if (browseId != null) launch(Dispatchers.IO) { context.librarySync().enqueue(com.mochyy.mochymusic.db.entities.PlaylistSyncOpEntity(playlistId = removed.map.playlistId, remoteId = browseId, kind = com.mochyy.mochymusic.importer.LibrarySync.ADD, videoId = removed.map.songId)) }
                             }
                         },
                     )

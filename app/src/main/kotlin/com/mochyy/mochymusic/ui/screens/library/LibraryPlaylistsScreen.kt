@@ -76,5 +76,6 @@ fun LibraryPlaylistsScreen(
         onEmptyAction = { menuState.show { CreatePlaylistDialog(onDismiss = menuState::dismiss) } },
         modifier = modifier,
         pureBlack = pureBlack,
+        onRefresh = if (shelf == null && source == null) viewModel::refreshPlaylists else null,
     )
 }

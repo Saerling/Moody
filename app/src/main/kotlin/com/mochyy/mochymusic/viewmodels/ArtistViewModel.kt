@@ -21,6 +21,7 @@ import com.mochyy.mochymusic.constants.HideVideoSongsKey
 import com.mochyy.mochymusic.constants.HideYoutubeShortsKey
 import com.mochyy.mochymusic.constants.ShowArtistVideoKey
 import com.mochyy.mochymusic.db.MusicDatabase
+import com.mochyy.mochymusic.importer.LibrarySync
 import com.mochyy.mochymusic.db.entities.ArtistEntity
 import com.mochyy.mochymusic.extensions.filterExplicit
 import com.mochyy.mochymusic.extensions.filterExplicitAlbums
@@ -74,6 +75,7 @@ data class ArtistRelease(
 class ArtistViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val database: MusicDatabase,
+    private val librarySync: LibrarySync,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val artistId = savedStateHandle.get<String>("artistId")!!
@@ -251,13 +253,13 @@ class ArtistViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val existing = database.album(album.browseId).first()
             if (existing != null) {
-                database.query { update(existing.album.toggleLike()) }
+                librarySync.toggleAlbumLike(existing.album)
                 return@launch
             }
             YouTube.album(album.browseId).onSuccess { albumPage ->
                 database.transaction { insert(albumPage) }
                 database.album(album.browseId).first()?.let { saved ->
-                    database.query { update(saved.album.toggleLike()) }
+                    librarySync.toggleAlbumLike(saved.album)
                 }
             }.onFailure(::reportException)
         }

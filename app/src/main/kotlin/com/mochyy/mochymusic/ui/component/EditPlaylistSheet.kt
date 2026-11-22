@@ -6,7 +6,8 @@ import android.content.Context
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
 import com.mochyy.mochymusic.R
-import com.music.innertube.YouTube
+import dagger.hilt.android.EntryPointAccessors
+import com.mochyy.mochymusic.di.LibrarySyncEntryPoint
 import com.mochyy.mochymusic.db.MusicDatabase
 import com.mochyy.mochymusic.db.entities.PlaylistEntity
 import com.mochyy.mochymusic.playlistcover.CoverChoice
@@ -38,6 +39,7 @@ fun PopupSheetState.showEditPlaylistSheet(
     topSongArtworkUrl: String?,
 ) {
     val appContext = context.applicationContext
+    val librarySync = EntryPointAccessors.fromApplication(appContext, LibrarySyncEntryPoint::class.java).librarySync()
     var sheet: PopupSheetHandle? = null
     val form = PlaylistFormState(playlist.name, playlist.description.orEmpty())
 
@@ -88,8 +90,9 @@ fun PopupSheetState.showEditPlaylistSheet(
                                 )?.let { thumbnail = it }
                             }
 
-                            val saved = current.copy(
-                                name = name,
+                            if (titleChanged) librarySync.renamePlaylist(playlist.id, name)
+                            val latest = database.playlistEntity(playlist.id) ?: current
+                            val saved = latest.copy(
                                 description = form.description.trim().ifBlank { null },
                                 thumbnailUrl = thumbnail,
                                 lastUpdateTime = LocalDateTime.now(),
@@ -98,10 +101,6 @@ fun PopupSheetState.showEditPlaylistSheet(
                             if (thumbnail != current.thumbnailUrl) {
                                 PlaylistCoverStore.deleteStale(appContext, playlist.id, thumbnail)
                             }
-                            if (titleChanged) {
-                                current.browseId?.let { runCatching { YouTube.renamePlaylist(it, name) } }
-                            }
-
                             withContext(Dispatchers.Main) { sheet?.dismiss() }
                         } catch (e: CancellationException) {
                             throw e

@@ -45,6 +45,7 @@ import com.mochyy.mochymusic.LocalDatabase
 import com.mochyy.mochymusic.R
 import com.mochyy.mochymusic.db.entities.Playlist
 import com.mochyy.mochymusic.ui.component.CreatePlaylistDialog
+import com.mochyy.mochymusic.di.librarySync
 import com.mochyy.mochymusic.ui.component.DefaultDialog
 import com.mochyy.mochymusic.ui.component.LocalMenuState
 import com.mochyy.mochymusic.ui.component.PlaylistThumbnail
@@ -54,7 +55,6 @@ import com.mochyy.mochymusic.ui.component.SheetLabel
 import com.mochyy.mochymusic.ui.component.SheetPillButton
 import com.mochyy.mochymusic.ui.component.SheetSearchField
 import com.mochyy.mochymusic.viewmodels.PlaylistsViewModel
-import com.music.innertube.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -108,7 +108,7 @@ internal fun announceAddedToPlaylist(
     }
 }
 
-// a playlist that mirrors youtube keeps what's added here on top through its syncs, and youtube gets the songs too
+// Add locally and persist each remote write in the Room queue.
 internal suspend fun addToPlaylistKeepingSync(
     context: android.content.Context,
     database: com.mochyy.mochymusic.db.MusicDatabase,
@@ -116,15 +116,8 @@ internal suspend fun addToPlaylistKeepingSync(
     ids: List<String>,
 ) {
     if (ids.isEmpty()) return
-    val browseId = playlist.playlist.browseId
-    if (browseId != null) {
-        com.mochyy.mochymusic.importer.PlaylistAddedHere.add(context, playlist.id, ids)
-        database.addSongsToPlaylistTop(playlist, ids)
-    } else {
-        database.addSongToPlaylist(playlist, ids)
-    }
+    context.librarySync().addSongsToPlaylist(playlist, ids)
     announceAddedToPlaylist(database, playlist, ids, context)
-    browseId?.let { ids.forEach { id -> YouTube.addToPlaylist(it, id) } }
 }
 
 @Composable

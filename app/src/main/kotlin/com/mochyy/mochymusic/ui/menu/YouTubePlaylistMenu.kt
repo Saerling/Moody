@@ -61,6 +61,8 @@ import com.music.innertube.models.SongItem
 import com.music.innertube.utils.completed
 import com.mochyy.mochymusic.LocalDatabase
 import com.mochyy.mochymusic.LocalDownloadUtil
+import com.mochyy.mochymusic.di.librarySync
+import com.mochyy.mochymusic.importer.LibrarySync
 import com.mochyy.mochymusic.LocalPlayerConnection
 import com.mochyy.mochymusic.R
 import com.mochyy.mochymusic.constants.ListThumbnailSize
@@ -100,6 +102,7 @@ fun MusicDatabase.toggleSavedPlaylist(
     dbPlaylist: Playlist?,
     songs: List<SongItem>,
     coroutineScope: CoroutineScope,
+    librarySync: LibrarySync,
 ) {
     if (dbPlaylist?.playlist == null) {
         transaction {
@@ -114,9 +117,8 @@ fun MusicDatabase.toggleSavedPlaylist(
                 playEndpointParams = playlist.playEndpoint?.params,
                 shuffleEndpointParams = playlist.shuffleEndpoint?.params,
                 radioEndpointParams = playlist.radioEndpoint?.params
-            ).toggleLike()
-            insert(playlistEntity)
             coroutineScope.launch(Dispatchers.IO) {
+                librarySync.saveRemotePlaylist(playlistEntity)
                 songs.ifEmpty {
                     YouTube.playlist(playlist.id).completed()
                         .getOrNull()?.songs.orEmpty()
@@ -137,7 +139,7 @@ fun MusicDatabase.toggleSavedPlaylist(
         transaction {
             val currentPlaylist = dbPlaylist.playlist
             update(currentPlaylist, playlist)
-            update(currentPlaylist.toggleLike())
+            coroutineScope.launch(Dispatchers.IO) { librarySync.togglePlaylistLike(currentPlaylist) }
         }
     }
 }
@@ -202,7 +204,7 @@ fun YouTubePlaylistMenu(
                     icon = if (dbPlaylist?.playlist?.bookmarkedAt != null) R.drawable.favorite else R.drawable.favorite_border,
                     tint = if (dbPlaylist?.playlist?.bookmarkedAt != null) MaterialTheme.colorScheme.error else Color.White,
                     onClick = {
-                        database.toggleSavedPlaylist(playlist, dbPlaylist, songs, coroutineScope)
+                        database.toggleSavedPlaylist(playlist, dbPlaylist, songs, coroutineScope, context.librarySync())
                     },
                 )
             }

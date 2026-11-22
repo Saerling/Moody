@@ -20,7 +20,6 @@ import com.mochyy.mochymusic.constants.YtSyncHoldKey
 import com.mochyy.mochymusic.constants.YtSyncLikedSongsKey
 import com.mochyy.mochymusic.constants.YtSyncSourcesTaggedKey
 import com.mochyy.mochymusic.db.MusicDatabase
-import com.mochyy.mochymusic.importer.PlaylistAddedHere
 import com.mochyy.mochymusic.scrobble.Scrobbler
 import com.mochyy.mochymusic.db.entities.ArtistEntity
 import com.mochyy.mochymusic.db.entities.ImportedPlaylist
@@ -33,6 +32,7 @@ import com.mochyy.mochymusic.extensions.isInternetConnected
 import com.mochyy.mochymusic.extensions.isSyncEnabled
 import com.mochyy.mochymusic.importer.ImportSource
 import com.mochyy.mochymusic.importer.PendingYouTubeLikes
+import com.mochyy.mochymusic.importer.LibrarySync
 import com.mochyy.mochymusic.importer.SyncUndo
 import com.mochyy.mochymusic.models.toMediaMetadata
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -99,6 +99,7 @@ class SyncUtils @Inject constructor(
     @ApplicationContext private val context: Context,
     private val database: MusicDatabase,
     private val scrobbler: Scrobbler,
+    private val librarySync: LibrarySync,
 ) {
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         if (throwable !is CancellationException) {
@@ -675,6 +676,7 @@ class SyncUtils @Inject constructor(
         }
 
         updateState { copy(likedAlbums = SyncStatus.Syncing, currentOperation = "Syncing liked albums") }
+        librarySync.flush()
 
         withRetry {
             YouTube.library("FEmusic_liked_albums").completed()
@@ -687,7 +689,13 @@ class SyncUtils @Inject constructor(
 
                     localAlbums.filterNot { it.id in remoteIds }.forEach { album ->
                         try {
-                            database.update(album.album.localToggleLike())
+                            database.withTransaction {
+                                val latest = albumEntity(album.id)
+                                if (pendingPlaylistSyncCountNow("album:${album.id}") == 0 && latest != null &&
+                                    latest.suppressPullUntil?.isAfter(LocalDateTime.now(ZoneOffset.UTC)) != true && latest.bookmarkedAt != null) {
+                                    update(latest.localToggleLike())
+                                }
+                            }
                             delay(DB_OPERATION_DELAY_MS)
                         } catch (e: Exception) {
                             Timber.e(e, "Failed to update album: ${album.id}")
@@ -696,15 +704,15 @@ class SyncUtils @Inject constructor(
 
                     remoteAlbums.forEach { album ->
                         try {
-                            val dbAlbum = database.album(album.id).firstOrNull()
+                            if (database.pendingPlaylistSyncCountNow("album:${album.id}") > 0 || dbAlbumSuppressed(album.id)) return@forEach
                             YouTube.album(album.browseId).onSuccess { albumPage ->
-                                if (dbAlbum == null) {
-                                    database.insert(albumPage)
-                                    database.album(album.id).firstOrNull()?.let { newDbAlbum ->
-                                        database.update(newDbAlbum.album.localToggleLike())
+                                database.insert(albumPage)
+                                database.withTransaction {
+                                    val latest = albumEntity(album.id)
+                                    if (pendingPlaylistSyncCountNow("album:${album.id}") == 0 &&
+                                        latest != null && latest.suppressPullUntil?.isAfter(LocalDateTime.now(ZoneOffset.UTC)) != true && latest.bookmarkedAt == null) {
+                                        update(latest.localToggleLike())
                                     }
-                                } else if (dbAlbum.album.bookmarkedAt == null) {
-                                    database.update(dbAlbum.album.localToggleLike())
                                 }
                             }
                             delay(DB_OPERATION_DELAY_MS)
@@ -729,6 +737,9 @@ class SyncUtils @Inject constructor(
         }
     }
 
+    private fun dbAlbumSuppressed(albumId: String): Boolean =
+        database.albumEntity(albumId)?.suppressPullUntil?.isAfter(LocalDateTime.now(ZoneOffset.UTC)) == true
+
     private suspend fun executeSyncUploadedAlbums() = withContext(Dispatchers.IO) {
         if (!isLoggedIn()) {
             Timber.w("Skipping syncUploadedAlbums - user not logged in")
@@ -736,6 +747,7 @@ class SyncUtils @Inject constructor(
         }
 
         updateState { copy(uploadedAlbums = SyncStatus.Syncing, currentOperation = "Syncing uploaded albums") }
+        librarySync.flush()
 
         withRetry {
             YouTube.library("FEmusic_library_privately_owned_releases").completed()
@@ -748,7 +760,11 @@ class SyncUtils @Inject constructor(
 
                     localAlbums.filterNot { it.id in remoteIds }.forEach { album ->
                         try {
-                            database.update(album.album.toggleUploaded())
+                            database.withTransaction {
+                                val latest = albumEntity(album.id)
+                                if (pendingPlaylistSyncCountNow("album:${album.id}") == 0 && latest != null &&
+                                    latest.suppressPullUntil?.isAfter(LocalDateTime.now(ZoneOffset.UTC)) != true && latest.isUploaded) update(latest.toggleUploaded())
+                            }
                             delay(DB_OPERATION_DELAY_MS)
                         } catch (e: Exception) {
                             Timber.e(e, "Failed to update album: ${album.id}")
@@ -757,15 +773,12 @@ class SyncUtils @Inject constructor(
 
                     remoteAlbums.forEach { album ->
                         try {
-                            val dbAlbum = database.album(album.id).firstOrNull()
+                            if (database.pendingPlaylistSyncCountNow("album:${album.id}") > 0 || dbAlbumSuppressed(album.id)) return@forEach
                             YouTube.album(album.browseId).onSuccess { albumPage ->
-                                if (dbAlbum == null) {
-                                    database.insert(albumPage)
-                                    database.album(album.id).firstOrNull()?.let { newDbAlbum ->
-                                        database.update(newDbAlbum.album.toggleUploaded())
-                                    }
-                                } else if (!dbAlbum.album.isUploaded) {
-                                    database.update(dbAlbum.album.toggleUploaded())
+                                database.insert(albumPage)
+                                database.withTransaction {
+                                    val latest = albumEntity(album.id)
+                                    if (pendingPlaylistSyncCountNow("album:${album.id}") == 0 && latest != null && !latest.isUploaded) update(latest.toggleUploaded())
                                 }
                             }.onFailure { reportException(it) }
                             delay(DB_OPERATION_DELAY_MS)
@@ -884,6 +897,7 @@ class SyncUtils @Inject constructor(
         }
 
         updateState { copy(playlists = SyncStatus.Syncing, currentOperation = "Syncing saved playlists") }
+        librarySync.flush()
 
         withRetry {
             YouTube.library("FEmusic_liked_playlists").completed()
@@ -908,7 +922,13 @@ class SyncUtils @Inject constructor(
                         .filterNot { it.playlist.browseId == null }
                         .forEach { playlist ->
                             try {
-                                database.update(playlist.playlist.localToggleLike())
+                                database.withTransaction {
+                                    val latest = playlistEntity(playlist.id)
+                                    if (pendingPlaylistSyncCountNow(playlist.id) == 0 && latest != null &&
+                                        latest.suppressPullUntil?.isAfter(LocalDateTime.now(ZoneOffset.UTC)) != true && latest.bookmarkedAt != null) {
+                                        update(latest.localToggleLike())
+                                    }
+                                }
                                 delay(DB_OPERATION_DELAY_MS)
                             } catch (e: Exception) {
                                 Timber.e(e, "Failed to update playlist: ${playlist.id}")
@@ -938,7 +958,10 @@ class SyncUtils @Inject constructor(
                                 database.insert(playlistEntity)
                                 Timber.d("syncSavedPlaylists: Created new playlist ${playlist.title} (${playlist.id})")
                             } else {
-                                database.update(playlistEntity, playlist)
+                                if (database.pendingPlaylistSyncCountNow(playlistEntity.id) == 0 &&
+                                    playlistEntity.suppressPullUntil?.isAfter(LocalDateTime.now(ZoneOffset.UTC)) != true) {
+                                    database.update(playlistEntity, playlist)
+                                }
                                 Timber.d("syncSavedPlaylists: Updated existing playlist ${playlist.title} (${playlist.id})")
                             }
 
@@ -1004,38 +1027,34 @@ class SyncUtils @Inject constructor(
     private suspend fun executeSyncPlaylist(browseId: String, playlistId: String) = withContext(Dispatchers.IO) {
         Timber.d("syncPlaylist: Starting sync for browseId=$browseId, playlistId=$playlistId")
 
+        librarySync.flush()
+        if (database.pendingPlaylistSyncCountNow(playlistId) > 0) return@withContext
+        val currentPlaylist = database.playlistEntity(playlistId)
+        if (currentPlaylist?.suppressPullUntil?.isAfter(LocalDateTime.now(ZoneOffset.UTC)) == true) return@withContext
+
         withRetry {
             YouTube.playlist(browseId).completed()
         }.onSuccess { result ->
             result.onSuccess { page ->
                 try {
+                    if (database.pendingPlaylistSyncCountNow(playlistId) > 0 ||
+                        database.playlistEntity(playlistId)?.suppressPullUntil?.isAfter(LocalDateTime.now(ZoneOffset.UTC)) == true) return@onSuccess
+                    currentPlaylist?.let { database.update(it, page.playlist) }
                     val songs = page.songs.map(SongItem::toMediaMetadata)
                     Timber.d("syncPlaylist: Fetched ${songs.size} songs from remote")
 
                     val remoteIds = songs.map { it.id }
+                    val merged = remoteIds
                     val localIds = database.playlistSongs(playlistId).first()
                         .sortedBy { it.map.position }
                         .map { it.song.id }
 
-                    // songs added in mochy stay on top through every sync, even when youtube never got them
-                    // (signed out, or someone else's playlist); the sync used to wipe them a few seconds later
-                    val addedHere = PlaylistAddedHere.added(context, playlistId).filter { it in localIds }
-                    val seen = PlaylistAddedHere.remoteSeen(context, playlistId)
-                    // from before this was kept: anything here youtube never had counts as added here too
-                    val olderAdds = localIds.filter { it !in remoteIds && it !in addedHere && (seen == null || it !in seen) }
-                    val top = addedHere + olderAdds
-                    val merged = top + remoteIds.filter { it !in top }
-                    PlaylistAddedHere.remember(context, playlistId, remoteIds, top)
-
-                    if (merged == localIds) {
-                        Timber.d("syncPlaylist: Local and remote are in sync, no changes needed")
-                        return@onSuccess
-                    }
-
-                    Timber.d("syncPlaylist: Updating local playlist (remote: ${remoteIds.size}, kept here: ${top.size}, local: ${localIds.size})")
+                    Timber.d("syncPlaylist: Updating local playlist from YouTube (remote: ${remoteIds.size}, previous local: ${localIds.size})")
 
                     val remoteById = songs.associateBy { it.id }
                     database.withTransaction {
+                        if (pendingPlaylistSyncCountNow(playlistId) > 0 ||
+                            playlistEntity(playlistId)?.suppressPullUntil?.isAfter(LocalDateTime.now(ZoneOffset.UTC)) == true) return@withTransaction
                         database.clearPlaylist(playlistId)
                         merged.forEachIndexed { idx, id ->
                             val song = remoteById[id]

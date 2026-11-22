@@ -6,6 +6,8 @@
 package com.mochyy.mochymusic.ui.screens.library
 
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -27,6 +29,11 @@ import com.mochyy.mochymusic.ui.component.GlassState
 import com.mochyy.mochymusic.ui.screens.search.rememberCollapseProgress
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 
 /** A flattened row: either a section header or an item. */
 private sealed interface IndexedRow<out T> {
@@ -35,6 +42,7 @@ private sealed interface IndexedRow<out T> {
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 fun <T> LibraryEntityListScreen(
     title: String,
     subtitle: String,
@@ -62,6 +70,7 @@ fun <T> LibraryEntityListScreen(
     emptyDescription: String? = null,
     emptyActionLabel: String? = null,
     onEmptyAction: (() -> Unit)? = null,
+    onRefresh: (() -> Unit)? = null,
 ) {
     var query by remember { mutableStateOf(TextFieldValue()) }
     val listState = rememberLazyListState()
@@ -69,6 +78,7 @@ fun <T> LibraryEntityListScreen(
     val collapse = rememberCollapseProgress(listState)
     val scope = rememberCoroutineScope()
     val bottomInset = LocalPlayerAwareWindowInsets.current.asPaddingValues().calculateBottomPadding()
+    val refreshState = rememberPullToRefreshState()
 
     val playerConnection = LocalPlayerConnection.current
     val idle = remember { MutableStateFlow<com.mochyy.mochymusic.models.MediaMetadata?>(null) }
@@ -109,7 +119,10 @@ fun <T> LibraryEntityListScreen(
         }
     }
 
-    androidx.compose.foundation.layout.Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = (if (onRefresh != null) modifier.pullToRefresh(state = refreshState, isRefreshing = false, onRefresh = { onRefresh() }) else modifier).fillMaxSize(),
+        contentAlignment = Alignment.TopCenter,
+    ) {
         LibraryScaffold(
             title = title,
             subtitle = subtitle,
@@ -182,5 +195,6 @@ fun <T> LibraryEntityListScreen(
                 modifier = Modifier.fillMaxSize(),
             )
         }
+        if (onRefresh != null) PullToRefreshDefaults.LoadingIndicator(state = refreshState, isRefreshing = false)
     }
 }

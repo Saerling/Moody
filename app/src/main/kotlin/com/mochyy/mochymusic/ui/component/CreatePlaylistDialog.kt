@@ -12,8 +12,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import com.music.innertube.YouTube
-import com.mochyy.mochymusic.LocalDatabase
+import dagger.hilt.android.EntryPointAccessors
+import com.mochyy.mochymusic.di.LibrarySyncEntryPoint
 import com.mochyy.mochymusic.R
 import com.mochyy.mochymusic.constants.InnerTubeCookieKey
 import com.mochyy.mochymusic.constants.YtSyncNewPlaylistsKey
@@ -49,9 +49,9 @@ fun CreatePlaylistDialog(
     topSongArtworkUrl: String? = null,
 ) {
     val menuState = LocalMenuState.current
-    val database = LocalDatabase.current
     val context = LocalContext.current
     val appContext = context.applicationContext
+    val librarySync = remember { EntryPointAccessors.fromApplication(appContext, LibrarySyncEntryPoint::class.java).librarySync() }
 
     val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
     val isSignedIn = innerTubeCookie.isNotEmpty()
@@ -88,10 +88,8 @@ fun CreatePlaylistDialog(
                         scope.launch(Dispatchers.IO) {
                             try {
                                 val name = form.name.trim()
-                                val browseId = when {
-                                    form.sync && signedIn ->
-                                        // a failed YouTube create still leaves the user a local playlist
-                                        runCatching { YouTube.createPlaylist(name) }.getOrNull()
+                                when {
+                                    form.sync && signedIn -> Unit
                                     form.sync -> {
                                         Timber.tag("CreatePlaylistDialog").w("Not signed in")
                                         form.busy = false
@@ -114,13 +112,13 @@ fun CreatePlaylistDialog(
                                 val playlist = PlaylistEntity(
                                     id = playlistId,
                                     name = name,
-                                    browseId = browseId,
+                                    browseId = null,
                                     bookmarkedAt = LocalDateTime.now(),
                                     isEditable = true,
                                     thumbnailUrl = cover,
                                     description = form.description.trim().ifBlank { null },
                                 )
-                                database.query { insert(playlist) }
+                                librarySync.createPlaylist(playlist, form.sync && signedIn)
 
                                 withContext(Dispatchers.Main) {
                                     currentOnCreated?.invoke(playlistId)

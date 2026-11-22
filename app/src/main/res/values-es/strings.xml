@@ -315,4 +315,6 @@
     <string name="lib_action_explore">Descubrir música</string>
     <string name="lib_action_create_playlist">Crear lista</string>
     <string name="lib_play_all">Reproducir todo</string>
+    <string name="library_sync_pending">%1$d cambios pendientes de subir</string>
+    <string name="library_sync_failed">YouTube Music rechazó un cambio de la biblioteca</string>
 </resources>

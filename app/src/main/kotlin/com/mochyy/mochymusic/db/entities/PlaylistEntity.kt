@@ -4,10 +4,6 @@ import androidx.compose.runtime.Immutable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.music.innertube.YouTube
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.apache.commons.lang3.RandomStringUtils
 import java.time.LocalDateTime
 
@@ -33,6 +29,7 @@ data class PlaylistEntity(
     val isAutoSync: Boolean = false,
     /** Free text the owner wrote about the playlist. Local only - never sent to YouTube. */
     val description: String? = null,
+    @ColumnInfo(name = "suppress_pull_until") val suppressPullUntil: LocalDateTime? = null,
 ) {
     companion object {
         const val LIKED_PLAYLIST_ID = "LP_LIKED"
@@ -52,10 +49,5 @@ data class PlaylistEntity(
         bookmarkedAt = if (bookmarkedAt != null) null else LocalDateTime.now()
     )
 
-    fun toggleLike() = localToggleLike().also {
-        CoroutineScope(Dispatchers.IO).launch {
-            if (browseId != null)
-                YouTube.likePlaylist(browseId, bookmarkedAt == null)
-        }
-    }
+    fun toggleLike() = localToggleLike()
 }
