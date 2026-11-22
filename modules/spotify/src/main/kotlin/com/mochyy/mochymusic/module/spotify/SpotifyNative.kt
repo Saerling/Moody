@@ -14,5 +14,8 @@ internal object SpotifyNative {
     /** a Web API token from the session, or "error:<why>" */
     @JvmStatic external fun nativeAccessToken(): String
 
+    /** Pathfinder searchDesktop response JSON, or error:<why>. */
+    @JvmStatic external fun nativeSearch(query: String, hash: String, appVersion: String): String
+
     @JvmStatic external fun nativeSignOut()
 }

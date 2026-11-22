@@ -69,9 +69,9 @@ class SpotifyModule : SourceModule, ModuleFields {
 
     @Volatile private var user: String? = null
     @Volatile private var lastError: String? = null
-    @Volatile private var webToken: Pair<String, Long>? = null
     private val startLock = Any()
-    private var limitedUntil: Long = 0L
+    private var searchHash: String = DEFAULT_SEARCH_HASH
+    private var searchAppVersion: String = "1.2.97.155.g5dd0dcaf-development"
 
     // like Spotifast: a Client ID of the person's own (developer.spotify.com) gives the search its own
     // quota, instead of sharing the desktop client's with everyone; the session still plays the songs
@@ -82,7 +82,7 @@ class SpotifyModule : SourceModule, ModuleFields {
 
     override fun attach(host: ModuleHost) {
         this.host = host
-        limitedUntil = host.storage.get("search_limited_until")?.toLongOrNull() ?: 0L
+        searchHash = host.storage.get("spotify_search_hash")?.takeIf { it.matches(Regex("[a-fA-F0-9]{64}")) } ?: DEFAULT_SEARCH_HASH
         runCatching {
             val obj = json.parseToJsonElement(host.storage.get("search_cache") ?: "{}").jsonObject
             obj["matches"]?.jsonObject?.forEach { (k, v) ->
@@ -160,13 +160,6 @@ class SpotifyModule : SourceModule, ModuleFields {
         return token
     }
 
-    /** how long until some search token may ask again, 0 when one can now */
-    private fun searchWaitMs(): Long {
-        val now = System.currentTimeMillis()
-        val shared = limitedUntil - now
-        return if (hasPersonal()) minOf(shared, personalLimitedUntil - now) else shared
-    }
-
     override val choices = listOf(
         ModuleChoice(
             id = "quality",
@@ -209,7 +202,6 @@ class SpotifyModule : SourceModule, ModuleFields {
         if (SpotifyNative.loaded) runCatching { SpotifyNative.nativeSignOut() }
         user = null
         lastError = null
-        webToken = null
         host.storage.set("user", null)
         host.storage.set("refresh_token", null)
         matches.clear()
@@ -296,15 +288,6 @@ class SpotifyModule : SourceModule, ModuleFields {
         return access to obj["refresh_token"]?.jsonPrimitive?.contentOrNull
     }
 
-    /** a token for the Web API search, from the session itself */
-    private fun apiToken(): String? {
-        webToken?.let { (token, at) -> if (System.currentTimeMillis() - at < 40 * 60_000L) return token }
-        val answer = SpotifyNative.nativeAccessToken()
-        val token = if (answer.startsWith("error:")) refreshed() else answer
-        token?.let { webToken = it to System.currentTimeMillis() }
-        return token
-    }
-
     // ---- songs ----------------------------------------------------------------------------------
 
     override suspend fun resolve(track: TrackQuery, picks: Map<String, String>): ResolveResult = diagnose(track, picks) {}
@@ -328,59 +311,19 @@ class SpotifyModule : SourceModule, ModuleFields {
 
         report(DiagnosticStep("Buscar canción", null, "Buscando en Spotify…"))
         val song = matches[key] ?: run {
-            // only a search waits out the limit: a song found before still plays
-            val remaining = searchWaitMs()
-            if (remaining > 0) {
-                report(DiagnosticStep("Buscar canción", false, "Spotify está saturado, intenta en un momento"))
-                return ResolveResult.Unavailable("Spotify está saturado, intenta en un momento", remaining)
-            }
-            val ownToken = if (hasPersonal() && personalLimitedUntil <= System.currentTimeMillis()) personalApiToken() else null
-            val usedPersonal = ownToken != null
-            val token = ownToken ?: apiToken().takeIf { limitedUntil <= System.currentTimeMillis() } ?: run {
-                report(DiagnosticStep("Buscar canción", false, "Sin token para buscar en Spotify"))
-                return ResolveResult.Unavailable("Sin token para buscar en Spotify")
-            }
             val queries = buildList {
                 track.isrc?.takeIf { it.isNotBlank() }?.let { add("isrc:$it") }
                 add("${TrackMatcher.core(track.title)} ${track.artists.firstOrNull().orEmpty()}".trim())
             }
             var best: CatalogTrack? = null
             for (q in queries) {
-                val response = runCatching {
-                    host.http(HttpRequest("$API/search?type=track&limit=10&q=${enc(q)}", headers = mapOf("Authorization" to "Bearer $token")))
-                }.getOrElse {
-                    host.log("spotify search failed: ${it::class.simpleName}: ${it.message}")
-                    report(DiagnosticStep("Buscar canción", false, "La búsqueda de Spotify no respondió"))
-                    return ResolveResult.Unavailable("La búsqueda de Spotify no respondió (${it.message ?: it::class.simpleName})")
+                val sessionResult = searchSession(q)
+                val catalog = if (sessionResult != null) sessionResult else searchPersonal(q)
+                if (catalog == null) {
+                    report(DiagnosticStep("Buscar canción", false, "La sesión de búsqueda de Spotify no respondió"))
+                    return ResolveResult.Unavailable("La sesión de búsqueda de Spotify no respondió")
                 }
-                if (response.code == 401 && usedPersonal) {
-                    personalToken = null
-                    report(DiagnosticStep("Buscar canción", false, "Tu Client ID propio fue rechazado; revisa el ID y el Secret"))
-                    return ResolveResult.Unavailable("Tu Client ID propio fue rechazado; revisa el ID y el Secret")
-                }
-                if (response.code == 401) {
-                    webToken = null
-                    report(DiagnosticStep("Buscar canción", false, "La sesión de búsqueda de Spotify expiró; inicia sesión de nuevo"))
-                    return ResolveResult.Unavailable("La sesión de búsqueda de Spotify expiró; inicia sesión de nuevo")
-                }
-                if (response.code == 429) {
-                    val seconds = response.headers.entries.firstOrNull { it.key.equals("Retry-After", true) }?.value?.toLongOrNull() ?: 30L
-                    val wait = (seconds.coerceAtLeast(1L) * 1000L).coerceAtMost(3_600_000L)
-                    if (usedPersonal) {
-                        personalLimitedUntil = System.currentTimeMillis() + wait
-                    } else {
-                        limitedUntil = System.currentTimeMillis() + wait
-                        host.storage.set("search_limited_until", limitedUntil.toString())
-                    }
-                    report(DiagnosticStep("Buscar canción", false, "Spotify está saturado, intenta en un momento"))
-                    return ResolveResult.Unavailable("Spotify está saturado, intenta en un momento", wait)
-                }
-                if (response.code >= 500) {
-                    report(DiagnosticStep("Buscar canción", false, "La búsqueda de Spotify devolvió ${response.code}"))
-                    return ResolveResult.Unavailable("La búsqueda de Spotify devolvió HTTP ${response.code}")
-                }
-                if (!response.ok) continue
-                best = TrackMatcher.best(track, tracksIn(response.text))?.track
+                best = TrackMatcher.best(track, catalog.orEmpty())?.track
                 if (best != null) break
             }
             if (best == null) {
@@ -415,6 +358,64 @@ class SpotifyModule : SourceModule, ModuleFields {
         )
     }
 
+    private fun searchSession(query: String): List<CatalogTrack>? {
+        fun call(hash: String): String = SpotifyNative.nativeSearch(query, hash, searchAppVersion)
+        var answer = runCatching { call(searchHash) }.getOrElse { "error:${it.message}" }
+        fun stale(value: String): Boolean = value.contains("412") || value.contains("PersistedQueryNotFound", true)
+        if (stale(answer)) {
+            refreshSearchHash()
+            answer = runCatching { call(searchHash) }.getOrElse { "error:${it.message}" }
+        }
+        if (answer.startsWith("error:")) {
+            host.log("spotify session search: ${answer.take(180)}")
+            return null
+        }
+        val root = runCatching { json.parseToJsonElement(answer).jsonObject }.getOrNull() ?: return null
+        if (root["errors"]?.jsonArray?.isNotEmpty() == true) {
+            if (stale(answer)) {
+                refreshSearchHash()
+                val retry = runCatching { call(searchHash) }.getOrElse { "error:${it.message}" }
+                if (retry.startsWith("error:")) return null
+                val retriedRoot = runCatching { json.parseToJsonElement(retry).jsonObject }.getOrNull() ?: return null
+                if (retriedRoot["errors"]?.jsonArray?.isNotEmpty() == true) return null
+                return tracksIn(retry)
+            }
+            return null
+        }
+        return tracksIn(answer)
+    }
+
+    @OptIn(ExperimentalEncodingApi::class)
+    private fun refreshSearchHash() {
+        runCatching {
+            val page = host.http(HttpRequest("https://open.spotify.com/", headers = mapOf("User-Agent" to "Mozilla/5.0 Chrome/140.0.0.0 Safari/537.36")))
+            val html = page.text
+            val bundle = Regex("""https://open\.spotifycdn\.com/cdn/build/web-player/web-player\.[a-f0-9]+\.js""").find(html)?.value ?: return
+            val script = host.http(HttpRequest(bundle)).text
+            val hash = Regex("""[\"']searchDesktop[\"']\s*,\s*[\"']query[\"']\s*,\s*[\"']([a-f0-9]{64})[\"']""").find(script)?.groupValues?.get(1) ?: return
+            searchHash = hash
+            host.storage.set("spotify_search_hash", hash)
+            val config = Regex("""<script[^>]*id="appServerConfig"[^>]*>([^<]+)</script>""").find(html)?.groupValues?.get(1)
+            config?.let { encoded ->
+                val decoded = Base64.Default.decode(encoded).decodeToString()
+                Regex(""""clientVersion"\s*:\s*"([^"]+)"""").find(decoded)?.groupValues?.get(1)?.let { searchAppVersion = it }
+            }
+        }.onFailure { host.log("spotify hash refresh failed: ${it.message}") }
+    }
+
+    private fun searchPersonal(query: String): List<CatalogTrack>? {
+        if (!hasPersonal() || personalLimitedUntil > System.currentTimeMillis()) return null
+        val token = personalApiToken() ?: return null
+        val response = runCatching { host.http(HttpRequest("$API/search?type=track&limit=10&q=${enc(query)}", headers = mapOf("Authorization" to "Bearer $token"))) }.getOrNull() ?: return null
+        if (response.code == 429) {
+            val seconds = response.headers.entries.firstOrNull { it.key.equals("Retry-After", true) }?.value?.toLongOrNull() ?: 30L
+            personalLimitedUntil = System.currentTimeMillis() + (seconds.coerceAtLeast(1) * 1000).coerceAtMost(3_600_000)
+            return null
+        }
+        if (!response.ok) return null
+        return tracksIn(response.text)
+    }
+
     private fun persistSearchCache() {
         val matchEntries = matches.entries.toList().take(500).associate { (k, v) -> k to kotlinx.serialization.json.buildJsonObject {
             put("id", v.id); put("title", v.title); put("artist", v.artist); v.album?.let { put("album", it) }; v.durationMs?.let { put("durationMs", it) }; v.isrc?.let { put("isrc", it) }
@@ -425,20 +426,27 @@ class SpotifyModule : SourceModule, ModuleFields {
 
     private fun tracksIn(text: String): List<CatalogTrack> {
         val items = runCatching {
-            json.parseToJsonElement(text).jsonObject["tracks"]?.jsonObject?.get("items")?.jsonArray
+            val root = json.parseToJsonElement(text).jsonObject
+            root["tracks"]?.jsonObject?.get("items")?.jsonArray
+                ?: root["data"]?.jsonObject?.get("searchV2")?.jsonObject?.get("tracksV2")?.jsonObject?.get("items")?.jsonArray
         }.getOrNull() ?: return emptyList()
         return items.mapNotNull { element ->
-            val item = element as? JsonObject ?: return@mapNotNull null
+            val wrapper = element as? JsonObject ?: return@mapNotNull null
+            val item = wrapper["item"]?.jsonObject?.get("data")?.jsonObject ?: wrapper
             if (item["is_playable"]?.jsonPrimitive?.contentOrNull == "false") return@mapNotNull null
-            val id = item["id"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null
+            val uri = wrapper["item"]?.jsonObject?.get("_uri")?.jsonPrimitive?.contentOrNull ?: item["uri"]?.jsonPrimitive?.contentOrNull
+            val id = item["id"]?.jsonPrimitive?.contentOrNull ?: uri?.substringAfterLast(':') ?: return@mapNotNull null
+            if (!id.matches(Regex("[A-Za-z0-9]{22}"))) return@mapNotNull null
+            val albumData = item["albumOfTrack"]?.jsonObject ?: item["album"]?.jsonObject
+            val duration = item["duration"]?.jsonObject?.get("totalMilliseconds")?.jsonPrimitive?.longOrNull ?: item["duration_ms"]?.jsonPrimitive?.longOrNull
             CatalogTrack(
                 id = id,
                 title = item["name"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null,
-                artist = (item["artists"] as? JsonArray).orEmpty()
-                    .mapNotNull { (it as? JsonObject)?.get("name")?.jsonPrimitive?.contentOrNull }
+                artist = ((item["artists"] as? JsonObject)?.get("items") as? JsonArray ?: item["artists"] as? JsonArray).orEmpty()
+                    .mapNotNull { artist -> (artist as? JsonObject)?.let { it["profile"]?.jsonObject?.get("name")?.jsonPrimitive?.contentOrNull ?: it["name"]?.jsonPrimitive?.contentOrNull } }
                     .joinToString(", "),
-                album = (item["album"] as? JsonObject)?.get("name")?.jsonPrimitive?.contentOrNull,
-                durationMs = item["duration_ms"]?.jsonPrimitive?.longOrNull,
+                album = albumData?.get("name")?.jsonPrimitive?.contentOrNull,
+                durationMs = duration,
                 isrc = (item["external_ids"] as? JsonObject)?.get("isrc")?.jsonPrimitive?.contentOrNull,
             )
         }
@@ -485,26 +493,12 @@ class SpotifyModule : SourceModule, ModuleFields {
         private const val AUTHORIZE_URL = "https://accounts.spotify.com/authorize"
         private const val TOKEN_URL = "https://accounts.spotify.com/api/token"
         private const val API = "https://api.spotify.com/v1"
+        private const val DEFAULT_SEARCH_HASH = "4801118d4a100f756e833d33984436a3899cff359c532f8fd3aaf174b60b3b49"
 
         /** the same header CaptureWebView sends for a loopback redirect */
         private const val LOOPBACK_HEADER = "x-loopback-redirect"
         private const val MISS_MEMORY_MS = 30 * 60_000L
 
-        private val SCOPES = listOf(
-            "streaming",
-            "user-read-private",
-            "user-read-email",
-            "user-library-read",
-            "user-library-modify",
-            "playlist-read-private",
-            "playlist-read-collaborative",
-            "playlist-modify-private",
-            "playlist-modify-public",
-            "user-follow-read",
-            "user-top-read",
-            "user-read-recently-played",
-            "user-read-playback-state",
-            "user-modify-playback-state",
-        )
+        private val SCOPES = listOf("streaming", "user-read-private", "user-read-email")
     }
 }

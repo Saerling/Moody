@@ -19,6 +19,8 @@ use librespot_core::{
     audio_key::AudioKey, authentication::Credentials, cache::Cache, config::SessionConfig,
     session::Session, spotify_uri::SpotifyUri, FileId, SpotifyId,
 };
+use bytes::Bytes;
+use http::{Request, Method, header::{AUTHORIZATION, CONTENT_TYPE, ACCEPT}};
 use librespot_metadata::audio::{AudioFileFormat, AudioItem};
 use once_cell::sync::OnceCell;
 use std::{
@@ -166,6 +168,35 @@ fn access_token() -> Res<String> {
     Ok(token.access_token)
 }
 
+/// Pathfinder searchDesktop over the authenticated librespot session.
+/// Request shape and operation follow Convx's GPL-3.0 SpotifyCanvas reference.
+fn search(query: &str, hash: &str, app_version: &str) -> Res<String> {
+    let session = session()?;
+    let rt = runtime()?;
+    rt.block_on(async {
+        let token = session.login5().auth_token().await.map_err(|e| format!("token: {e}"))?;
+        let client_token = session.spclient().client_token().await.map_err(|e| format!("client token: {e}"))?;
+        let body = format!(r#"{{"variables":{{"searchTerm":{},"offset":0,"limit":10,"numberOfTopResults":5,"includeAudiobooks":false,"includeArtistHasConcertsField":false,"includePreReleases":false,"includeLocalConcertsField":false,"includeAuthors":false}},"operationName":"searchDesktop","extensions":{{"persistedQuery":{{"version":1,"sha256Hash":"{}"}}}}}}"#,
+            serde_json::to_string(query).map_err(|e| format!("query: {e}"))?, hash);
+        let request = Request::builder().method(Method::POST).uri("https://api-partner.spotify.com/pathfinder/v2/query")
+            .header(AUTHORIZATION, format!("Bearer {}", token.access_token))
+            .header("client-token", client_token)
+            .header("app-platform", "WebPlayer")
+            .header("spotify-app-version", app_version)
+            .header("origin", "https://open.spotify.com")
+            .header("referer", "https://open.spotify.com/")
+            .header(ACCEPT, "application/json")
+            .header(CONTENT_TYPE, "application/json; charset=UTF-8")
+            .body(Bytes::from(body)).map_err(|e| format!("request: {e}"))?;
+        let response = session.http_client().request(request).await.map_err(|e| format!("request: {e}"))?;
+        let status = response.status();
+        let bytes = response.into_body();
+        let body = http_body_util::BodyExt::collect(bytes).await.map_err(|e| format!("response: {e}"))?.to_bytes();
+        if !status.is_success() { return Err(format!("HTTP {}: {}", status.as_u16(), String::from_utf8_lossy(&body))); }
+        String::from_utf8(body.to_vec()).map_err(|e| format!("response utf8: {e}"))
+    })
+}
+
 fn sign_out() {
     if let Ok(mut s) = SESSION.lock() {
         if let Some(s) = s.take() {
@@ -299,6 +330,8 @@ fn handle(stream: TcpStream) -> std::io::Result<()> {
     let mut request_line = String::new();
     reader.read_line(&mut request_line)?;
     let mut range: Option<(u64, Option<u64>)> = None;
+    let mut has_range = false;
+    let mut invalid_range = false;
     loop {
         let mut line = String::new();
         if reader.read_line(&mut line)? == 0 || line == "\r\n" || line == "\n" {
@@ -306,7 +339,9 @@ fn handle(stream: TcpStream) -> std::io::Result<()> {
         }
         if let Some((name, value)) = line.split_once(':') {
             if name.trim().eq_ignore_ascii_case("range") {
+                has_range = true;
                 range = parse_range(value.trim());
+                invalid_range = range.is_none();
             }
         }
     }
@@ -324,6 +359,43 @@ fn handle(stream: TcpStream) -> std::io::Result<()> {
         .and_then(|v| v.parse().ok())
         .unwrap_or(320u32);
 
+    // AudioFile::open can fetch/decrypt the track. For HEAD, answer from the
+    // known librespot cache entry whenever the resolved file and its size exist.
+    if method.eq_ignore_ascii_case("HEAD") {
+        let cache_key = format!("{base62}@{kbps}");
+        let cached = OPENED.lock().ok().and_then(|m| m.as_ref().and_then(|m| m.get(&cache_key).copied()))
+            .or_else(|| session().ok().and_then(|session| resolve(&session, base62, kbps).ok()));
+        if let (Some(resolved), Ok(session)) = (cached, session()) {
+            if let Some(path) = session.cache().and_then(|cache| cache.file_path(resolved.file)) {
+                if let Ok(metadata) = std::fs::metadata(path) {
+                    let offset = if is_ogg(resolved.format) { SPOTIFY_OGG_HEADER_END } else { 0 };
+                    if metadata.len() > offset {
+                        let size = metadata.len() - offset;
+                        let mime = if is_ogg(resolved.format) { "audio/ogg" } else { "audio/mpeg" };
+                        if invalid_range {
+                            let head = format!("HTTP/1.1 416 Range Not Satisfiable\r\nContent-Range: bytes */{size}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+                            return out.write_all(head.as_bytes());
+                        }
+                        let (start, end) = match range {
+                            Some((s, Some(u64::MAX))) if has_range => (size.saturating_sub((u64::MAX - s) + 1), size - 1),
+                            Some((s, e)) => (s, e.unwrap_or(size - 1).min(size - 1)),
+                            None => (0, size - 1),
+                        };
+                        if start >= size || start > end || end >= size {
+                            let head = format!("HTTP/1.1 416 Range Not Satisfiable\r\nContent-Range: bytes */{size}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+                            return out.write_all(head.as_bytes());
+                        }
+                        let length = end - start + 1;
+                        let status = if has_range { "206 Partial Content" } else { "200 OK" };
+                        let content_range = if has_range { format!("Content-Range: bytes {start}-{end}/{size}\r\n") } else { String::new() };
+                        let head = format!("HTTP/1.1 {status}\r\nContent-Type: {mime}\r\nContent-Length: {length}\r\nAccept-Ranges: bytes\r\n{content_range}Connection: close\r\n\r\n");
+                        return out.write_all(head.as_bytes());
+                    }
+                }
+            }
+        }
+    }
+
     let opened = std::panic::catch_unwind(|| open(base62, kbps)).unwrap_or_else(|_| Err("panic".into()));
     let (mut file, offset, size, mime) = match opened {
         Ok(v) => v,
@@ -333,20 +405,26 @@ fn handle(stream: TcpStream) -> std::io::Result<()> {
         }
     };
 
+    if invalid_range {
+        let head = format!("HTTP/1.1 416 Range Not Satisfiable\r\nContent-Range: bytes */{size}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+        return out.write_all(head.as_bytes());
+    }
+
     let (start, end) = match range {
+        Some((s, Some(u64::MAX))) if has_range => (size.saturating_sub((u64::MAX - s) + 1), size - 1),
         Some((s, e)) => (s, e.unwrap_or(size - 1).min(size - 1)),
         None => (0, size - 1),
     };
-    if start >= size || start > end {
+    if start >= size || start > end || end >= size {
         let head = format!("HTTP/1.1 416 Range Not Satisfiable\r\nContent-Range: bytes */{size}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
         return out.write_all(head.as_bytes());
     }
     let length = end - start + 1;
-    let status = if range.is_some() { "206 Partial Content" } else { "200 OK" };
+    let status = if has_range { "206 Partial Content" } else { "200 OK" };
     let mut head = format!(
         "HTTP/1.1 {status}\r\nContent-Type: {mime}\r\nContent-Length: {length}\r\nAccept-Ranges: bytes\r\nCache-Control: no-store\r\nConnection: close\r\n"
     );
-    if range.is_some() {
+    if has_range {
         head.push_str(&format!("Content-Range: bytes {start}-{end}/{size}\r\n"));
     }
     head.push_str("\r\n");
@@ -372,10 +450,18 @@ fn handle(stream: TcpStream) -> std::io::Result<()> {
 
 fn parse_range(value: &str) -> Option<(u64, Option<u64>)> {
     let spec = value.strip_prefix("bytes=")?;
-    let (a, b) = spec.split(',').next()?.split_once('-')?;
+    if spec.contains(',') { return None; }
+    let (a, b) = spec.split_once('-')?;
+    if a.is_empty() { let suffix: u64 = b.parse().ok()?; if suffix == 0 { return None; } return Some((u64::MAX - (suffix - 1), Some(u64::MAX))); }
     let start = a.trim().parse().ok()?;
-    let end = b.trim().parse().ok();
+    let end = if b.trim().is_empty() { None } else { Some(b.trim().parse().ok()?) };
     Some((start, end))
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_mochyy_mochymusic_module_spotify_SpotifyNative_nativeSearch<'l>(mut env: JNIEnv<'l>, _class: JClass<'l>, query: JString<'l>, hash: JString<'l>, app_version: JString<'l>) -> jstring {
+    let query = text(&mut env, &query); let hash = text(&mut env, &hash); let app_version = text(&mut env, &app_version);
+    let out = guarded(move || search(&query, &hash, &app_version)); answer(&mut env, out)
 }
 
 fn reply_error(out: &mut TcpStream, code: u16, message: &str) -> std::io::Result<()> {
