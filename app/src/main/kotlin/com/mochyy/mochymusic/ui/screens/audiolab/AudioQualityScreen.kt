@@ -57,6 +57,8 @@ import com.mochyy.mochymusic.viewmodels.ModulesViewModel
 import com.mochyy.mochymusic.R
 import com.mochyy.mochymusic.constants.AudioQuality
 import com.mochyy.mochymusic.constants.AudioQualityKey
+import com.mochyy.mochymusic.utils.rememberPreference
+import com.mochyy.mochymusic.constants.UpgradeWhilePlayingKey
 import com.mochyy.mochymusic.eq.audio.AudioTap
 import com.mochyy.mochymusic.ui.theme.InterFontFamily
 import com.mochyy.mochymusic.utils.rememberEnumPreference
@@ -237,6 +239,16 @@ fun AudioQualityScreen(navController: NavController, modules: ModulesViewModel =
             onReorder = modules::setVisibleOrder,
         )
         Footnote(stringResource(R.string.quality_provider_footnote))
+        Spacer(Modifier.height(12.dp))
+        val (upgradeWhilePlaying, onUpgradeWhilePlaying) = rememberPreference(UpgradeWhilePlayingKey, defaultValue = true)
+        LabCard(padding = 10.dp) {
+            LabToggleRow(
+                title = stringResource(R.string.aq_upgrade_while_playing),
+                subtitle = stringResource(R.string.aq_upgrade_while_playing_desc),
+                checked = upgradeWhilePlaying,
+                onCheckedChange = onUpgradeWhilePlaying,
+            )
+        }
 
         Spacer(Modifier.height(24.dp))
         LabSheetTitle(stringResource(R.string.quality_download_order))

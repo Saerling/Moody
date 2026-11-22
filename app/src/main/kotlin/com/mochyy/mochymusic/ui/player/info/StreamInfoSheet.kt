@@ -95,6 +95,8 @@ fun StreamInfoSheet(onDismiss: () -> Unit, onForce: (String?) -> Unit = {}) {
                     Spacer(Modifier.height(12.dp))
                     ProviderRow(service, from, onForce = { onDismiss(); onForce(from?.providerId) })
                     NerdsDivider()
+                    AudioPipelineSection(service, song.id)
+                    NerdsDivider()
                     InfoSectionTitle(stringResource(R.string.pc_info_format_about))
                     Spacer(Modifier.height(14.dp))
                     cards.forEachIndexed { index, card ->
@@ -105,6 +107,64 @@ fun StreamInfoSheet(onDismiss: () -> Unit, onForce: (String?) -> Unit = {}) {
             }
         }
 
+    }
+}
+
+/** Audio route summary adapted from BitChord (GPL-3), AudioPipelineDialog.kt. */
+@Composable
+private fun AudioPipelineSection(service: MusicService, mediaId: String) {
+    val player by service.playerFlow.collectAsState()
+    val detailsFlow = remember(player) { player?.let(service::inspectorOf)?.details ?: MutableStateFlow(StreamDetails()) }
+    val details by detailsFlow.collectAsState()
+    val eq by service.audioLab.eq.collectAsState()
+    val reverb by service.audioLab.reverb.collectAsState()
+    val loudness by service.audioLab.loudness.collectAsState()
+    val spatial by service.audioLab.spatial.collectAsState()
+    val (crossmixMode) = rememberPreference(CrossmixModeKey, DefaultTransitionMode.name)
+    val device by service.audioOutputs.devices.collectAsState()
+    val facts by remember(mediaId) { service.streamFacts.map { it[mediaId] }.distinctUntilChanged() }.collectAsState(initial = null)
+    val effects = buildList {
+        if (eq.enabled) add("ecualizador")
+        if (spatial.enabled) add("espacial")
+        if (reverb.enabled) add("reverb")
+        if (loudness.enabled) add("loudness")
+        if (service.audioLab.volume.value.enabled) add("control de volumen")
+        if (runCatching { CrossmixMode.valueOf(crossmixMode) }.getOrNull() == CrossmixMode.CROSSMIX) add("crossmix")
+    }
+    val altered = effects.isNotEmpty() || details.resampledFrom != null || details.dithered || details.decodedEncoding != details.outputEncoding
+    val deviceName = device.firstOrNull { it.isActive }?.let { it.name.ifBlank { it.kind.name } } ?: "Salida del dispositivo"
+    InfoSectionTitle(stringResource(R.string.stream_pipeline_title))
+    Spacer(Modifier.height(10.dp))
+    InfoCard {
+        PipelineLine(stringResource(R.string.stream_pipeline_source), facts?.codec ?: details.sampleMime ?: "—")
+        CardConnector()
+        PipelineLine(stringResource(R.string.stream_pipeline_decoder), details.decoderName ?: "—")
+        CardConnector()
+        PipelineLine(stringResource(R.string.stream_pipeline_effects), effects.joinToString().ifBlank { "Sin efectos activos" })
+        CardConnector()
+        val output = buildList {
+            add(if (details.outputEncoding == androidx.media3.common.C.ENCODING_PCM_FLOAT) "float" else details.outputEncoding?.let { "${StreamInspector.bitDepthOf(it) ?: 16} bits" } ?: "—")
+            details.resampledTo?.let { add("${it / 1000} kHz") }
+            if (details.resampledFrom != null) add("remuestreo")
+            add(deviceName)
+        }.joinToString(" · ")
+        PipelineLine(stringResource(R.string.stream_pipeline_output), output)
+        Spacer(Modifier.height(10.dp))
+        Text(
+            text = if (altered) stringResource(R.string.stream_pipeline_modified, (effects + listOfNotNull(if (details.resampledFrom != null) "remuestreo" else null, if (details.dithered) "dither" else null)).distinct().joinToString()) else stringResource(R.string.stream_pipeline_intact),
+            color = if (altered) InfoMuted else Color.White,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+        )
+    }
+}
+
+@Composable
+private fun PipelineLine(label: String, value: String) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Text(label, color = InfoMuted, fontSize = 12.sp)
+        Spacer(Modifier.width(12.dp))
+        Text(value, color = Color.White, fontSize = 13.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
     }
 }
 

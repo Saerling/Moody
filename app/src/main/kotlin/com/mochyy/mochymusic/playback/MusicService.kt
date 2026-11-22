@@ -112,6 +112,7 @@ import com.mochyy.mochymusic.constants.SkipBlendAheadMax
 import com.mochyy.mochymusic.constants.StudioForVideosKey
 import com.mochyy.mochymusic.constants.CrossmixMode
 import com.mochyy.mochymusic.constants.HiFiResamplerKey
+import com.mochyy.mochymusic.constants.UpgradeWhilePlayingKey
 import com.mochyy.mochymusic.constants.HiResOutputKey
 import com.mochyy.mochymusic.constants.PreferUsbDacKey
 import com.mochyy.mochymusic.constants.UsbPassthroughKey
@@ -5205,6 +5206,20 @@ class MusicService :
 
     private fun notePlayingFrom(mediaId: String, from: PlayingFrom) {
         _playingFrom.update { if (it[mediaId] == from) it else it + (mediaId to from) }
+        // a song the listener sent to a provider by hand stays there; the rest get one look upward
+        if (from.providerId == PlayingFrom.Device || from.providerId == PlayingFrom.Downloads || forcedRoutes.containsKey(mediaId)) return
+        scope.launch(Dispatchers.IO) {
+            if (!dataStore.get(UpgradeWhilePlayingKey, true)) return@launch
+            withContext(Dispatchers.Main) {
+                providerSwitch.upgrade(mediaId, from.providerId) {
+                    val position = player.currentPosition
+                    val duration = player.duration
+                    player.currentMediaItem?.mediaId == mediaId &&
+                        position < UpgradeWindowMs &&
+                        (duration == C.TIME_UNSET || duration - position > UpgradeTailMs)
+                }
+            }
+        }
     }
 
     /** the song as a module looks for it: its saved row, or the queue's own copy for a song played straight from search that isn't saved yet */
@@ -5522,6 +5537,9 @@ class MusicService :
     }
 
     companion object {
+        /** a better source is only swapped in this early in a song, and never this close to its end */
+        private const val UpgradeWindowMs = 45_000L
+        private const val UpgradeTailMs = 20_000L
         const val ROOT = "root"
         const val SONG = "song"
         const val ARTIST = "artist"

@@ -461,4 +461,13 @@
     <string name="lib_play_all">Play all</string>
     <string name="library_sync_pending">%1$d cambios pendientes de subir</string>
     <string name="library_sync_failed">YouTube Music rechazó un cambio de la biblioteca</string>
+    <string name="stream_pipeline_title">Audio path</string>
+    <string name="stream_pipeline_source">Source</string>
+    <string name="stream_pipeline_decoder">Decoder</string>
+    <string name="stream_pipeline_effects">Effects</string>
+    <string name="stream_pipeline_output">Output</string>
+    <string name="stream_pipeline_intact">Bit-perfect · audio reaches the output intact</string>
+    <string name="stream_pipeline_modified">Modified by: %1$s</string>
+    <string name="aq_upgrade_while_playing">Mejorar calidad mientras suena</string>
+    <string name="aq_upgrade_while_playing_desc">Si una canción empezó desde una fuente peor que tu preferida, Moody la busca en las mejores y se cambia sola al principio de la canción (puede haber un corte muy breve).</string>
 </resources>

@@ -97,6 +97,45 @@ class ProviderSwitch(private val scope: () -> CoroutineScope, private val host: 
         }
     }
 
+    // songs already given their one upgrade look this session, so a song never swaps back and forth
+    private val upgradeTried = java.util.Collections.synchronizedSet(mutableSetOf<String>())
+    private var upgradeJob: Job? = null
+
+    /**
+     * La segunda mirada, como QualityUpgrade de BitChord (GPL-3.0): una canción que empezó desde una
+     * fuente peor que la preferida vuelve a preguntar, con calma, a las que están por encima en el orden;
+     * si una la tiene, se pasa a ella en la misma posición. Una vez por canción y solo mientras [isSafe]
+     * (al principio de la canción, lejos del final), porque ExoPlayer no cambia de fuente sin un microcorte.
+     */
+    fun upgrade(mediaId: String, currentProviderId: String, isSafe: () -> Boolean) {
+        if (!upgradeTried.add(mediaId)) return
+        val ranked = host.availableProviders()
+        val at = ranked.indexOf(currentProviderId)
+        if (at <= 0) return
+        val better = ranked.take(at).filter { (_limitedUntil.value[it] ?: 0L) <= System.currentTimeMillis() && it !in _failedProviders.value }
+        if (better.isEmpty()) return
+        upgradeJob?.cancel()
+        upgradeJob = scope().launch {
+            // let the song settle first, so the look never competes with its own start
+            delay(UpgradeSettleMs)
+            for (candidate in better) {
+                if (host.currentMediaId() != mediaId || !isSafe()) return@launch
+                val result = withTimeoutOrNull(AttemptTimeoutMs) {
+                    runCatching { host.resolve(candidate, mediaId) }.getOrNull()
+                }
+                if (result is SwitchResolution.Failed) {
+                    result.retryAfterMs?.let { retry -> _limitedUntil.value = _limitedUntil.value + (candidate to (System.currentTimeMillis() + retry.coerceAtLeast(0L))) }
+                }
+                if (result is SwitchResolution.Found) {
+                    if (host.currentMediaId() != mediaId || !isSafe()) return@launch
+                    Timber.tag(Tag).i("$mediaId upgraded from $currentProviderId to $candidate while playing")
+                    host.switchTo(mediaId, result.route, host.holdPlayback())
+                    return@launch
+                }
+            }
+        }
+    }
+
     fun acknowledge() { if (_state.value !is ProviderSwitchState.Working) _state.value = ProviderSwitchState.Idle }
 
     companion object {
@@ -115,5 +154,6 @@ class ProviderSwitch(private val scope: () -> CoroutineScope, private val host: 
         const val DeadlineMs = 20_000L
         // Spotify's first librespot login plus Web API search can exceed 12 seconds on cold start.
         const val AttemptTimeoutMs = 40_000L
+        private const val UpgradeSettleMs = 2_500L
     }
 }
