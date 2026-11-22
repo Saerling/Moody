@@ -60,6 +60,13 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
+import com.mochyy.mochymusic.playback.PlayingFrom
+import com.mochyy.mochymusic.ui.player.info.ForceProviderSheet
+import com.mochyy.mochymusic.ui.player.info.ProviderLogo
+import com.mochyy.mochymusic.ui.theme.InterFontFamily
 import com.mochyy.mochymusic.constants.ShowFormatBadgeKey
 import com.mochyy.mochymusic.constants.ShowFormatSampleRateKey
 import com.mochyy.mochymusic.utils.rememberPreference
@@ -352,6 +359,60 @@ private fun SongLines(
                     .basicMarquee(iterations = 1, initialDelayMillis = 3000, velocity = 30.dp)
             )
         }
+        PlayingSourceChip(mediaId = mediaId, alpha = infoAlpha)
+    }
+}
+
+/**
+ * De dónde suena esta canción: el logo de la fuente y su nombre (con la calidad), en una
+ * pastilla bajo el artista. Al tocarla se abre la hoja para cambiar de fuente.
+ */
+@Composable
+private fun PlayingSourceChip(mediaId: String, alpha: () -> Float) {
+    val service = LocalPlayerConnection.current?.service ?: return
+    val playingFrom by service.playingFrom.collectAsState()
+    val from = playingFrom[mediaId]
+    var showSources by remember { mutableStateOf(false) }
+    AnimatedVisibility(
+        visible = from != null,
+        enter = fadeIn(tween(220)),
+        exit = fadeOut(tween(160)),
+    ) {
+        val shown = from ?: return@AnimatedVisibility
+        val name = when (shown.providerId) {
+            PlayingFrom.Device -> "Este teléfono"
+            PlayingFrom.Downloads -> "Tus descargas"
+            else -> shown.name
+        }
+        val label = listOfNotNull(name, shown.quality?.takeIf { it.isNotBlank() }).joinToString(" · ")
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .graphicsLayer { this.alpha = alpha() }
+                .clip(RoundedCornerShape(50))
+                .background(Color.White.copy(alpha = 0.12f))
+                .clickable { showSources = true }
+                .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
+        ) {
+            ProviderLogo(providerId = shown.providerId, name = name, size = 18.dp)
+            Spacer(Modifier.width(6.dp))
+            Text(
+                text = "Sonando desde $label",
+                style = TextStyle(
+                    color = Color.White.copy(alpha = 0.85f),
+                    fontFamily = InterFontFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp,
+                    platformStyle = PlatformTextStyle(includeFontPadding = false),
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+    if (showSources) {
+        ForceProviderSheet(currentProviderId = from?.providerId, onDismiss = { showSources = false })
     }
 }
 

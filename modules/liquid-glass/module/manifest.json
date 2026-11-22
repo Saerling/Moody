@@ -3,7 +3,7 @@
   "name": "Liquid Glass",
   "version": "1.0",
   "description": "Turns the nav bar and the mini player into glass that bends what's under it",
-  "author": "Saerling (basado en el ejemplo de Mochy)",
+  "author": "Saerling (basado en el ejemplo de Moody)",
   "icon": "icon.png",
   "banner": "banner.webp",
   "glass": {
@@ -59,7 +59,7 @@
         },
         {
           "value": "frost",
-          "label": "Mochy's frost",
+          "label": "Frosted glass",
           "description": "The usual frosted bars, keeping the rest of this look.",
           "look": {
             "bottomBar": "FROSTED"

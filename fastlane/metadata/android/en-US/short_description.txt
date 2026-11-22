@@ -1,1 +1,1 @@
-A Material 3 YouTube Music client for Android
+Reproductor de música para Android con biblioteca, letras y módulos.

@@ -49,7 +49,6 @@ import com.mochyy.mochymusic.link.tv.TvControl
 import com.mochyy.mochymusic.link.tv.TvProfile
 import com.mochyy.mochymusic.link.tv.TvProfiles
 import com.mochyy.mochymusic.ui.component.LocalZoomOutOverlayState
-import com.mochyy.mochymusic.ui.screens.donate.showDonateSheet
 import com.mochyy.mochymusic.ui.screens.update.rememberUpdateState
 import com.mochyy.mochymusic.ui.screens.update.showUpdateSheet
 
@@ -87,9 +86,6 @@ internal fun TvMochyScreen(profile: TvProfile) {
         ) { TvControl.setAllowed(!phoneControl) },
         TvMochyTile("updates", stringResource(R.string.tv_mochy_updates), stringResource(R.string.tv_mochy_version, BuildConfig.VERSION_NAME), R.drawable.sync) {
             popup.showUpdateSheet(updateState)
-        },
-        TvMochyTile("support", stringResource(R.string.tv_mochy_support), stringResource(R.string.tv_mochy_support_detail), R.drawable.favorite) {
-            popup.showDonateSheet()
         },
     )
 

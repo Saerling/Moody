@@ -68,7 +68,7 @@ object StoragePlaces {
         return all.firstOrNull { it.root == root } ?: root?.let { folderPlace(context, it) } ?: all.first()
     }
 
-    // the folder mochy saves into for one the user picked: its own "Mochy" folder inside, since the player's cache deletes any file it doesn't know in its folder
+    // the folder mochy saves into for one the user picked: its own "Moody" folder inside, since the player's cache deletes any file it doesn't know in its folder
     fun rootForPicked(picked: File): File = if (picked.name.equals(PickedFolderName, ignoreCase = true)) picked else File(picked, PickedFolderName)
 
     // a picked folder described like a drive: where it is, and that drive's room

@@ -341,7 +341,7 @@
     <string name="wrapped_ready_title">WRAPPED ของคุณพร้อมแล้ว!</string>
     <string name="wrapped_ready_subtitle">มาดูสิ่งที่คุณชื่นชอบในปีนี้กัน</string>
     <string name="wrapped_thank_you">ขอบคุณที่รับฟัง</string>
-    <string name="wrapped_special_thanks">Basado en Mochy Music de realidkroo (GPL-3.0).</string>
+    <string name="wrapped_special_thanks">Gracias por escuchar Moody.</string>
     <string name="wrapped_close">ปิด Wrapped</string>
     <string name="wrapped_playlist_title">Wrapped %s ของคุณ</string>
     <string name="wrapped_create_playlist">สร้างเพลย์ลิสต์</string>

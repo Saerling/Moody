@@ -1,5 +1,5 @@
-# every file of app text, so a translation platform sees all of it; new text goes into one of these, never into the code
-# untranslated strings are left out of the exports: written as english copies, they hid the translations an older folder of the
+# Textos traducibles de Moody: define cada texto nuevo en values/ antes de sus traducciones.
+# Se omiten cadenas sin traducir para conservar las traducciones existentes.
 # same language still had (vietnamese showed almost nothing in vietnamese, issue 217)
 files:
   - source: /app/src/main/res/values/strings.xml

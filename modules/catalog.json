@@ -1,13 +1,11 @@
 {
-  "about": "The modules people can find under Settings, Modules, Add a module. Each one is a link Mochy can add; modules/README.md says what that link has to answer.",
+  "about": "Módulos publicados y mantenidos por Moody. Consulta modules/README.md para más información.",
   "modules": [
     {
       "name": "Liquid Glass",
-      "description": "Barra y mini reproductor de vidrio que dobla la luz, estilo iOS (como Convx).",
+      "description": "Barra y mini reproductor de vidrio que dobla la luz.",
       "url": "https://github.com/Saerling/moody/releases/tag/liquid-glass-v1.0",
-      "adds": [
-        "look"
-      ],
+      "adds": ["look"],
       "author": "Saerling"
     }
   ]

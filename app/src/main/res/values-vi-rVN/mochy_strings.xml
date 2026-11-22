@@ -567,7 +567,7 @@
     <string name="wrapped_ready_title">WRAPPED CỦA BẠN ĐÃ SẴN SÀNG!</string>
     <string name="wrapped_ready_subtitle">Cùng xem bạn đã yêu thích gì trong năm nay.</string>
     <string name="wrapped_thank_you">Cảm ơn bạn đã lắng nghe</string>
-    <string name="wrapped_special_thanks">Basado en Mochy Music de realidkroo (GPL-3.0).</string>
+    <string name="wrapped_special_thanks">Gracias por escuchar Moody.</string>
     <string name="wrapped_close">Đóng Wrapped</string>
     <string name="wrapped_playlist_title">Wrapped %s của bạn</string>
     <string name="wrapped_create_playlist">Tạo danh sách phát</string>

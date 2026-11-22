@@ -17,9 +17,9 @@ const val GithubRepo = "moody"
 
 const val GithubProfileUrl = "https://github.com/$GithubOwner"
 const val GithubRepoUrl = "https://github.com/$GithubOwner/$GithubRepo"
-const val InstagramUrl = "https://www.instagram.com/furfurrfoxx/"
+const val InstagramUrl = GithubRepoUrl
 // Threads names follow the Instagram one
-const val ThreadsUrl = "https://www.threads.net/@furfurrfoxx"
+const val ThreadsUrl = GithubRepoUrl
 // dev spaces hides the discord row while this is blank
 const val DiscordUrl = ""
 

@@ -1,17 +1,7 @@
-A Material 3 YouTube Music client for Android
+Moody es un reproductor de música para Android con fuentes en línea y locales, biblioteca personal, letras sincronizadas y módulos opcionales.
 
-<br><b>Features:</b>
+Organiza tu música, crea listas de reproducción y personaliza la experiencia con distintos estilos y herramientas de audio.
 
-- Play songs from YT/YT Music without ads
-- Background playback
-- Search songs, videos, albums, and playlists from YouTube Music
-- Library management
-- Cache and download songs for offline playback
-- Synchronized lyrics
-- Skip silence
-- Audio normalization
-- Dynamic theme
-- Localization
-- Android Auto support
-- Personalized quick picks
-- Material 3
+Código fuente y versiones: https://github.com/Saerling/moody
+
+Licencia GPL-3.0.

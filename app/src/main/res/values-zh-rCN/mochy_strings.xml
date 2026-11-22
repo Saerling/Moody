@@ -447,7 +447,7 @@
     <string name="wrapped_ready_title">您的年度总结已准备好！</string>
     <string name="wrapped_ready_subtitle">是时候看看您今年最喜欢什么了.</string>
     <string name="wrapped_thank_you">谢谢您的聆听</string>
-    <string name="wrapped_special_thanks">Basado en Mochy Music de realidkroo (GPL-3.0).</string>
+    <string name="wrapped_special_thanks">Gracias por escuchar Moody.</string>
     <string name="wrapped_close">关闭年度总结</string>
     <string name="wrapped_playlist_title">您的 %s 年度总结</string>
     <string name="wrapped_create_playlist">创建播放列表</string>

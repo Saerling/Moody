@@ -47,9 +47,7 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.transformations
 import com.mochyy.mochymusic.R
-import com.mochyy.mochymusic.core.updater.DiscordUrl
-import com.mochyy.mochymusic.core.updater.InstagramUrl
-import com.mochyy.mochymusic.core.updater.ThreadsUrl
+import com.mochyy.mochymusic.core.updater.GithubRepoUrl
 import com.mochyy.mochymusic.ui.component.LocalZoomOutOverlayState
 import com.mochyy.mochymusic.ui.component.pressBounce
 import com.mochyy.mochymusic.ui.screens.donate.showDonateSheet
@@ -70,20 +68,11 @@ internal data class DevPerson(
 
 internal val DevPeople = listOf(
     DevPerson(
-        name = "idkroo",
-        bio = "ui ux guy here uhh idk what to write here, pls star the repo",
-        avatar = R.drawable.frame_51_3,
+        name = "Saerling",
+        bio = "Creador de Moody: un reproductor que te deja elegir de dónde suena cada canción.",
+        avatar = R.drawable.ic_launcher_mark,
         takesDonations = false,
-        socials = listOf(
-            DevSocial("Instagram", InstagramUrl),
-            DevSocial("Discord", DiscordUrl),
-            DevSocial("Threads", ThreadsUrl),
-        ).filter { it.url.isNotBlank() },
-    ),
-    DevPerson(
-        name = "Keycii",
-        bio = "Hi hello hi",
-        avatar = R.drawable.dev_keycii,
+        socials = listOf(DevSocial("GitHub", GithubRepoUrl)),
     ),
 )
 

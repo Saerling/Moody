@@ -152,7 +152,7 @@ fun ImportSyncScreen(
             items = listOf(
                 SettingsItem(
                     title = { Text(stringResource(R.string.import_sync_export_csv_title)) },
-                    highlightKey = "Export to Mochy CSV",
+                    highlightKey = "Export to Moody CSV",
                     descriptionText = stringResource(R.string.import_sync_export_csv_desc),
                     detail = stringResource(R.string.import_sync_export_csv_detail),
                     icon = painterResource(R.drawable.backup),

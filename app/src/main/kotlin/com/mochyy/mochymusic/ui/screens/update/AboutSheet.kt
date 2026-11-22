@@ -101,16 +101,10 @@ private data class ContributorEntry(
 private val LeadDevs =
     listOf(
         LeadDevEntry(
-            name = "Roo",
-            githubUser = "realidkroo",
+            name = "Saerling",
+            githubUser = "Saerling",
             devSpaceIndex = 0,
-            fallbackAvatar = R.drawable.frame_51_3,
-        ),
-        LeadDevEntry(
-            name = "key",
-            githubUser = "realkeichi",
-            devSpaceIndex = 1,
-            fallbackAvatar = R.drawable.dev_keycii,
+            fallbackAvatar = R.drawable.ic_launcher_mark,
         ),
     )
 
@@ -186,7 +180,7 @@ private val Licenses =
     listOf(
         LicenseEntry(
             tag = "GPL-3.0",
-            title = "Basado en Mochy Music de realidkroo (GPL-3.0)",
+            title = "Moody se basa en código GPL-3.0 de Mochy Music y otros proyectos libres",
             subtitle = "Free and open source software, source code on GitHub",
             url = "$GithubRepoUrl/blob/main/LICENSE",
         ),
@@ -234,29 +228,14 @@ private val Licenses =
         ),
     )
 
-//  this guy promote the app
-private val ExtraContributors =
-    listOf(
-        ContributorEntry(
-            login = "swtstvn",
-            avatarUrl = githubAvatarUrl("swtstvn"),
-            profileUrl = "https://github.com/swtstvn",
-        ),
-    )
-
 private val FallbackContributors =
     listOf(
         ContributorEntry(
-            login = "realidkroo",
-            avatarUrl = githubAvatarUrl("realidkroo"),
-            profileUrl = "https://github.com/realidkroo",
+            login = "Saerling",
+            avatarUrl = githubAvatarUrl("Saerling"),
+            profileUrl = "https://github.com/Saerling",
         ),
-        ContributorEntry(
-            login = "realkeichi",
-            avatarUrl = githubAvatarUrl("realkeichi"),
-            profileUrl = "https://github.com/realkeichi",
-        ),
-    ) + ExtraContributors
+    )
 
 // kept in memory for the session so reopening the about sheet never hits github twice
 @Volatile
@@ -275,7 +254,7 @@ private suspend fun fetchContributors(): List<ContributorEntry> {
                     connectTimeout = 8_000
                     readTimeout = 8_000
                     setRequestProperty("Accept", "application/vnd.github+json")
-                    setRequestProperty("User-Agent", "mochy-android")
+                    setRequestProperty("User-Agent", "moody-android")
                 }
             try {
                 val arr = JSONArray(conn.inputStream.bufferedReader().use { it.readText() })

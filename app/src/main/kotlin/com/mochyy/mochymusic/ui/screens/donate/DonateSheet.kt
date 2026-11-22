@@ -49,7 +49,7 @@ import com.mochyy.mochymusic.ui.screens.update.openUrl
 
 const val KofiUrl = ""
 const val SocialBuzzUrl = ""
-const val BuyMeACoffeeUrl = "https://buymeacoffee.com/realkeichii"
+const val BuyMeACoffeeUrl = "https://github.com/Saerling/moody"
 
 // the title tucks up over her faded bottom by this much, like the mock
 private val TitleOverlap = 18.dp
@@ -73,7 +73,7 @@ private fun DonateSheetContent() {
         val characterWidth = characterWidth(maxWidth, maxHeight)
 
         VersionRing(
-            text = "MOCHY MUSIC",
+            text = "MOODY",
             modifier =
                 Modifier
                     .align(Alignment.TopEnd)
