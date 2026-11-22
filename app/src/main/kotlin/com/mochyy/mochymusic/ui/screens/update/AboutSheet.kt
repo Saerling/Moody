@@ -270,7 +270,6 @@ private suspend fun fetchContributors(): List<ContributorEntry> {
                         add(ContributorEntry(login = login, avatarUrl = avatar, profileUrl = html))
                     }
                 }.ifEmpty { FallbackContributors }
-                    .plus(ExtraContributors)
                     .distinctBy { it.login.lowercase() }
                     .also { cachedContributors = it }
             } finally {
