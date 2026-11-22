@@ -53,6 +53,7 @@ import com.mochyy.mochymusic.constants.DefaultTransitionMode
 import com.mochyy.mochymusic.playback.MusicService
 import com.mochyy.mochymusic.playback.PlayingFrom
 import com.mochyy.mochymusic.playback.StreamDetails
+import com.mochyy.mochymusic.playback.StreamInspector
 import com.mochyy.mochymusic.ui.player.menu.LocalMenuSheetStack
 import com.mochyy.mochymusic.ui.player.menu.MenuSheetSurface
 import com.mochyy.mochymusic.ui.player.menu.SongHeader
