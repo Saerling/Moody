@@ -5,7 +5,10 @@ import com.mochyy.mochymusic.module.CatalogTrack
 import com.mochyy.mochymusic.module.DiagnosticStep
 import com.mochyy.mochymusic.module.HttpRequest
 import com.mochyy.mochymusic.module.MatchedTrack
+import com.mochyy.mochymusic.module.FieldKind
 import com.mochyy.mochymusic.module.ModuleChoice
+import com.mochyy.mochymusic.module.ModuleField
+import com.mochyy.mochymusic.module.ModuleFields
 import com.mochyy.mochymusic.module.ModuleHost
 import com.mochyy.mochymusic.module.ModuleInfo
 import com.mochyy.mochymusic.module.ResolveResult
@@ -42,7 +45,7 @@ import kotlinx.serialization.json.put
  *
  * Sign-in and the session recipe come from Square (github.com/Lelonio/Square, GPL-3.0).
  */
-class SpotifyModule : SourceModule {
+class SpotifyModule : SourceModule, ModuleFields {
 
     override val info = ModuleInfo(
         id = Id,
@@ -70,6 +73,13 @@ class SpotifyModule : SourceModule {
     private val startLock = Any()
     private var limitedUntil: Long = 0L
 
+    // like Spotifast: a Client ID of the person's own (developer.spotify.com) gives the search its own
+    // quota, instead of sharing the desktop client's with everyone; the session still plays the songs
+    @Volatile private var personalId: String = ""
+    @Volatile private var personalSecret: String = ""
+    @Volatile private var personalToken: Pair<String, Long>? = null
+    @Volatile private var personalLimitedUntil: Long = 0L
+
     override fun attach(host: ModuleHost) {
         this.host = host
         limitedUntil = host.storage.get("search_limited_until")?.toLongOrNull() ?: 0L
@@ -92,6 +102,70 @@ class SpotifyModule : SourceModule {
             title = "Spotify",
             subtitle = "Sign in with a Premium account. Moody plays from your account through librespot.",
         )
+
+    override val fields = listOf(
+        ModuleField(
+            id = "client_id",
+            label = "Client ID propio (opcional)",
+            kind = FieldKind.Text,
+            hint = "p. ej. 1a2b3c…",
+            description = "Como Spotifast: crea una app gratis en developer.spotify.com/dashboard y pega aquí su Client ID. Así la búsqueda usa tu propio límite y Spotify se satura mucho menos.",
+        ),
+        ModuleField(
+            id = "client_secret",
+            label = "Client Secret de tu app",
+            kind = FieldKind.Text,
+            hint = "Ajustes de la app en el panel de Spotify",
+            description = "Se guarda solo en este teléfono y solo se usa para pedir el token de búsqueda.",
+        ),
+    )
+
+    override fun onFields(values: Map<String, String>) {
+        val id = values["client_id"].orEmpty().trim()
+        val secret = values["client_secret"].orEmpty().trim()
+        if (id != personalId || secret != personalSecret) {
+            personalToken = null
+            personalLimitedUntil = 0L
+        }
+        personalId = id
+        personalSecret = secret
+    }
+
+    private fun hasPersonal(): Boolean = personalId.isNotEmpty() && personalSecret.isNotEmpty()
+
+    /** an app-only token (client credentials) from the person's own Client ID; null without one or when it fails */
+    private fun personalApiToken(): String? {
+        if (!hasPersonal()) return null
+        personalToken?.let { (token, until) -> if (System.currentTimeMillis() < until) return token }
+        val basic = base64("$personalId:$personalSecret".toByteArray())
+        val response = runCatching {
+            host.http(
+                HttpRequest(
+                    TOKEN_URL,
+                    method = "POST",
+                    headers = mapOf("Authorization" to "Basic $basic"),
+                    body = "grant_type=client_credentials".toByteArray(),
+                    contentType = "application/x-www-form-urlencoded",
+                ),
+            )
+        }.getOrNull()
+        if (response == null || !response.ok) {
+            host.log("spotify: Client ID propio rechazado (${response?.code}: ${response?.text?.take(120)})")
+            return null
+        }
+        val obj = runCatching { json.parseToJsonElement(response.text).jsonObject }.getOrNull() ?: return null
+        val token = obj["access_token"]?.jsonPrimitive?.contentOrNull ?: return null
+        val seconds = obj["expires_in"]?.jsonPrimitive?.longOrNull ?: 3600L
+        personalToken = token to (System.currentTimeMillis() + (seconds - 60L).coerceAtLeast(60L) * 1000L)
+        return token
+    }
+
+    /** how long until some search token may ask again, 0 when one can now */
+    private fun searchWaitMs(): Long {
+        val now = System.currentTimeMillis()
+        val shared = limitedUntil - now
+        return if (hasPersonal()) minOf(shared, personalLimitedUntil - now) else shared
+    }
 
     override val choices = listOf(
         ModuleChoice(
@@ -236,8 +310,6 @@ class SpotifyModule : SourceModule {
     override suspend fun resolve(track: TrackQuery, picks: Map<String, String>): ResolveResult = diagnose(track, picks) {}
 
     override suspend fun diagnose(track: TrackQuery, picks: Map<String, String>, report: (DiagnosticStep) -> Unit): ResolveResult {
-        val remaining = limitedUntil - System.currentTimeMillis()
-        if (remaining > 0) return ResolveResult.Unavailable("Spotify está saturado, intenta en un momento", remaining)
         report(DiagnosticStep("Motor de Spotify", null, "Conectando…"))
         if (!ensureStarted()) {
             val why = lastError ?: "Inicia sesión en Spotify primero"
@@ -256,7 +328,15 @@ class SpotifyModule : SourceModule {
 
         report(DiagnosticStep("Buscar canción", null, "Buscando en Spotify…"))
         val song = matches[key] ?: run {
-            val token = apiToken() ?: run {
+            // only a search waits out the limit: a song found before still plays
+            val remaining = searchWaitMs()
+            if (remaining > 0) {
+                report(DiagnosticStep("Buscar canción", false, "Spotify está saturado, intenta en un momento"))
+                return ResolveResult.Unavailable("Spotify está saturado, intenta en un momento", remaining)
+            }
+            val ownToken = if (hasPersonal() && personalLimitedUntil <= System.currentTimeMillis()) personalApiToken() else null
+            val usedPersonal = ownToken != null
+            val token = ownToken ?: apiToken().takeIf { limitedUntil <= System.currentTimeMillis() } ?: run {
                 report(DiagnosticStep("Buscar canción", false, "Sin token para buscar en Spotify"))
                 return ResolveResult.Unavailable("Sin token para buscar en Spotify")
             }
@@ -273,6 +353,11 @@ class SpotifyModule : SourceModule {
                     report(DiagnosticStep("Buscar canción", false, "La búsqueda de Spotify no respondió"))
                     return ResolveResult.Unavailable("La búsqueda de Spotify no respondió (${it.message ?: it::class.simpleName})")
                 }
+                if (response.code == 401 && usedPersonal) {
+                    personalToken = null
+                    report(DiagnosticStep("Buscar canción", false, "Tu Client ID propio fue rechazado; revisa el ID y el Secret"))
+                    return ResolveResult.Unavailable("Tu Client ID propio fue rechazado; revisa el ID y el Secret")
+                }
                 if (response.code == 401) {
                     webToken = null
                     report(DiagnosticStep("Buscar canción", false, "La sesión de búsqueda de Spotify expiró; inicia sesión de nuevo"))
@@ -281,8 +366,12 @@ class SpotifyModule : SourceModule {
                 if (response.code == 429) {
                     val seconds = response.headers.entries.firstOrNull { it.key.equals("Retry-After", true) }?.value?.toLongOrNull() ?: 30L
                     val wait = (seconds.coerceAtLeast(1L) * 1000L).coerceAtMost(3_600_000L)
-                    limitedUntil = System.currentTimeMillis() + wait
-                    host.storage.set("search_limited_until", limitedUntil.toString())
+                    if (usedPersonal) {
+                        personalLimitedUntil = System.currentTimeMillis() + wait
+                    } else {
+                        limitedUntil = System.currentTimeMillis() + wait
+                        host.storage.set("search_limited_until", limitedUntil.toString())
+                    }
                     report(DiagnosticStep("Buscar canción", false, "Spotify está saturado, intenta en un momento"))
                     return ResolveResult.Unavailable("Spotify está saturado, intenta en un momento", wait)
                 }
@@ -378,6 +467,9 @@ class SpotifyModule : SourceModule {
         }.toMap()
 
     private fun randomText(bytes: Int): String = base64Url(ByteArray(bytes).also(random::nextBytes))
+
+    @OptIn(ExperimentalEncodingApi::class)
+    private fun base64(bytes: ByteArray): String = Base64.Default.encode(bytes)
 
     @OptIn(ExperimentalEncodingApi::class)
     private fun base64Url(bytes: ByteArray): String = Base64.UrlSafe.encode(bytes).trimEnd('=')
