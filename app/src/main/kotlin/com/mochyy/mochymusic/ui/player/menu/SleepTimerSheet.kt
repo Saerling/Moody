@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -200,9 +201,17 @@ private fun CountdownCard(sleepTimer: SleepTimer, idleMillis: Long) {
                 .fillMaxWidth()
                 .height(6.dp)
                 .drawBehind {
+                    // one block per 5 minutes (2 to 12 blocks), each emptying in turn, easier to read half asleep than a thin bar
+                    val segments = (totalMillis / 300_000L).toInt().coerceIn(2, 12)
+                    val gap = 4.dp.toPx()
+                    val w = (size.width - gap * (segments - 1)) / segments
                     val radius = CornerRadius(size.height / 2f)
-                    drawRoundRect(Color.White.copy(alpha = 0.12f), cornerRadius = radius)
-                    drawRoundRect(Color.White, size = Size(size.width * progress, size.height), cornerRadius = radius)
+                    for (i in 0 until segments) {
+                        val left = i * (w + gap)
+                        val fill = (progress * segments - i).coerceIn(0f, 1f)
+                        drawRoundRect(Color.White.copy(alpha = 0.12f), topLeft = Offset(left, 0f), size = Size(w, size.height), cornerRadius = radius)
+                        if (fill > 0f) drawRoundRect(Color.White, topLeft = Offset(left, 0f), size = Size(w * fill, size.height), cornerRadius = radius)
+                    }
                 }
         )
         Spacer(modifier = Modifier.height(10.dp))

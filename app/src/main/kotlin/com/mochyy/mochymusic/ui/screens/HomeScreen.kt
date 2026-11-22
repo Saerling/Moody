@@ -1447,6 +1447,12 @@ fun HomeScreen(
                     }
                 }
 
+                if (!launchHold) {
+                    item(key = "listening_modes", contentType = "listening_modes") {
+                        com.mochyy.mochymusic.ui.component.ListeningModesRow(navController, playerConnection)
+                    }
+                }
+
                 // nothing but bones while the launch intro plays; the rows reveal once it lands
                 if (!launchHold) homeSections.forEach { section ->
                     when (section) {

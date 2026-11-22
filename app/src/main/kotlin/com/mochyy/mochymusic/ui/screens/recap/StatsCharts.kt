@@ -359,3 +359,95 @@ private fun Modifier.scrub(count: Int, discrete: Boolean = false, onIndex: (Int)
         onIndex(-1)
     }
 }
+
+/**
+ * Weekday x hour grid (7 rows, 24 columns, monday first): the darker the cell, the less you listened.
+ * Tapping a cell names it under the grid.
+ */
+@Composable
+internal fun ListeningHeatmap(
+    values: List<Long>,
+    dayLabels: List<String>,
+    nameOf: (day: Int, hour: Int) -> String,
+    modifier: Modifier = Modifier,
+) {
+    if (values.size != 7 * 24) return
+    val grow = rememberGrowIn(values)
+    var touched by remember(values) { mutableIntStateOf(-1) }
+    val peak = max(values.max(), 1L).toFloat()
+    Column(modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.width(16.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                dayLabels.forEach {
+                    Text(it, style = TextStyle(fontFamily = InterFontFamily, fontSize = 9.sp, color = StatsInkMuted), modifier = Modifier.height(12.dp))
+                }
+            }
+            Canvas(
+                Modifier
+                    .weight(1f)
+                    .height((7 * 14 - 2).dp)
+                    .pointerInput(values) {
+                        awaitEachGesture {
+                            val down = awaitFirstDown()
+                            val col = (down.position.x / (size.width / 24f)).toInt().coerceIn(0, 23)
+                            val row = (down.position.y / (size.height / 7f)).toInt().coerceIn(0, 6)
+                            touched = row * 24 + col
+                        }
+                    },
+            ) {
+                val gap = 2.dp.toPx()
+                val cw = (size.width - gap * 23) / 24f
+                val ch = (size.height - gap * 6) / 7f
+                for (d in 0 until 7) for (h in 0 until 24) {
+                    val i = d * 24 + h
+                    val t = (values[i] / peak) * grow.value
+                    val color = if (values[i] == 0L) Grid else StatsAccent.copy(alpha = 0.15f + 0.85f * t)
+                    drawRoundRect(
+                        color = color,
+                        topLeft = Offset(h * (cw + gap), d * (ch + gap)),
+                        size = Size(cw, ch),
+                        cornerRadius = CornerRadius(2.dp.toPx()),
+                    )
+                    if (i == touched) {
+                        drawRoundRect(StatsInk, Offset(h * (cw + gap), d * (ch + gap)), Size(cw, ch), CornerRadius(2.dp.toPx()), style = Stroke(1.5.dp.toPx()))
+                    }
+                }
+            }
+        }
+        if (touched in values.indices) {
+            Text(
+                "${nameOf(touched / 24, touched % 24)} · ${shortDuration(values[touched])}",
+                style = TextStyle(fontFamily = InterFontFamily, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = StatsInkSecondary),
+                modifier = Modifier.padding(top = 6.dp, start = 16.dp),
+            )
+        }
+    }
+}
+
+/** A small ring that fills to [fraction], with the percent inside and [label] under it. */
+@Composable
+internal fun StatRing(fraction: Float, label: String, modifier: Modifier = Modifier) {
+    val grow = rememberGrowIn(fraction)
+    val f = fraction.coerceIn(0f, 1f)
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(Modifier.size(64.dp), contentAlignment = Alignment.Center) {
+            Canvas(Modifier.size(64.dp)) {
+                val w = 6.dp.toPx()
+                val inset = w / 2f
+                val arcSize = Size(size.width - w, size.height - w)
+                drawArc(Grid, 0f, 360f, false, Offset(inset, inset), arcSize, style = Stroke(w))
+                drawArc(StatsAccent, -90f, 360f * f * grow.value, false, Offset(inset, inset), arcSize, style = Stroke(w, cap = StrokeCap.Round))
+            }
+            Text(
+                "${(f * 100).roundToInt()}%",
+                style = TextStyle(fontFamily = InterFontFamily, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = StatsInk),
+            )
+        }
+        Text(
+            label,
+            style = TextStyle(fontFamily = InterFontFamily, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = StatsInkMuted),
+            modifier = Modifier.padding(top = 6.dp),
+            maxLines = 1,
+        )
+    }
+}

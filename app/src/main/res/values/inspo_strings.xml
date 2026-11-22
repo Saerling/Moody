@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="inspo_ring_active">Active days</string>
+    <string name="inspo_ring_top_artist">Top artist</string>
+    <string name="inspo_ring_top10">Top 10 songs</string>
+    <string name="inspo_recently_played">Recently played</string>
+    <string name="inspo_modes_title">How do you want to listen?</string>
+    <string name="inspo_mode_focus">Focus</string>
+    <string name="inspo_mode_focus_detail">Lo-fi to study</string>
+    <string name="inspo_mode_relax">Relax</string>
+    <string name="inspo_mode_relax_detail">Chill and calm</string>
+    <string name="inspo_mode_energy">Energy</string>
+    <string name="inspo_mode_energy_detail">Upbeat to move</string>
+    <string name="inspo_mode_sleep">Sleep</string>
+    <string name="inspo_mode_sleep_detail">Ambient · stops in 30 min</string>
+    <string name="inspo_appearance">Appearance</string>
+    <string name="inspo_pitch_black">Pitch black</string>
+    <string name="inspo_pitch_black_desc">Pure black backgrounds, easier on the eyes at night and on AMOLED batteries</string>
+    <string name="inspo_font">App font</string>
+    <string name="inspo_font_desc">Tap to switch between Inter, system, serif and mono</string>
+    <string name="inspo_font_system">System</string>
+    <string name="inspo_font_serif">Serif</string>
+    <string name="inspo_font_mono">Mono</string>
+    <string name="inspo_filter_local">Local</string>
+    <string name="inspo_filter_streaming">Streaming</string>
+</resources>

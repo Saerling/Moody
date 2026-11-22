@@ -20,6 +20,7 @@ val DynamicThemeKey = booleanPreferencesKey("dynamicTheme")
 val SelectedThemeColorKey = intPreferencesKey("selectedThemeColor")
 val DarkModeKey = stringPreferencesKey("darkMode")
 val PureBlackKey = booleanPreferencesKey("pureBlack")
+val AppFontKey = stringPreferencesKey("appFont")
 val PureBlackMiniPlayerKey = booleanPreferencesKey("pureBlackMiniPlayer")
 val Enable26RecapKey = booleanPreferencesKey("enable26Recap")
 /** Opens the monthly recap even before the 3rd or with fewer than 10 songs played (Experimental). */

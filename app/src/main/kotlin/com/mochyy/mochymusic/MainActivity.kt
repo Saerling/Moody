@@ -1516,11 +1516,13 @@ class MainActivity : ComponentActivity() {
                         speed = prefs[com.mochyy.mochymusic.constants.AnimationSpeedKey] ?: 1f,
                         elementBlur = prefs[com.mochyy.mochymusic.constants.ElementBlurKey] ?: true,
                         coverRadius = prefs[com.mochyy.mochymusic.constants.ThumbnailCornerRadiusKey] ?: 25f,
+                        font = prefs[com.mochyy.mochymusic.constants.AppFontKey] ?: "inter",
                     )
                 }
                 .distinctUntilChanged()
                 .collect { look ->
                     com.mochyy.mochymusic.ui.utils.AppMotion.enabled = look.animations
+                    com.mochyy.mochymusic.ui.theme.UserFont.name = look.font
                     com.mochyy.mochymusic.ui.utils.AppMotion.speed = look.speed
                     com.mochyy.mochymusic.ui.utils.AppMotion.elementBlur = look.elementBlur
                     val r = look.coverRadius.coerceIn(0f, 45f)
@@ -1531,7 +1533,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private data class LookSettings(val animations: Boolean, val speed: Float, val elementBlur: Boolean, val coverRadius: Float)
+    private data class LookSettings(val animations: Boolean, val speed: Float, val elementBlur: Boolean, val coverRadius: Float, val font: String)
 
     // people who had the old lyrics shader switch off land on the matching shaderless lyric style, once
     private fun moveOffOldLyricsShaderSwitch() {

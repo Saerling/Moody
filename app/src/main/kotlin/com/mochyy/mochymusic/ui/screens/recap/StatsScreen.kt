@@ -563,6 +563,17 @@ private fun TotalCard(
             Fact(pluralStringResource(R.plurals.rc_stats_fact_albums, s.albumCount, s.albumCount))
             Fact(pluralStringResource(R.plurals.rc_stats_fact_plays, s.plays, s.plays))
         }
+        if (s.totalMs > 0) {
+            val active = s.bucketMs.count { it > 0 }.toFloat() / s.bucketMs.size.coerceAtLeast(1)
+            val topArtist = (s.topArtists.firstOrNull()?.playTimeMs ?: 0L).toFloat() / s.totalMs
+            val top10 = s.topSongs.take(10).sumOf { it.playTimeMs }.toFloat() / s.totalMs
+            Spacer(Modifier.height(16.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                StatRing(active, stringResource(R.string.inspo_ring_active))
+                StatRing(topArtist, stringResource(R.string.inspo_ring_top_artist))
+                StatRing(top10, stringResource(R.string.inspo_ring_top10))
+            }
+        }
     }
 }
 
@@ -829,6 +840,14 @@ private fun HourCard(
                 labelAt = { h -> if (h % 6 == 0) hourLabel(h) else null },
                 nameOf = { h -> hourLabel(h) },
             )
+            if (s.weekdayHourMs.size == 7 * 24) {
+                ListeningHeatmap(
+                    values = s.weekdayHourMs,
+                    dayLabels = DayOfWeek.entries.map { it.getDisplayName(JavaTextStyle.NARROW, Locale.getDefault()) },
+                    nameOf = { d, h -> DayOfWeek.of(d + 1).getDisplayName(JavaTextStyle.FULL, Locale.getDefault()) + " · " + hourLabel(h) },
+                    modifier = Modifier.padding(top = 16.dp),
+                )
+            }
         },
     ) {
         Text(stringResource(hourRes), style = statsText(13f, FontWeight.SemiBold))

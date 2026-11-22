@@ -455,6 +455,7 @@ internal fun SearchActiveContent(
         ),
     ) {
         if (query.isEmpty()) {
+            recentlyPlayedItems()
             if (state.history.isNotEmpty()) {
                 item(key = "history_header") {
                     SearchSectionHeader(title = stringResource(R.string.search_history))

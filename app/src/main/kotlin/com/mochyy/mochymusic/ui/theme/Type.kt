@@ -29,8 +29,21 @@ object LookFont {
     var family: FontFamily? by mutableStateOf(null)
 }
 
+/** the font picked in settings (inter, system, serif or mono); a look module's font still wins over it */
+object UserFont {
+    val choices = listOf("inter", "system", "serif", "mono")
+    var name: String by mutableStateOf("inter")
+    val family: FontFamily?
+        get() = when (name) {
+            "system" -> FontFamily.SansSerif
+            "serif" -> FontFamily.Serif
+            "mono" -> FontFamily.Monospace
+            else -> null
+        }
+}
+
 // read through a state, so text set in it follows a look's font turning on or off
-val InterFontFamily: FontFamily get() = LookFont.family ?: Inter
+val InterFontFamily: FontFamily get() = LookFont.family ?: UserFont.family ?: Inter
 
 private val GlobalFontWeight = FontWeight.SemiBold
 private val GlobalLetterSpacing = (-0.05).em

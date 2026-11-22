@@ -99,6 +99,9 @@ private enum class SongFilterOption(val labelRes: Int) {
     ALL(R.string.lib_filter_all),
     DOWNLOADED(R.string.lib_filter_downloaded),
     LIKED(R.string.lib_filter_liked),
+    // where a song comes from, so local files and streamed ones can be told apart in one tap
+    LOCAL(R.string.inspo_filter_local),
+    STREAMING(R.string.inspo_filter_streaming),
 }
 
 private enum class SongSortOption(val labelRes: Int) {
@@ -144,6 +147,8 @@ fun LibrarySongsScreen(
                 SongFilterOption.ALL -> true
                 SongFilterOption.DOWNLOADED -> song.song.isDownloaded || song.song.isLocal
                 SongFilterOption.LIKED -> song.song.liked
+                SongFilterOption.LOCAL -> song.song.isLocal
+                SongFilterOption.STREAMING -> !song.song.isLocal
             }
             val matchesQuery = if (q.isBlank()) {
                 true

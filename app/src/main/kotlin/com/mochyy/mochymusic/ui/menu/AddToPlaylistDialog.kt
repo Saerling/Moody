@@ -2,6 +2,7 @@
 
 package com.mochyy.mochymusic.ui.menu
 
+import com.mochyy.mochymusic.ui.utils.pressBounce
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
@@ -358,16 +359,27 @@ private fun PlaylistPickRow(
         } else {
             playlist.songCount
         }
+    // tap: the row squashes, a check pops in, then the pick goes through (inspired by @lejdi.diana's watering sheet)
+    val source = remember { MutableInteractionSource() }
+    var picked by remember { androidx.compose.runtime.mutableStateOf(false) }
+    androidx.compose.runtime.LaunchedEffect(picked) {
+        if (picked) {
+            if (com.mochyy.mochymusic.ui.utils.AppMotion.enabled) kotlinx.coroutines.delay(260)
+            onClick()
+            picked = false
+        }
+    }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
             Modifier
                 .fillMaxWidth()
+                .pressBounce(source)
                 .clip(RoundedCornerShape(14.dp))
                 .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
+                    interactionSource = source,
                     indication = RemoteFocus,
-                    onClick = onClick,
+                    onClick = { picked = true },
                 ).padding(vertical = 6.dp),
     ) {
         PlaylistThumbnail(
@@ -399,6 +411,20 @@ private fun PlaylistPickRow(
                 fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+            )
+        }
+        androidx.compose.animation.AnimatedVisibility(
+            visible = picked,
+            enter = androidx.compose.animation.scaleIn(
+                androidx.compose.animation.core.spring(dampingRatio = androidx.compose.animation.core.Spring.DampingRatioMediumBouncy),
+            ) + androidx.compose.animation.fadeIn(),
+            exit = androidx.compose.animation.fadeOut(),
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.check),
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.padding(end = 8.dp).size(22.dp),
             )
         }
     }

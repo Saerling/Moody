@@ -66,6 +66,7 @@ fun AppBehaviourSettingsScreen(navController: NavController) {
         // larpaspriority
         SettingsSection(title = null, items = larpItems().matching(query))
         SettingsSection(stringResource(R.string.general_app_settings), generalItems().matching(query))
+        SettingsSection(stringResource(R.string.inspo_appearance), appearanceItems().matching(query))
         SettingsSection(stringResource(R.string.settings_section_network), networkItems(navController).matching(query))
         SettingsSection(stringResource(R.string.settings_section_library_privacy), libraryItems().matching(query))
         SettingsSection(stringResource(R.string.settings_related), relatedItems(navController).matching(query))
@@ -102,6 +103,39 @@ private fun larpItems(): List<SettingsItem> {
             trailingContent = {
                 AppSwitch(checked = larping, onCheckedChange = { on -> if (on) openSheet() else setLarping(false) })
             },
+        ),
+    )
+}
+
+// pitch black and the app font, the two looks people asked to set without a look module (inspired by bitchord's pitch black + font options)
+@Composable
+private fun appearanceItems(): List<SettingsItem> {
+    val (pureBlack, onPureBlack) = rememberPreference(com.mochyy.mochymusic.constants.PureBlackKey, defaultValue = false)
+    val (font, onFont) = rememberPreference(com.mochyy.mochymusic.constants.AppFontKey, defaultValue = "inter")
+    val choices = com.mochyy.mochymusic.ui.theme.UserFont.choices
+    val fontLabel = when (font) {
+        "system" -> stringResource(R.string.inspo_font_system)
+        "serif" -> stringResource(R.string.inspo_font_serif)
+        "mono" -> stringResource(R.string.inspo_font_mono)
+        else -> "Inter"
+    }
+    return listOf(
+        switchItem(
+            key = "Pitch black theme",
+            title = stringResource(R.string.inspo_pitch_black),
+            description = stringResource(R.string.inspo_pitch_black_desc),
+            icon = painterResource(R.drawable.contrast),
+            checked = pureBlack,
+            onCheckedChange = onPureBlack,
+        ),
+        SettingsItem(
+            title = { ValueTitle(stringResource(R.string.inspo_font), fontLabel) },
+            highlightKey = "App font",
+            searchText = stringResource(R.string.inspo_font),
+            descriptionText = stringResource(R.string.inspo_font_desc),
+            icon = painterResource(R.drawable.palette),
+            iconShape = CircleShape,
+            onClick = { onFont(choices[(choices.indexOf(font) + 1).mod(choices.size)]) },
         ),
     )
 }

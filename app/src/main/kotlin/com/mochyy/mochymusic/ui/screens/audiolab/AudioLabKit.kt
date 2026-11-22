@@ -215,6 +215,8 @@ fun LabSlider(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     steps: Int = 0,
+    /** the slider's two ends spelled out under it, so you see where the value sits (min, max) */
+    rangeLabels: Pair<String, String>? = null,
 ) {
     Column(modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -241,6 +243,12 @@ fun LabSlider(
             steps = steps,
             enabled = enabled,
         )
+        if (rangeLabels != null) {
+            Row(Modifier.fillMaxWidth()) {
+                Text(rangeLabels.first, fontFamily = InterFontFamily, fontSize = 11.sp, color = LabColors.Faint, modifier = Modifier.weight(1f))
+                Text(rangeLabels.second, fontFamily = InterFontFamily, fontSize = 11.sp, color = LabColors.Faint)
+            }
+        }
     }
 }
 

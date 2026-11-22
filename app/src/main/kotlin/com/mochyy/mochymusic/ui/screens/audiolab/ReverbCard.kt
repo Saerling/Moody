@@ -57,13 +57,13 @@ internal fun ReverbCard(viewModel: AudioLabViewModel) {
             )
             Spacer(Modifier.height(10.dp))
             LabPanel {
-                LabSlider(stringResource(R.string.fx_mix), pct(reverb.mix), reverb.mix, { v -> viewModel.updateReverb { it.copy(mix = v, presetId = null) } }, 0f..1f)
-                LabSlider(stringResource(R.string.fx_room_size), pct(reverb.roomSize), reverb.roomSize, { v -> viewModel.updateReverb { it.copy(roomSize = v, presetId = null) } }, 0f..1f)
-                LabSlider(stringResource(R.string.fx_damping), pct(reverb.damping), reverb.damping, { v -> viewModel.updateReverb { it.copy(damping = v, presetId = null) } }, 0f..1f)
-                LabSlider(stringResource(R.string.fx_wet), pct(reverb.wet), reverb.wet, { v -> viewModel.updateReverb { it.copy(wet = v, presetId = null) } }, 0f..1f)
+                LabSlider(stringResource(R.string.fx_mix), pct(reverb.mix), reverb.mix, { v -> viewModel.updateReverb { it.copy(mix = v, presetId = null) } }, 0f..1f, rangeLabels = pct(0f) to pct(1f))
+                LabSlider(stringResource(R.string.fx_room_size), pct(reverb.roomSize), reverb.roomSize, { v -> viewModel.updateReverb { it.copy(roomSize = v, presetId = null) } }, 0f..1f, rangeLabels = pct(0f) to pct(1f))
+                LabSlider(stringResource(R.string.fx_damping), pct(reverb.damping), reverb.damping, { v -> viewModel.updateReverb { it.copy(damping = v, presetId = null) } }, 0f..1f, rangeLabels = pct(0f) to pct(1f))
+                LabSlider(stringResource(R.string.fx_wet), pct(reverb.wet), reverb.wet, { v -> viewModel.updateReverb { it.copy(wet = v, presetId = null) } }, 0f..1f, rangeLabels = pct(0f) to pct(1f))
                 FineTuneLabel()
-                LabSlider(stringResource(R.string.fx_dry), pct(reverb.dry), reverb.dry, { v -> viewModel.updateReverb { it.copy(dry = v, presetId = null) } }, 0f..1f)
-                LabSlider(stringResource(R.string.fx_width), pct(reverb.width), reverb.width, { v -> viewModel.updateReverb { it.copy(width = v, presetId = null) } }, 0f..1f)
+                LabSlider(stringResource(R.string.fx_dry), pct(reverb.dry), reverb.dry, { v -> viewModel.updateReverb { it.copy(dry = v, presetId = null) } }, 0f..1f, rangeLabels = pct(0f) to pct(1f))
+                LabSlider(stringResource(R.string.fx_width), pct(reverb.width), reverb.width, { v -> viewModel.updateReverb { it.copy(width = v, presetId = null) } }, 0f..1f, rangeLabels = pct(0f) to pct(1f))
                 LabSlider(stringResource(R.string.fx_pre_delay), "${reverb.preDelayMs.roundToInt()} ms", reverb.preDelayMs,
                     { v -> viewModel.updateReverb { it.copy(preDelayMs = v.roundToInt().toFloat(), presetId = null) } }, 0f..120f)
                 LabSlider(stringResource(R.string.fx_low_cut), "${reverb.lowCutHz.roundToInt()} Hz", log10(reverb.lowCutHz),

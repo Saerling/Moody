@@ -2,6 +2,7 @@
 
 package com.mochyy.mochymusic.ui.component
 
+import com.mochyy.mochymusic.ui.utils.tapBounce
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animate
@@ -137,6 +138,7 @@ inline fun ListItem(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .tapBounce()
             .padding(contentPadding)
             .height(ListItemHeight)
             .clip(shape)
@@ -294,10 +296,12 @@ fun GridItem(
     Column(
         modifier = if (fillMaxWidth) {
             modifier
+                .tapBounce()
                 .padding(padding)
                 .fillMaxWidth()
         } else {
             modifier
+                .tapBounce()
                 .padding(padding)
                 .width(gridHeight * thumbnailRatio)
         }

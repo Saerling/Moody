@@ -85,6 +85,8 @@ class ListeningStats(
     val weekdayMs: List<Long>,
     /** Listening time per hour of the day, 0..23. */
     val hourMs: List<Long>,
+    /** 7 weekdays x 24 hours, monday first, for the listening heatmap */
+    val weekdayHourMs: List<Long> = emptyList(),
     /** Listening time per day of the month, or per month of the year. */
     val bucketMs: List<Long>,
 ) {
@@ -170,6 +172,7 @@ internal object RecapRepository {
         val perSong = HashMap<String, Acc>()
         val weekday = LongArray(7)
         val hour = LongArray(24)
+        val weekdayHour = LongArray(7 * 24)
         val buckets = LongArray(range.bucketCount)
         var total = 0L
         for (e in events) {
@@ -182,6 +185,7 @@ internal object RecapRepository {
             val at = storedMillisToDateTime(e.timestamp)
             weekday[at.dayOfWeek.value - 1] += ms
             hour[at.hour] += ms
+            weekdayHour[(at.dayOfWeek.value - 1) * 24 + at.hour] += ms
             val bucket = if (range.kind == StatsRange.Kind.Month) at.dayOfMonth - 1 else at.monthValue - 1
             if (bucket in buckets.indices) buckets[bucket] += ms
         }
@@ -251,6 +255,7 @@ internal object RecapRepository {
             topArtists = topArtists,
             weekdayMs = weekday.toList(),
             hourMs = hour.toList(),
+            weekdayHourMs = weekdayHour.toList(),
             bucketMs = buckets.toList(),
         )
     }
