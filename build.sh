@@ -19,7 +19,7 @@ CUSTOM_BUILD_INFO=""
 IS_CUSTOM_BUILD=false
 NIGHTLY_NUMBER=""
 
-BETA_NOTICE_FILE="app/src/main/kotlin/com/mochyy/mochymusic/ui/screens/beta/BetaNoticeScreen.kt"
+BETA_NOTICE_FILE="app/src/main/kotlin/com/saerling/moody/ui/screens/beta/BetaNoticeScreen.kt"
 
 cleanup() {
     # a nightly's fourth number only lives for its own build
@@ -294,11 +294,11 @@ if [ "$INSTALL_ON_DEVICES" = true ]; then
     else
         DEVICES=$(adb devices | grep -v "^List" | grep -w "device" | cut -f1)
         
-        PACKAGE_NAME="com.mochyy.mochymusic"
+        PACKAGE_NAME="com.saerling.moody"
         if [ "$VARIANT" == "debug" ]; then
-            PACKAGE_NAME="com.mochyy.mochymusic.debug"
+            PACKAGE_NAME="com.saerling.moody.debug"
         elif [ "$VARIANT" == "profileable" ]; then
-            PACKAGE_NAME="com.mochyy.mochymusic.profileable"
+            PACKAGE_NAME="com.saerling.moody.profileable"
         fi
 
         if [ -z "$DEVICES" ]; then

@@ -60,7 +60,7 @@
         </intent>
         <!-- source modules installed as their own app (modules/SourceModules.kt) -->
         <intent>
-            <action android:name="com.mochyy.mochymusic.SOURCE_MODULE" />
+            <action android:name="com.saerling.moody.SOURCE_MODULE" />
         </intent>
         <!-- the song share sends straight to these three -->
         <package android:name="com.instagram.android" />
@@ -1160,9 +1160,9 @@
             android:label="@string/widget_music_player">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.mochyy.mochymusic.widget.PLAY_PAUSE" />
-                <action android:name="com.mochyy.mochymusic.widget.LIKE" />
-                <action android:name="com.mochyy.mochymusic.widget.UPDATE_WIDGET" />
+                <action android:name="com.saerling.moody.widget.PLAY_PAUSE" />
+                <action android:name="com.saerling.moody.widget.LIKE" />
+                <action android:name="com.saerling.moody.widget.UPDATE_WIDGET" />
             </intent-filter>
 
             <meta-data
@@ -1177,9 +1177,9 @@
             android:label="@string/widget_turntable">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.mochyy.mochymusic.widget.TURNTABLE_PLAY_PAUSE" />
-                <action android:name="com.mochyy.mochymusic.widget.TURNTABLE_LIKE" />
-                <action android:name="com.mochyy.mochymusic.widget.UPDATE_TURNTABLE_WIDGET" />
+                <action android:name="com.saerling.moody.widget.TURNTABLE_PLAY_PAUSE" />
+                <action android:name="com.saerling.moody.widget.TURNTABLE_LIKE" />
+                <action android:name="com.saerling.moody.widget.UPDATE_TURNTABLE_WIDGET" />
             </intent-filter>
 
             <meta-data
@@ -1190,7 +1190,7 @@
         <!-- Google Cast Options Provider -->
         <meta-data
             android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
-            android:value="com.mochyy.mochymusic.cast.CastOptionsProvider" />
+            android:value="com.saerling.moody.cast.CastOptionsProvider" />
     </application>
 
 </manifest>

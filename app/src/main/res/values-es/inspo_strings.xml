@@ -23,4 +23,15 @@
     <string name="inspo_font_mono">Mono</string>
     <string name="inspo_filter_local">Locales</string>
     <string name="inspo_filter_streaming">Streaming</string>
+    <string name="moody_for_you">Para ti</string>
+    <string name="moody_keep_listening">Seguir escuchando</string>
+    <string name="moody_good_morning">Buenos días</string>
+    <string name="moody_good_afternoon">Buenas tardes</string>
+    <string name="moody_good_evening">Buenas noches</string>
+    <string name="moody_this_week">Esta semana</string>
+    <string name="moody_last_week">frente a %1$s la anterior</string>
+    <string name="moody_sleep_title">Ambiental suave</string>
+    <string name="moody_sleep_detail">se apaga en 30 min</string>
+    <string name="moody_for_you_now">Para ti ahora</string>
+    <string name="moody_forgotten">Vuelve a estas</string>
 </resources>

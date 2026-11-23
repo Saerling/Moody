@@ -19,7 +19,7 @@ plugins {
 }
 
 extensions.configure<ApplicationExtension> {
-    namespace = "com.mochyy.mochymusic"
+    namespace = "com.saerling.moody"
     compileSdk = 37
     ndkVersion = "27.0.12077973"
 

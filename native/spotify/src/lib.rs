@@ -459,7 +459,7 @@ fn parse_range(value: &str) -> Option<(u64, Option<u64>)> {
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_mochyy_mochymusic_module_spotify_SpotifyNative_nativeSearch<'l>(mut env: JNIEnv<'l>, _class: JClass<'l>, query: JString<'l>, hash: JString<'l>, app_version: JString<'l>) -> jstring {
+pub extern "system" fn Java_com_saerling_moody_module_spotify_SpotifyNative_nativeSearch<'l>(mut env: JNIEnv<'l>, _class: JClass<'l>, query: JString<'l>, hash: JString<'l>, app_version: JString<'l>) -> jstring {
     let query = text(&mut env, &query); let hash = text(&mut env, &hash); let app_version = text(&mut env, &app_version);
     let out = guarded(move || search(&query, &hash, &app_version)); answer(&mut env, out)
 }
@@ -501,7 +501,7 @@ fn guarded(f: impl FnOnce() -> Res<String> + std::panic::UnwindSafe) -> String {
 
 /// Conecta y devuelve el usuario, o `error:<motivo>`.
 #[no_mangle]
-pub extern "system" fn Java_com_mochyy_mochymusic_module_spotify_SpotifyNative_nativeStart<'l>(
+pub extern "system" fn Java_com_saerling_moody_module_spotify_SpotifyNative_nativeStart<'l>(
     mut env: JNIEnv<'l>,
     _class: JClass<'l>,
     dir: JString<'l>,
@@ -515,7 +515,7 @@ pub extern "system" fn Java_com_mochyy_mochymusic_module_spotify_SpotifyNative_n
 
 /// Puerto del servidor local, o -1.
 #[no_mangle]
-pub extern "system" fn Java_com_mochyy_mochymusic_module_spotify_SpotifyNative_nativePort<'l>(
+pub extern "system" fn Java_com_saerling_moody_module_spotify_SpotifyNative_nativePort<'l>(
     _env: JNIEnv<'l>,
     _class: JClass<'l>,
 ) -> jint {
@@ -524,7 +524,7 @@ pub extern "system" fn Java_com_mochyy_mochymusic_module_spotify_SpotifyNative_n
 
 /// Un token de acceso para la Web API (búsqueda), o `error:<motivo>`.
 #[no_mangle]
-pub extern "system" fn Java_com_mochyy_mochymusic_module_spotify_SpotifyNative_nativeAccessToken<'l>(
+pub extern "system" fn Java_com_saerling_moody_module_spotify_SpotifyNative_nativeAccessToken<'l>(
     mut env: JNIEnv<'l>,
     _class: JClass<'l>,
 ) -> jstring {
@@ -533,7 +533,7 @@ pub extern "system" fn Java_com_mochyy_mochymusic_module_spotify_SpotifyNative_n
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_mochyy_mochymusic_module_spotify_SpotifyNative_nativeSignOut<'l>(
+pub extern "system" fn Java_com_saerling_moody_module_spotify_SpotifyNative_nativeSignOut<'l>(
     _env: JNIEnv<'l>,
     _class: JClass<'l>,
 ) {
