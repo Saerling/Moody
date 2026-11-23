@@ -2,6 +2,7 @@
 
 package com.mochyy.mochymusic.ui.player
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
@@ -35,22 +36,25 @@ fun StreamFormatBadge(
 ) {
     // the text is sized off the box, not the user's font scale, so the two never drift apart
     val fontSize = with(LocalDensity.current) { (height * 0.5f).toSp() }
+    // moody: a filled chip in mono, green for lossless (flac, alac, wav, pcm), neutral for the rest
+    val lossless = Regex("FLAC|ALAC|WAV|PCM|AIFF|DSD", RegexOption.IGNORE_CASE).containsMatchIn(text)
+    val ink = if (lossless) com.mochyy.mochymusic.ui.theme.Moody.Green else color
+    val fill = if (lossless) com.mochyy.mochymusic.ui.theme.Moody.Green.copy(alpha = 0.16f) else Color.White.copy(alpha = 0.1f)
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .height(height)
-            .border(height * 0.0625f, color, RoundedCornerShape(height * 0.31f))
-            .padding(horizontal = height * 0.29f),
+            .background(fill, RoundedCornerShape(height * 0.5f))
+            .padding(horizontal = height * 0.4f),
     ) {
         Text(
             text = text,
             maxLines = 1,
             softWrap = false,
-            // Inter's line box centres on its capitals, as the design centres them in the tag
             style = TextStyle(
-                color = color,
-                fontFamily = InterFontFamily,
-                fontWeight = FontWeight.Medium,
+                color = ink,
+                fontFamily = com.mochyy.mochymusic.ui.theme.MoodyMono,
+                fontWeight = FontWeight.Bold,
                 fontSize = fontSize,
                 letterSpacing = 0.sp,
                 platformStyle = PlatformTextStyle(includeFontPadding = false),

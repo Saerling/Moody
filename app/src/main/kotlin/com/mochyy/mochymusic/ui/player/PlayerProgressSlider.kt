@@ -260,7 +260,8 @@ fun PlayerProgressSlider(
             .fillMaxWidth()
             .padding(horizontal = PlayerHorizontalPadding + 4.dp)
     ) {
-        val timeStyle = MaterialTheme.typography.labelMedium
+        // moody: times read like a device display, in mono
+        val timeStyle = MaterialTheme.typography.labelMedium.copy(fontFamily = com.mochyy.mochymusic.ui.theme.MoodyMono)
         val restColor = Color.White.copy(alpha = TimeRestAlpha)
         AnimatedContent(
             targetState = if (failureLabel != null) FailureKey else if (showLoading) LoadingKey else null,

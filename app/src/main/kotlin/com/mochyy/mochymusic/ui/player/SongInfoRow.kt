@@ -325,8 +325,8 @@ private fun SongLines(
             // it's cut and scrolls by, as it did against the buttons.
             FadingOverflowText(
                 text = title,
-                style = androidx.compose.material3.MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = Color.White,
+                style = androidx.compose.material3.MaterialTheme.typography.titleLarge.copy(fontFamily = com.mochyy.mochymusic.ui.theme.DisplayFontFamily, fontWeight = FontWeight.ExtraBold),
+                color = com.mochyy.mochymusic.ui.theme.Moody.Ink,
                 modifier = Modifier
                     .weight(1f, fill = false)
                     .graphicsLayer { alpha = infoAlpha() },

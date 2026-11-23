@@ -1,5 +1,7 @@
 package com.mochyy.mochymusic.ui.player
 
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -58,7 +60,8 @@ internal val PlayerVolumeBarHeight = 76.dp
 private val VolumeBarBottomGap = 10.dp
 
 /** the buttons under the volume line, each centred in its half */
-private val VolumeBarButtons = listOf(PlayerMenuAction.LYRICS, PlayerMenuAction.QUEUE)
+// moody's action pill: lyrics, queue, where it plays and the sleep timer, together under one bar
+private val VolumeBarButtons = listOf(PlayerMenuAction.LYRICS, PlayerMenuAction.QUEUE, PlayerMenuAction.OUTPUT, PlayerMenuAction.SLEEP_TIMER)
 
 /** The caller pads the bar 26dp in; this brings the speakers out to the seek bar's 32dp edges. */
 private val VolumeRowInset = 6.dp
@@ -103,7 +106,10 @@ internal fun PlayerVolumeBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = VolumeRowInset),
+                .padding(horizontal = VolumeRowInset)
+                .clip(androidx.compose.foundation.shape.RoundedCornerShape(28.dp))
+                .background(com.mochyy.mochymusic.ui.theme.Moody.Night.copy(alpha = 0.4f))
+                .padding(vertical = 4.dp),
         ) {
             VolumeBarButtons.forEach { action ->
                 val on = isActive(action)

@@ -22,6 +22,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -178,8 +181,12 @@ fun PlayerTransportRow(
         // against the row instead, clamped so they never grow silly or drop below a comfortable
         // touch target.
         val buttonSize = (maxWidth * 0.21f).coerceIn(64.dp, 96.dp)
-        val iconSize = buttonSize * 0.73f
-        val gap = (maxWidth * 0.09f).coerceIn(22.dp, 40.dp)
+        // moody's hardware keys (the classic row only): square skip keys and a wide blue play key with an edge
+        val moodyKeys = !flagshipGlyph
+        val iconSize = if (moodyKeys) buttonSize * 0.5f else buttonSize * 0.73f
+        val gap = if (moodyKeys) (maxWidth * 0.06f).coerceIn(14.dp, 28.dp) else (maxWidth * 0.09f).coerceIn(22.dp, 40.dp)
+        val skipKey = if (moodyKeys) com.mochyy.mochymusic.ui.theme.Moody.Ink.copy(alpha = 0.12f) else Color.Transparent
+        val skipShape = RoundedCornerShape(if (moodyKeys) 18.dp else 100.dp)
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(gap, Alignment.CenterHorizontally),
@@ -197,6 +204,8 @@ fun PlayerTransportRow(
                 holdLabel = "0.5\u00D7",
                 holdPulseMs = 900L,
                 flagshipGlyph = flagshipGlyph,
+                containerColor = skipKey,
+                shape = skipShape,
                 modifier = Modifier.size(buttonSize)
             )
 
@@ -211,10 +220,13 @@ fun PlayerTransportRow(
                         playerConnection.togglePlayPause()
                     }
                 },
-                tint = Color.White,
+                tint = if (moodyKeys) com.mochyy.mochymusic.ui.theme.Moody.OnBlue else Color.White,
                 iconSize = iconSize,
                 flagshipGlyph = flagshipGlyph,
-                modifier = Modifier.size(buttonSize)
+                containerColor = if (moodyKeys) com.mochyy.mochymusic.ui.theme.Moody.Blue else Color.Transparent,
+                shape = if (moodyKeys) RoundedCornerShape(24.dp) else RoundedCornerShape(50),
+                keyShadow = if (moodyKeys) com.mochyy.mochymusic.ui.theme.Moody.BlueShadow else null,
+                modifier = if (moodyKeys) Modifier.width(buttonSize * 1.25f).height(buttonSize) else Modifier.size(buttonSize)
             )
 
             AnimatedPressScaleSkipButton(
@@ -228,6 +240,8 @@ fun PlayerTransportRow(
                 holdLabel = "2\u00D7",
                 holdPulseMs = 420L,
                 flagshipGlyph = flagshipGlyph,
+                containerColor = skipKey,
+                shape = skipShape,
                 modifier = Modifier.size(buttonSize)
             )
         }
@@ -243,6 +257,7 @@ internal fun AnimatedPressScaleSkipButton(
     modifier: Modifier = Modifier,
     iconSize: Dp = 28.dp,
     containerColor: Color = Color.Transparent,
+    shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(50),
     enabled: Boolean = true,
     /** Held: runs from the long press until the finger lifts. A tap still skips. */
     onHoldStart: (() -> Unit)? = null,
@@ -292,7 +307,7 @@ internal fun AnimatedPressScaleSkipButton(
                 if (containerColor == Color.Transparent) {
                     Modifier
                 } else {
-                    Modifier.clip(RoundedCornerShape(50)).background(containerColor)
+                    Modifier.clip(shape).background(containerColor)
                 }
             )
             .tapOrHold(
@@ -371,6 +386,9 @@ internal fun AnimatedPressScalePlayPauseButton(
     modifier: Modifier = Modifier,
     iconSize: Dp = 28.dp,
     containerColor: Color = Color.Transparent,
+    shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(50),
+    /** a solid edge drawn under the button, so it reads as a key that sinks when pressed */
+    keyShadow: Color? = null,
     enabled: Boolean = true,
     // the flagship's squash and bounce in place of the morphing icon; the turntable wears it, the classic keeps its own
     flagshipGlyph: Boolean = false,
@@ -390,8 +408,16 @@ internal fun AnimatedPressScalePlayPauseButton(
                 scaleX = scale
                 scaleY = scale
                 alpha = if (enabled) 1f else 0.36f
+                // pressed, the key sinks onto its edge
+                if (keyShadow != null) translationY = (1f - scale) / 0.14f * 5.dp.toPx()
             }
-            .clip(RoundedCornerShape(50))
+            .then(
+                if (keyShadow == null) Modifier else Modifier.drawBehind {
+                    val o = shape.createOutline(size, layoutDirection, this)
+                    translate(top = 6.dp.toPx()) { drawOutline(o, keyShadow) }
+                }
+            )
+            .clip(shape)
             .background(containerColor)
             .clickable(
                 enabled = enabled,
