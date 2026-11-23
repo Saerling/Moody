@@ -112,7 +112,6 @@ internal fun PlaylistStylePreview(style: PlaylistStyle, coverRadius: Dp) {
 @Composable
 internal fun PlayerStylePreview(style: PlayerStyle) {
     when (style) {
-        PlayerStyle.IPOD -> IpodPreview()
         // the video across the card with a line of lyrics over it and the pane's bar at the bottom right
         PlayerStyle.VIDEO -> Box(Modifier.fillMaxSize().background(ArtFill)) {
             Column(Modifier.align(Alignment.BottomStart).padding(start = 12.dp, bottom = 22.dp)) {
@@ -154,27 +153,9 @@ internal fun PlayerStylePreview(style: PlayerStyle) {
                 Bar(40.dp, 22.dp, Bone)
             }
         }
-        PlayerStyle.LYRICS -> Column(
-            verticalArrangement = Arrangement.spacedBy(7.dp),
-            modifier = Modifier.fillMaxSize().padding(start = 12.dp, top = 18.dp),
-        ) {
-            Bar(70.dp, 7.dp, BoneDim)
-            Bar(100.dp, 9.dp)
-            Bar(86.dp, 9.dp)
-            Bar(64.dp, 7.dp, BoneDim)
-            Bar(92.dp, 7.dp, BoneDim)
-        }
         else -> Column(Modifier.fillMaxSize()) {
-            if (style == PlayerStyle.TURNTABLE) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth().height(96.dp)) {
-                    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(80.dp).background(Bone, CircleShape)) {
-                        Box(Modifier.size(26.dp).background(ArtLight, CircleShape))
-                    }
-                }
-            } else {
-                // the flagship's cover runs edge to edge across the top
-                Box(Modifier.fillMaxWidth().height(96.dp).background(ArtFill))
-            }
+            // the cover runs edge to edge across the top
+            Box(Modifier.fillMaxWidth().height(96.dp).background(ArtFill))
             Spacer(Modifier.height(10.dp))
             NowPlayingBars()
         }
@@ -217,20 +198,6 @@ internal fun HomeStylePreview(style: HomeStyle, coverRadius: Dp) {
             Bar(44.dp, 5.dp)
             Spacer(Modifier.height(6.dp))
             Shelf(radius)
-        }
-    }
-}
-
-@Composable
-private fun IpodPreview() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize().padding(12.dp),
-    ) {
-        Box(Modifier.fillMaxWidth().height(58.dp).background(Color.White.copy(alpha = 0.85f), RoundedCornerShape(6.dp)))
-        Spacer(Modifier.height(12.dp))
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(70.dp).background(Bone, CircleShape)) {
-            Box(Modifier.size(24.dp).background(FrameFill, CircleShape))
         }
     }
 }

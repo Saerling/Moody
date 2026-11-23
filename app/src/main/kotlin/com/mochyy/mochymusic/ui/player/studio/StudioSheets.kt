@@ -1,5 +1,7 @@
 package com.mochyy.mochymusic.ui.player.studio
 
+import com.mochyy.mochymusic.constants.DiscLabelContent
+import com.mochyy.mochymusic.constants.DiscLabelContentKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,8 +44,6 @@ import androidx.compose.ui.unit.sp
 import com.mochyy.mochymusic.LocalPlayerConnection
 import com.mochyy.mochymusic.R
 import androidx.compose.ui.res.stringResource
-import com.mochyy.mochymusic.constants.DiscLabelContent
-import com.mochyy.mochymusic.constants.DiscLabelContentKey
 import com.mochyy.mochymusic.constants.DiscNameKey
 import com.mochyy.mochymusic.constants.PlayerCoverStyle
 import com.mochyy.mochymusic.constants.PlayerEndTimestamp
@@ -51,7 +51,6 @@ import com.mochyy.mochymusic.constants.PlayerEndTimestampKey
 import com.mochyy.mochymusic.ui.component.AppSwitch
 import com.mochyy.mochymusic.ui.component.ButtonStyle
 import com.mochyy.mochymusic.constants.FlagshipTransportLayout
-import com.mochyy.mochymusic.ui.player.flagship.TransportLayoutPreview
 import com.mochyy.mochymusic.ui.component.PlayerTransportButtons
 import com.mochyy.mochymusic.ui.component.SeekBarStyle
 import com.mochyy.mochymusic.ui.component.SeekBarTrack
@@ -86,31 +85,7 @@ fun StudioSheets(
             androidx.compose.material3.LocalTextStyle provides studioText(StudioType.Body),
         ) {
         when (sheet) {
-            StudioSheet.CONTROLS -> if (transportLayout != null) OptionSheet(stringResource(R.string.ps_studio_controls)) {
-                FlagshipTransportLayout.entries.forEach { layout ->
-                    OptionRow(selected = layout == transportLayout, onClick = { onTransportLayout(layout) }) {
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            TransportLayoutPreview(layout)
-                            TwoLines(
-                                stringResource(
-                                    when (layout) {
-                                        FlagshipTransportLayout.THREE -> R.string.flagship_layout_three
-                                        FlagshipTransportLayout.TEN_SECONDS -> R.string.flagship_layout_ten
-                                        FlagshipTransportLayout.QUEUE_REPEAT -> R.string.flagship_layout_queue_repeat
-                                    }
-                                ),
-                                stringResource(
-                                    when (layout) {
-                                        FlagshipTransportLayout.THREE -> R.string.flagship_layout_three_caption
-                                        FlagshipTransportLayout.TEN_SECONDS -> R.string.flagship_layout_ten_caption
-                                        FlagshipTransportLayout.QUEUE_REPEAT -> R.string.flagship_layout_queue_repeat_caption
-                                    }
-                                ),
-                            )
-                        }
-                    }
-                }
-            } else OptionSheet(stringResource(R.string.ps_studio_controls)) {
+            StudioSheet.CONTROLS -> OptionSheet(stringResource(R.string.ps_studio_controls)) {
                 ButtonStyle.entries.forEach { style ->
                     OptionRow(selected = style == buttonStyle, onClick = { onButtonStyle(style) }, caption = stringResource(style.labelRes)) {
                         if (style == ButtonStyle.DEFAULT) {
@@ -235,8 +210,6 @@ fun StudioSheets(
                 }
             }
 
-            StudioSheet.POSTER -> PosterOptions()
-            StudioSheet.IPOD -> IpodOptions()
             StudioSheet.BEDSIDE -> BedsideOptions()
 
         }
@@ -251,32 +224,13 @@ fun StudioSheets(
 @Composable
 fun StyleSheets(studio: PlayerStudioState) {
     val sheet = studio.sheet
-    if (sheet != StudioSheet.POSTER && sheet != StudioSheet.IPOD && sheet != StudioSheet.BEDSIDE) return
+    if (sheet != StudioSheet.BEDSIDE) return
     MenuSheetSurface(onDismiss = { studio.sheet = null }, wrapHeight = true) { _ ->
         androidx.compose.runtime.CompositionLocalProvider(
             androidx.compose.material3.LocalTextStyle provides studioText(StudioType.Body),
         ) {
-            when (sheet) {
-                StudioSheet.IPOD -> IpodOptions()
-                StudioSheet.BEDSIDE -> BedsideOptions()
-                else -> PosterOptions()
-            }
+            BedsideOptions()
         }
-    }
-}
-
-@Composable
-private fun ColumnScope.PosterOptions() {
-    OptionSheet(title = stringResource(R.string.ps_studio_poster)) {
-        SwitchRow(
-            CoverOption.Switch(
-                title = stringResource(R.string.ps_studio_visualizer),
-                description = stringResource(R.string.ps_studio_visualizer_desc),
-                icon = R.drawable.graphic_eq,
-                key = com.mochyy.mochymusic.constants.PosterVisualizerKey,
-                default = false,
-            ),
-        )
     }
 }
 

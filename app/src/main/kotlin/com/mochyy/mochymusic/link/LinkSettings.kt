@@ -185,7 +185,7 @@ internal class LinkSettings(context: Context) {
             section = R.string.link_section_player,
             title = R.string.link_setting_player_style,
             options = { context, _ -> stylesOn(context).map { it.name to it.selectorName } },
-            read = { prefs, _ -> prefs[PlayerStyleKey] ?: PlayerStyle.FLAGSHIP.name },
+            read = { prefs, _ -> prefs[PlayerStyleKey] ?: PlayerStyle.CLASSIC.name },
             write = { context, _, value ->
                 val style = stylesOn(context).first { it.name == value }
                 context.dataStore.edit { it[PlayerStyleKey] = style.name }

@@ -346,9 +346,7 @@ fun PlayerSelectorOverlay(
                         // every card built, the live one too: picking a style hands over to its
                         // card, which mustn't be built in the frame it has to cover the player
                         when (style) {
-                            PlayerStyle.FLAGSHIP -> FlagshipPreview(flagship = true)
                             PlayerStyle.CLASSIC -> FlagshipPreview()
-                            PlayerStyle.TURNTABLE -> FlagshipPreview(turntable = true)
                             else -> AlternatePlayerStyle(style = style, actions = previewActions, preview = true, modifier = Modifier.fillMaxSize())
                         }
                     }

@@ -269,7 +269,7 @@ internal fun markOnboardedOnThisInstall(context: android.content.Context) {
 }
 
 // set once the redesign has cleared the old design choices
-private val MoodyRedesignKey = androidx.datastore.preferences.core.booleanPreferencesKey("moodyRedesignV1")
+private val MoodyRedesignKey = androidx.datastore.preferences.core.booleanPreferencesKey("moodyRedesignV2")
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -1561,6 +1561,7 @@ class MainActivity : ComponentActivity() {
                 prefs.remove(com.mochyy.mochymusic.constants.SelectedThemeColorKey)
                 prefs[com.mochyy.mochymusic.constants.AppFontKey] = "moody"
                 prefs[com.mochyy.mochymusic.constants.PureBlackKey] = true
+                prefs[com.mochyy.mochymusic.constants.HomeStyleKey] = com.mochyy.mochymusic.constants.HomeStyle.LISTEN_NOW.name
                 prefs[MoodyRedesignKey] = true
             }
         }

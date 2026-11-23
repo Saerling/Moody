@@ -144,7 +144,7 @@ internal class LinkControlRoutes(
         val style = runBlocking { context.dataStore.data.first()[PlayerStyleKey] }
         return json
             .put("liked", liked)
-            .put("style", style ?: PlayerStyle.FLAGSHIP.name)
+            .put("style", style ?: PlayerStyle.CLASSIC.name)
             .put("styles", JSONArray(styles.map { JSONObject().put("name", it.name).put("label", it.selectorName) }))
     }
 

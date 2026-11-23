@@ -86,19 +86,9 @@ import com.mochyy.mochymusic.constants.ShowPlayerBottomCardKey
 import com.mochyy.mochymusic.constants.PlayerBottomBarStyle
 import com.mochyy.mochymusic.constants.PlayerBottomBarStyleKey
 import com.mochyy.mochymusic.constants.InfiniteQueueKey
-import com.mochyy.mochymusic.constants.FlagshipBackgroundStyleKey
-import com.mochyy.mochymusic.constants.FlagshipBottomBarStyleKey
-import com.mochyy.mochymusic.constants.FlagshipTransportLayout
-import com.mochyy.mochymusic.constants.FlagshipTransportLayoutKey
-import com.mochyy.mochymusic.ui.player.flagship.FlagshipBarHeight
-import com.mochyy.mochymusic.ui.player.flagship.FlagshipBottomBar
 import com.mochyy.mochymusic.ui.player.flagship.FlagshipLandscape
-import com.mochyy.mochymusic.ui.player.flagship.FlagshipPillLook
-import com.mochyy.mochymusic.ui.player.flagship.FlagshipPillMorphSurface
-import com.mochyy.mochymusic.ui.player.flagship.FlagshipTransportRow
 import com.mochyy.mochymusic.ui.player.flagship.ControlsShade
 import com.mochyy.mochymusic.ui.player.flagship.CoverFrost
-import com.mochyy.mochymusic.ui.player.flagship.flagshipBarFootprint
 import com.mochyy.mochymusic.ui.player.flagship.rememberAmbientColors
 import androidx.activity.compose.BackHandler
 import com.mochyy.mochymusic.ui.component.BottomSheet
@@ -339,9 +329,9 @@ private fun PlayerSheet(
     var pickedPlayerStyle by remember { mutableStateOf<PlayerStyle?>(null) }
     // the module style draws the look that's on; with none on, the flagship stands in
     val playerStyle = (pickedPlayerStyle ?: savedPlayerStyle)
-        .let { if (it == PlayerStyle.MODULE && !hasModuleStyle) PlayerStyle.FLAGSHIP else it }
+        .let { if (it == PlayerStyle.MODULE && !hasModuleStyle) PlayerStyle.CLASSIC else it }
         // a phone's ipod or turntable picked before the tv had its own list lands on the flagship there
-        .let { if (onTv && !it.availableOnTv) PlayerStyle.FLAGSHIP else it }
+        .let { if (onTv && !it.availableOnTv) PlayerStyle.CLASSIC else it }
     // on a tv the lyrics are the player: they open with it, and the remote opens and closes them
     if (onTv) {
         val currentStyle by androidx.compose.runtime.rememberUpdatedState(playerStyle)
@@ -372,37 +362,30 @@ private fun PlayerSheet(
         savePlayerStyle(style)
     }
     // the Turntable is the flagship around a record player, whatever cover the flagship is set to
-    val isTurntable = playerStyle == com.mochyy.mochymusic.constants.PlayerStyle.TURNTABLE
-    val shownCoverStyle = if (isTurntable) PlayerCoverStyle.TURNTABLE else coverStyle
+    val shownCoverStyle = coverStyle
     val controlsDrawShift = if (shownCoverStyle == PlayerCoverStyle.EDGE_TO_EDGE) ControlsDrawShift else 0.dp
     // the new flagship: its own buttons and bottom bar, the cover frosting into moving colours
-    val isFlagship = playerStyle == PlayerStyle.FLAGSHIP
     // the flagships' landscape layout draws the whole open player itself, the way the other styles do
     val landscapeFlagship = playerStyle.flagshipFamily && landscapeWindow
     // each flagship keeps its own background, the new one starting on the moving colours it was made with
     var classicBackground by rememberEnumPreference(PlayerBackgroundStyleKey, PlayerBackgroundStyle.COVER_GRADIENT)
-    var flagshipBackground by rememberEnumPreference(FlagshipBackgroundStyleKey, PlayerBackgroundStyle.AMBIENT)
-    val backgroundStyle = if (isFlagship) flagshipBackground else classicBackground
-    var transportLayout by rememberEnumPreference(FlagshipTransportLayoutKey, FlagshipTransportLayout.THREE)
+    val backgroundStyle = classicBackground
     // the colours the new flagship's backdrop and cover fade drift between
     val ambient = rememberAmbientColors()
     // what sits under the play buttons: the card deck or the volume bar, again each flagship with its own
     val (classicBarStyle, onClassicBarStyle) = rememberEnumPreference(PlayerBottomBarStyleKey, PlayerBottomBarStyle.VOLUME)
-    val (flagshipBarStyle, onFlagshipBarStyle) = rememberEnumPreference(FlagshipBottomBarStyleKey, PlayerBottomBarStyle.STACK)
     // the Turntable is built on the new flagship, so it takes the new bottom bar rather than the classic's
-    val newBottomBar = isFlagship || isTurntable
     // the card under the buttons: the classic's glass, or the new flagship's faint outlined one
-    val cardLook = if (newBottomBar) FlagshipCardLook else ClassicCardLook
-    val barStyle = if (newBottomBar) flagshipBarStyle else classicBarStyle
-    val onBarStyle: (PlayerBottomBarStyle) -> Unit = if (newBottomBar) onFlagshipBarStyle else onClassicBarStyle
+    val cardLook = ClassicCardLook
+    val barStyle = classicBarStyle
+    val onBarStyle: (PlayerBottomBarStyle) -> Unit = onClassicBarStyle
     StudioCameraEffect(studio, studioCapture, studioPieces, barStyle)
     // while the bar is edited both its styles are built, each lifted off the player for the editor
     val barLifted by remember { derivedStateOf { studioPieces.liftedPart == LiftedPart.BAR } }
     val showDeck = showPlayerBottomCard && barStyle == PlayerBottomBarStyle.STACK
     val showVolumeBar = barStyle == PlayerBottomBarStyle.VOLUME
     // the flagship's bar has no card to grow a page from, so the page grows out of the pill's lyrics or queue half
-    val pillMorph = newBottomBar && showVolumeBar
-    val pageLook = if (pillMorph) FlagshipPillLook else cardLook
+    val pageLook = cardLook
     // a style stored by the ones these replaced lands on its successor
     val (storedPlayerStyle, onStoredPlayerStyle) = rememberPreference(com.mochyy.mochymusic.constants.PlayerStyleKey, "")
     LaunchedEffect(storedPlayerStyle) {
@@ -507,8 +490,7 @@ private fun PlayerSheet(
         com.mochyy.mochymusic.ui.player.styles.StyleActions(
             onOtherMenu = {
                 // the styles that perform the lyrics get the lyrics tools too: provider, translation
-                menuFromLyrics = currentPlayerStyleForStudio == PlayerStyle.POSTER ||
-                    currentPlayerStyleForStudio == PlayerStyle.LYRICS
+                menuFromLyrics = false
                 showActionMenu = true
             },
             onEditPlayer = openStudio,
@@ -668,7 +650,6 @@ private fun PlayerSheet(
     val lyricsPageProgress by remember { derivedStateOf { transition.lyricsProgress.coerceIn(0f, 1f) } }
     val queuePageProgress by remember { derivedStateOf { transition.queueProgress.coerceIn(0f, 1f) } }
     // the Turntable's pages: lyrics or queue, whichever is opening
-    val turntablePageProgress by remember { derivedStateOf { maxOf(lyricsPageProgress, queuePageProgress) } }
     // Also while the page is being built, just before it grows (PlayerPageTransition.preparing)
     val lyricsPageMounted by remember {
         derivedStateOf { lyricsPageProgress > 0.001f || transition.preparing == PlayerPage.LYRICS }
@@ -993,13 +974,13 @@ private fun PlayerSheet(
                         }
                     },
                     // tapping the art opens the song details like the title does, not on the turntable since its record has its own taps
-                    onTapCover = if (playerStyle.flagshipFamily && !isTurntable && !landscapeFlagship) {
+                    onTapCover = if (playerStyle.flagshipFamily && !landscapeFlagship) {
                         { if (!studioEngaged) showSongDetails = true }
                     } else null,
                     onArtBoundsChanged = { rects.cover = it },
                     onVideoShowingChange = { videoShowing = it },
-                    ambient = if (isFlagship || backgroundStyle == PlayerBackgroundStyle.AMBIENT) ambient else null,
-                    frostedCover = isFlagship,
+                    ambient = if (backgroundStyle == PlayerBackgroundStyle.AMBIENT) ambient else null,
+                    frostedCover = false,
                 )
             },
             onDismiss = {
@@ -1102,7 +1083,7 @@ private fun PlayerSheet(
                     onCoveredChange = { styleQueueCovered = it },
                 )
                 // the ipod, the full video mode and the bedside each have their own close, a bar over them would just be in the way
-                if (!onTv && playerStyle != PlayerStyle.IPOD && playerStyle != PlayerStyle.VIDEO && !playerStyle.isBedside) PlayerHandle(
+                if (!onTv && playerStyle != PlayerStyle.VIDEO && !playerStyle.isBedside) PlayerHandle(
                     state = handleState,
                     sheet = state,
                     statusBarTop = statusBarTopInset,
@@ -1118,7 +1099,7 @@ private fun PlayerSheet(
                 }
                 FlagshipLandscape(
                     pages = transition,
-                    turntable = isTurntable,
+                    turntable = false,
                     sheetShowing = sheetShowing,
                     interactive = remember(state) { { landscapeOpen } },
                     expanded = remember(state) { { state.isExpanded } },
@@ -1128,26 +1109,10 @@ private fun PlayerSheet(
                     onSongInfo = { if (!studioEngaged) showSongDetails = true },
                     onSwitchLyricsSource = { showLyricsSource = true },
                     transport = { transportModifier ->
-                        if (isFlagship) {
-                            FlagshipTransportRow(
-                                layout = transportLayout,
-                                queueOpen = showQueue,
-                                onQueue = { if (showQueue) transition.close() else transition.open(PlayerPage.QUEUE) },
-                                modifier = transportModifier,
-                            )
-                        } else {
-                            PlayerTransportRow(modifier = transportModifier, flagshipGlyph = isTurntable)
-                        }
+                        PlayerTransportRow(modifier = transportModifier)
                     },
                     bottom = { barModifier ->
                         when {
-                            showVolumeBar && newBottomBar -> FlagshipBottomBar(
-                                progressProvider = progressProvider,
-                                isActive = ::menuActionActive,
-                                onAction = onMenuAction,
-                                pages = transition,
-                                modifier = barModifier,
-                            )
                             showVolumeBar -> PlayerVolumeBar(
                                 progressProvider = progressProvider,
                                 isActive = ::menuActionActive,
@@ -1197,22 +1162,7 @@ private fun PlayerSheet(
             )
 
             // the new flagship's cover fades into its own blurred copy instead, with only a light shade for the text; the Turntable's record isn't a cover to soften
-            if (isFlagship) {
-                if (shownCoverStyle == PlayerCoverStyle.EDGE_TO_EDGE) CoverFrost(
-                    glassState = morphingGlassState,
-                    progressProvider = progressProvider,
-                    maxHeight = screenHeight,
-                    fadeProvider = { 1f - lyricsProgress },
-                    offsetProvider = layoutTweaks::controlsOffset,
-                )
-                if (shownCoverStyle == PlayerCoverStyle.EDGE_TO_EDGE) ControlsShade(
-                    progressProvider = progressProvider,
-                    maxHeight = screenHeight,
-                    fadeProvider = { 1f - lyricsProgress },
-                    offsetProvider = layoutTweaks::controlsOffset,
-                    glareProvider = ambient::glare,
-                )
-            } else if (!isTurntable) SeamBlur(
+            SeamBlur(
                 glassState = morphingGlassState,
                 progressProvider = progressProvider,
                 trackInfo = trackInfo,
@@ -1224,8 +1174,7 @@ private fun PlayerSheet(
 
             // The card growing into the page, under it: its glass widens to the full screen while
             // the player behind dims a touch. Only there while a page is growing or shrinking.
-            if (pillMorph) FlagshipPillMorphSurface(transition = transition, morph = morph)
-            else ExpandingCardSurface(transition = transition, morph = morph, look = cardLook)
+            ExpandingCardSurface(transition = transition, morph = morph, look = cardLook)
 
             // Unmounted while the player is collapsed - even though the page itself is remembered -
             // because its lines keep per-frame clocks of their own that would otherwise tick away
@@ -1277,7 +1226,7 @@ private fun PlayerSheet(
                 targetY = statusBarTopInset + 38.dp,
                 screenWidth = screenWidth,
                 // the Turntable's title is set differently, so its header title fades in over it
-                handOff = !isTurntable,
+                handOff = true,
             )
             // Above the title after a like, moving with it into the lyrics/queue header.
             LikedLabel(
@@ -1325,8 +1274,7 @@ private fun PlayerSheet(
                     .align(Alignment.BottomCenter)
                     .widthIn(max = 600.dp)
                     .padding(
-                        bottom = if (newBottomBar) flagshipBarFootprint() - FlagshipBarHeight
-                        else playerVolumeBarFootprint() - PlayerVolumeBarHeight
+                        bottom = playerVolumeBarFootprint() - PlayerVolumeBarHeight
                     )
                     .padding(horizontal = 26.dp)
                     .studioAnchor(studioAnchors) { it.volumeBar }
@@ -1337,24 +1285,12 @@ private fun PlayerSheet(
                         translationY = controlsHidden * size.height * 0.75f
                         letTouchesThroughWhenHidden()
                     }
-                if (newBottomBar) {
-                    FlagshipBottomBar(
-                        progressProvider = progressProvider,
-                        isActive = ::menuActionActive,
-                        onAction = onMenuAction,
-                        // the page grows out of the button that was tapped, not out of a card that isn't there
-                        onPageFrom = { morph.cardRect = it },
-                        pages = transition,
-                        modifier = volumeBarModifier,
-                    )
-                } else {
                     PlayerVolumeBar(
                         progressProvider = progressProvider,
                         isActive = ::menuActionActive,
                         onAction = onMenuAction,
                         modifier = volumeBarModifier,
                     )
-                }
             }
 
             if (lyricsButtonMounted && !studioEngaged) {
@@ -1373,7 +1309,6 @@ private fun PlayerSheet(
             // open and the start of every close, for a value the card layout never uses. (The
             // volume bar reads its size as if it were showing, which stays put through all that.)
             val belowControls = when {
-                showVolumeBar && newBottomBar -> flagshipBarFootprint()
                 showVolumeBar -> playerVolumeBarFootprint()
                 showPlayerBottomCard -> PlayerDeckHeight
                 else -> WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 8.dp
@@ -1391,8 +1326,8 @@ private fun PlayerSheet(
                     roomAboveBar = (gapAboveButtons + gapBelowButtons) / 2f,
                     screenHeightPx = with(density) { screenHeight.toPx() },
                     density = density,
-                    controlsMovable = !isTurntable,
-                    cardGrowable = showDeck && !isTurntable,
+                    controlsMovable = true,
+                    cardGrowable = showDeck,
                 )
             }
             Column(
@@ -1406,7 +1341,7 @@ private fun PlayerSheet(
                     .graphicsLayer {
                         // the Turntable shows its own controls; these (with the seek bar) come up
                         // only as the lyrics or the queue open, which run off the seek bar
-                        alpha = (1f - controlsHidden) * (if (isTurntable) turntablePageProgress else 1f)
+                        alpha = 1f - controlsHidden
 
                         translationY = controlsHidden * size.height * 0.55f
                         // Hidden over the lyrics, or behind the Turntable's own controls, they let
@@ -1449,8 +1384,8 @@ private fun PlayerSheet(
                             // Only while the sheet is up: during a slide the title's root position
                             // moves every frame, and the header morph that reads it recomposed with
                             // it. Its place on the sheet itself doesn't change.
-                            onTitlePositioned = { if (state.isExpanded && !isTurntable) songInfoSourceRect = it },
-                            onChevronPositioned = { if (!isTurntable) chevronButtonRect = it },
+                            onTitlePositioned = { if (state.isExpanded) songInfoSourceRect = it },
+                            onChevronPositioned = { chevronButtonRect = it },
                             isExpandMenuOpen = showExpandMenu,
                             hideChevron = lyricsMounted,
                             onToggleExpandMenu = { showExpandMenu = !showExpandMenu },
@@ -1690,41 +1625,7 @@ private fun PlayerSheet(
                     .studioAnchor(studioAnchors) { it.transport }
                     .studioTransportLayer(studioParts)
                     .studioPiece(studioPieces, StudioPieces.TRANSPORT)
-                if (isFlagship) {
-                    FlagshipTransportRow(
-                        layout = transportLayout,
-                        queueOpen = showQueue,
-                        onQueue = { if (showQueue) transition.close() else transition.open(PlayerPage.QUEUE) },
-                        modifier = transportModifier,
-                    )
-                } else {
-                    PlayerTransportRow(modifier = transportModifier, flagshipGlyph = isTurntable)
-                }
-            }
-
-            // The Turntable's own controls, as its frame lays them out, above the card. They give
-            // way to the flagship's (with the seek bar) while a page is up.
-            if (isTurntable) {
-                TurntableControls(
-                    isExpandMenuOpen = showExpandMenu,
-                    onToggleExpandMenu = { showExpandMenu = !showExpandMenu },
-                    hideChevron = lyricsMounted,
-                    onTitlePositioned = { if (state.isExpanded) songInfoSourceRect = it },
-                    onChevronPositioned = { chevronButtonRect = it },
-                    likeBurst = likeBurst,
-                    onSongInfoClick = { if (!studioEngaged) showSongDetails = true },
-                    onStreamInfoClick = { if (!studioEngaged) showStreamInfo = true },
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .widthIn(max = 600.dp)
-                        .padding(bottom = belowControls + TurntableControlsLift)
-                        .graphicsLayer {
-                            alpha = (1f - controlsHidden) * (1f - turntablePageProgress)
-                            translationY = controlsHidden * size.height * 0.55f
-                            // gone with a page up, so the flagship's controls under them answer
-                            letTouchesThroughWhenHidden()
-                        },
-                )
+                PlayerTransportRow(modifier = transportModifier)
             }
 
             // the editor's tiles: inside the sheet, so they shrink and grow with it
@@ -1749,19 +1650,12 @@ private fun PlayerSheet(
             // the Turntable's pills have no shuffle or repeat, so its menu adds them on top of the
             // four set in the editor (unless one of those is already there)
             slots = run {
-                val set = if (isTurntable) {
-                    listOf(
-                        com.mochyy.mochymusic.ui.player.studio.PlayerMenuAction.SHUFFLE,
-                        com.mochyy.mochymusic.ui.player.studio.PlayerMenuAction.REPEAT,
-                    ).filterNot { it in menuLayout.slots } + menuLayout.slots
-                } else {
-                    menuLayout.slots
-                }
+                val set = menuLayout.slots
                 // with a youtube video on the cover, the full video mode goes on top unless it's already one of the four
                 val fullVideo = com.mochyy.mochymusic.ui.player.studio.PlayerMenuAction.FULL_VIDEO
                 val withVideo = if (videoShowing && fullVideo !in set) listOf(fullVideo) + set else set
                 // the turntable's rotate button sits last, the way the other styles keep theirs at the end
-                if (isTurntable && styleCanTurn) withVideo + com.mochyy.mochymusic.ui.player.studio.PlayerMenuAction.ROTATE else withVideo
+                withVideo
             },
             isActive = ::menuActionActive,
             onAction = onMenuAction,
@@ -1868,21 +1762,7 @@ private fun PlayerSheet(
                 studio.settleOn(index, restyled, velocity = velocity)
             },
             onEdit = { focused ->
-                if (playerStyles.getOrNull(focused) == PlayerStyle.POSTER) {
-                    // its one edit is its visualizer: back to the player, with the poster's sheet
-                    val restyled = playerStyle != PlayerStyle.POSTER
-                    if (restyled) onPlayerStyleChange(PlayerStyle.POSTER)
-                    studio.settleOn(focused, restyled) {
-                        studio.openSheet(com.mochyy.mochymusic.ui.player.studio.StudioSheet.POSTER)
-                    }
-                } else if (playerStyles.getOrNull(focused) == PlayerStyle.IPOD) {
-                    // the ipod's colours, wheel, screen and shadow, in a sheet over the ipod itself
-                    val restyled = playerStyle != PlayerStyle.IPOD
-                    if (restyled) onPlayerStyleChange(PlayerStyle.IPOD)
-                    studio.settleOn(focused, restyled) {
-                        studio.openSheet(com.mochyy.mochymusic.ui.player.studio.StudioSheet.IPOD)
-                    }
-                } else if (playerStyles.getOrNull(focused)?.isBedside == true) {
+                if (playerStyles.getOrNull(focused)?.isBedside == true) {
                     // either bedside: the night look and the screen options, in a sheet over the style itself
                     val bedside = playerStyles[focused]
                     val restyled = playerStyle != bedside
@@ -1890,24 +1770,17 @@ private fun PlayerSheet(
                     studio.settleOn(focused, restyled) {
                         studio.openSheet(com.mochyy.mochymusic.ui.player.studio.StudioSheet.BEDSIDE)
                     }
-                } else if (playerStyles.getOrNull(focused) == PlayerStyle.TURNTABLE) {
-                    // its one edit is the disc label: back to the player, with the label's sheet
-                    val restyled = playerStyle != PlayerStyle.TURNTABLE
-                    if (restyled) onPlayerStyleChange(PlayerStyle.TURNTABLE)
-                    studio.settleOn(focused, restyled) {
-                        studio.openSheet(com.mochyy.mochymusic.ui.player.studio.StudioSheet.DISC_LABEL)
-                    }
                 } else {
                     // the full editor, on whichever flagship is in view
-                    val style = playerStyles.getOrNull(focused)?.takeIf { it.hasFullEditor } ?: PlayerStyle.FLAGSHIP
+                    val style = playerStyles.getOrNull(focused)?.takeIf { it.hasFullEditor } ?: PlayerStyle.CLASSIC
                     if (playerStyle != style) onPlayerStyleChange(style)
                     studio.livePage = playerStyles.indexOf(style)
                     studio.go(StudioStage.EDIT)
                 }
             },
         )
-        // the Poster's, the iPod's and the bedside's sheets, each over its own style
-        if (playerStyle == PlayerStyle.POSTER || playerStyle == PlayerStyle.IPOD || playerStyle.isBedside) {
+        // the bedside's sheets, over its own style
+        if (playerStyle.isBedside) {
             com.mochyy.mochymusic.ui.player.studio.StyleSheets(studio)
         }
         if (playerStyle.flagshipFamily) {
@@ -1942,7 +1815,7 @@ private fun PlayerSheet(
                 onCoverStyle = { coverStyle = it },
                 backgroundStyles = backgroundStyles,
                 backgroundStyle = backgroundStyle,
-                onBackgroundStyle = { if (isFlagship) flagshipBackground = it else classicBackground = it },
+                onBackgroundStyle = { classicBackground = it },
                 menuLayout = menuLayout,
                 seekBarStyle = seekBarStyle,
                 endTimestamp = endTimestamp,
@@ -1960,8 +1833,8 @@ private fun PlayerSheet(
                 onSeekBarStyle = { seekBarStyle = it },
                 menuLayout = menuLayout,
                 // the new flagship picks its button layout there instead of a button style
-                transportLayout = if (isFlagship) transportLayout else null,
-                onTransportLayout = { transportLayout = it },
+                transportLayout = null,
+                onTransportLayout = { },
                 transportColors = com.mochyy.mochymusic.ui.component.TransportColors(
                     accent = artworkPalette.accent,
                     onAccent = artworkPalette.onAccent,

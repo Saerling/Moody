@@ -229,7 +229,7 @@ private fun CustomiseSectionContent(section: CustomiseSection) {
         CustomiseSection.PLAYER -> PlayerSection()
         CustomiseSection.HOME -> {
             val (coverRadiusPx) = rememberPreference(ThumbnailCornerRadiusKey, defaultValue = 25f)
-            val (homeStyle, onHomeStyleChange) = rememberEnumPreference(HomeStyleKey, defaultValue = HomeStyle.MOCHYY)
+            val (homeStyle, onHomeStyleChange) = rememberEnumPreference(HomeStyleKey, defaultValue = HomeStyle.LISTEN_NOW)
             StylePagerSection(
                 category = stringResource(R.string.customise_home_styles),
                 styles = HomeStyle.entries,

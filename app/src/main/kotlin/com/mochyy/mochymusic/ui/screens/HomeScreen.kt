@@ -529,7 +529,7 @@ private val HomeTopBarRise = 16.dp
  */
 @Composable
 private fun HomeShell() {
-    val homeStyle by rememberEnumPreference(HomeStyleKey, defaultValue = HomeStyle.MOCHYY)
+    val homeStyle by rememberEnumPreference(HomeStyleKey, defaultValue = HomeStyle.LISTEN_NOW)
     val profilePicUri by rememberPreference(ProfilePicUriKey, "")
     val profileImageUrl = profilePicUri
         .takeIf { it.isNotBlank() }
@@ -747,7 +747,7 @@ fun HomeScreen(
     val startListeningGridState = rememberTrackGridState()
     val quickPicksLazyGridState = rememberTrackGridState()
     val forgottenFavoritesLazyGridState = rememberTrackGridState()
-    val homeStyle by rememberEnumPreference(HomeStyleKey, defaultValue = HomeStyle.MOCHYY)
+    val homeStyle by rememberEnumPreference(HomeStyleKey, defaultValue = HomeStyle.LISTEN_NOW)
 
     val startListeningSongs = remember(keepListening, recentHistorySongs, mostPlayedSongsForHome, forgottenFavorites) {
         buildList<Song> {

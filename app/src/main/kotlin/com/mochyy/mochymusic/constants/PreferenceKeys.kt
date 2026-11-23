@@ -56,7 +56,8 @@ val SwipeLeftActionKey = stringPreferencesKey("swipeLeftAction")
 
 // the top layout of the home tab, picked in customisation settings
 enum class HomeStyle(val displayName: String) {
-    MOCHYY("Mochyy"),
+    // the old hero carousel, kept as an option; moody opens on "listen now"
+    MOCHYY("Carousel"),
     LISTEN_NOW("Listen now"),
     HOP_IN("Hop in"),
 }
@@ -690,67 +691,52 @@ enum class PlayerCoverStyle {
  * each of which can be turned sideways from its menu.
  */
 enum class PlayerStyle(val displayName: String, val selectorName: String) {
-    // the flagship as it is now: frosted cover fade, moving cover colours, the new buttons and bottom bar
-    FLAGSHIP("Flagship", "Flagship"),
-    // the flagship before its layout refresh, kept as a variant under it in the selector
-    CLASSIC("Classic", "Classic"),
-    /** the flagship with a record player for its cover, whose arm is the seek bar */
-    TURNTABLE("Turntable", "Turntable"),
+    // moody's player (the "vinilo nocturno" redesign): hardware keys, tinted glass, the action pill.
+    // the inherited flagship, turntable, ipod, poster, timeline and lyrics-stage designs were removed with the redesign
+    CLASSIC("Moody", "Moody"),
     // the song's youtube video across the whole screen, turned sideways, with its lyrics in a pane
     VIDEO("Full video", "Full video"),
-    // the ipod classic, click wheel and all, browsing the library from inside the player
-    IPOD("iPod", "iPod"),
-    POSTER("Poster", "Poster"),
-    TIMELINE("Timeline", "Timeline"),
-    LYRICS("Lyrics", "Lyrics stage"),
     // a big quiet clock for the nightstand, with the song a swipe away, that can stay up over the lock screen
     BEDSIDE("Bedside clock", "Big clock"),
     // the nightstand as two tiles side by side, the music on one and the lyrics or a clock on the other, each scrolled on its own
     BEDSIDE_TILES("Bedside", "Bedside"),
-    // a look module's own player, drawn from its layout; kept last so the others keep their places, and only offered while such a module is on
+    // a look module's own player, drawn from its layout; kept last, and only offered while such a module is on
     MODULE("Module", "Module");
 
-    val editable: Boolean get() = this == FLAGSHIP || this == CLASSIC || this == TURNTABLE || this == POSTER || this == IPOD || isBedside
+    val editable: Boolean get() = this == CLASSIC || isBedside
 
     // the two nightstand styles share their sheet, their night look and their lock screen rules
     val isBedside: Boolean get() = this == BEDSIDE || this == BEDSIDE_TILES
 
-    /** drawn by the flagship's own player (cover, controls, card), not a design of its own */
-    val flagshipFamily: Boolean get() = this == FLAGSHIP || this == CLASSIC || this == TURNTABLE
+    /** drawn by the main player itself (cover, controls, card), not a design of its own */
+    val flagshipFamily: Boolean get() = this == CLASSIC
 
-    // the two flagships the full editor works on: cover, middle part, controls and bottom bar
-    val hasFullEditor: Boolean get() = this == FLAGSHIP || this == CLASSIC
+    // the player the full editor works on: cover, middle part, controls and bottom bar
+    val hasFullEditor: Boolean get() = this == CLASSIC
 
     // the styles whose menu has a rotate button, each with a landscape layout of its own to turn into
-    val turnable: Boolean get() = this == TURNTABLE || this == POSTER || this == TIMELINE || this == LYRICS || this == MODULE || isBedside
+    val turnable: Boolean get() = this == MODULE || isBedside
 
     // laid out sideways until someone turns it upright, the way a phone stands on a nightstand
     val startsSideways: Boolean get() = this == BEDSIDE_TILES
 
     // the looks that read well across a room and stay smooth on a tv's gpu; the rest stay on phones
-    val availableOnTv: Boolean get() = this == FLAGSHIP || this == POSTER || this == VIDEO || this == TIMELINE || isBedside
+    val availableOnTv: Boolean get() = this == CLASSIC || this == VIDEO || isBedside
 
     companion object {
-        /** the styles these replaced, so a stored choice lands on its nearest successor */
+        /** every style the redesign removed (and the older ones those replaced) lands on moody's player */
         fun fromStored(name: String?): PlayerStyle? = when (name) {
-            "SIMPLE", "SIMPLE_COMPACT" -> TIMELINE
-            "LYRICS_ABSTRACT" -> LYRICS
-            // everyone on the old flagship moves to the new one once; picking classic later sticks
-            "DEFAULT" -> FLAGSHIP
+            "SIMPLE", "SIMPLE_COMPACT", "LYRICS_ABSTRACT", "DEFAULT",
+            "FLAGSHIP", "TURNTABLE", "IPOD", "POSTER", "TIMELINE", "LYRICS" -> CLASSIC
             else -> null
         }
 
         // the selector's columns, each look with its variants stacked under it, a swipe down away
         val selectorColumns: List<List<PlayerStyle>> = listOf(
-            listOf(FLAGSHIP, CLASSIC),
-            listOf(TURNTABLE),
+            listOf(CLASSIC),
             listOf(VIDEO),
-            listOf(IPOD),
             // the tiles first, the single big clock a swipe down under them
             listOf(BEDSIDE_TILES, BEDSIDE),
-            listOf(POSTER),
-            // the lyrics stage sits under the timeline, the way the classic sits under the flagship
-            listOf(TIMELINE, LYRICS),
         )
     }
 }

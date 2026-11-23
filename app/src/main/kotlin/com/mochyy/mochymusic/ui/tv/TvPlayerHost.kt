@@ -375,7 +375,7 @@ private fun TvControlStrip(
     val squareLabel = stringResource(R.string.tv_flagship_square)
     val looks = remember(squareLabel) {
         PlayerStyle.entries.filter { it.availableOnTv }.flatMap { option ->
-            if (option == PlayerStyle.FLAGSHIP) {
+            if (option == PlayerStyle.CLASSIC) {
                 listOf(TvLook(option, false, option.selectorName), TvLook(option, true, squareLabel))
             } else {
                 listOf(TvLook(option, false, option.selectorName))
@@ -387,7 +387,7 @@ private fun TvControlStrip(
     // video mode remembers where it was opened from, so leaving it goes back there
     fun pick(look: TvLook) {
         if (look.style == PlayerStyle.VIDEO && style != PlayerStyle.VIDEO) videoReturn = style.name
-        if (look.style == PlayerStyle.FLAGSHIP) square = look.square
+        if (look.style == PlayerStyle.CLASSIC) square = look.square
         style = look.style
     }
 
@@ -448,7 +448,7 @@ private fun TvControlStrip(
             modifier = Modifier.onPreviewKeyEvent { event -> event.type == KeyEventType.KeyDown && event.key == Key.DirectionDown },
         ) {
             looks.forEach { look ->
-                val lit = look.style == style && (look.style != PlayerStyle.FLAGSHIP || look.square == square)
+                val lit = look.style == style && (look.style != PlayerStyle.CLASSIC || look.square == square)
                 TvPillButton(look.label, onClick = { pick(look) }, bright = lit)
             }
         }

@@ -40,12 +40,9 @@ import com.mochyy.mochymusic.constants.PlayerBottomBarStyleKey
 import com.mochyy.mochymusic.constants.PlayerCoverStyle
 import com.mochyy.mochymusic.constants.PlayerCoverStyleKey
 import com.mochyy.mochymusic.constants.FlagshipBackgroundStyleKey
-import com.mochyy.mochymusic.constants.FlagshipBottomBarStyleKey
 import com.mochyy.mochymusic.constants.FlagshipTransportLayout
 import com.mochyy.mochymusic.constants.FlagshipTransportLayoutKey
 import com.mochyy.mochymusic.ui.player.flagship.AmbientBackdrop
-import com.mochyy.mochymusic.ui.player.flagship.FlagshipBottomBar
-import com.mochyy.mochymusic.ui.player.flagship.FlagshipTransportRow
 import com.mochyy.mochymusic.ui.player.flagship.FollowPicture
 import com.mochyy.mochymusic.ui.player.flagship.rememberAmbientColors
 import androidx.compose.ui.draw.drawWithCache
@@ -76,10 +73,6 @@ import com.mochyy.mochymusic.ui.player.PlayerVolumeBarHeight
 import com.mochyy.mochymusic.ui.player.SeamBlur
 import com.mochyy.mochymusic.ui.player.SeekBarLift
 import com.mochyy.mochymusic.ui.player.TransportGapAboveRow
-import com.mochyy.mochymusic.ui.player.TurntableControls
-import com.mochyy.mochymusic.ui.player.TurntableControlsLift
-import com.mochyy.mochymusic.ui.player.flagship.FlagshipBarHeight
-import com.mochyy.mochymusic.ui.player.flagship.flagshipBarFootprint
 import com.mochyy.mochymusic.ui.player.playerVolumeBarFootprint
 import com.mochyy.mochymusic.utils.rememberPreference
 
@@ -173,13 +166,8 @@ internal fun FlagshipPreview(
         if (flagship) PlayerBackgroundStyle.AMBIENT else PlayerBackgroundStyle.COVER_GRADIENT,
     )
     // the Turntable is built on the new flagship, so it shares the new bottom bar, as on the live player
-    val newBottomBar = flagship || turntable
-    val barStyle by rememberEnumPreference(
-        if (newBottomBar) FlagshipBottomBarStyleKey else PlayerBottomBarStyleKey,
-        PlayerBottomBarStyle.STACK,
-    )
+    val barStyle by rememberEnumPreference(PlayerBottomBarStyleKey, PlayerBottomBarStyle.VOLUME)
     val (showBottomCard) = rememberPreference(ShowPlayerBottomCardKey, defaultValue = true)
-    val transportLayout by rememberEnumPreference(FlagshipTransportLayoutKey, FlagshipTransportLayout.THREE)
     val ambient = rememberAmbientColors()
     if (flagship) FollowPicture(ambient, track.thumbnailUrl)
     val statusTop = WindowInsets.stableStatusBars.asPaddingValues().calculateTopPadding()
@@ -239,21 +227,11 @@ internal fun FlagshipPreview(
 
         // what sits under the controls, by the live player's own sums, so the buttons land where they do there
         val belowControls = when {
-            showVolumeBar && newBottomBar -> flagshipBarFootprint()
             showVolumeBar -> playerVolumeBarFootprint()
             showDeck -> PlayerDeckHeight
             else -> navBottom + 8.dp
         }
-        if (turntable) {
-            // the Turntable's own pills and title row, standing above the card as in its frame
-            TurntableControls(
-                isExpandMenuOpen = false,
-                onToggleExpandMenu = {},
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = belowControls + TurntableControlsLift),
-            )
-        } else {
+        run {
             val drawShift = if (edgeToEdge) ControlsDrawShift else 0.dp
             val transportGap = (maxHeight * 0.19f - 37.dp - belowControls + TransportGapAboveRow + drawShift) / 2f
             val transportSpacer = (transportGap - SeekBarLift - drawShift).coerceAtLeast(0.dp)
@@ -272,21 +250,12 @@ internal fun FlagshipPreview(
                 }
                 Spacer(Modifier.height(transportSpacer))
                 Box(modifier = Modifier.offset(y = -buttonsLift)) {
-                    if (flagship) FlagshipTransportRow(layout = transportLayout) else PlayerTransportRow()
+                    PlayerTransportRow()
                 }
             }
         }
 
         when {
-            showVolumeBar && newBottomBar -> FlagshipBottomBar(
-                isActive = { false },
-                onAction = {},
-                preview = true,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = flagshipBarFootprint() - FlagshipBarHeight)
-                    .padding(horizontal = 26.dp),
-            )
             showVolumeBar -> PlayerVolumeBar(
                 isActive = { false },
                 onAction = {},
@@ -298,7 +267,7 @@ internal fun FlagshipPreview(
             )
             // the deck as it rests on the live player: the front card running off the bottom, the one behind peeking over it
             showDeck -> PlayerDeckPreview(
-                look = if (newBottomBar) FlagshipCardLook else ClassicCardLook,
+                look = ClassicCardLook,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(horizontal = 26.dp),
