@@ -29,6 +29,7 @@ import androidx.navigation.NavController
 import com.mochyy.mochymusic.R
 import com.mochyy.mochymusic.playback.PlayerConnection
 import com.mochyy.mochymusic.ui.screens.search.searchRoute
+import com.mochyy.mochymusic.ui.theme.Moody
 import com.mochyy.mochymusic.ui.utils.pressBounce
 import com.mochyy.mochymusic.ui.utils.rememberBounceSource
 
@@ -39,10 +40,11 @@ private enum class ListeningMode(
     val sleepMinutes: Int?,
     val colors: List<Color>,
 ) {
-    Focus(R.string.inspo_mode_focus, R.string.inspo_mode_focus_detail, "lofi focus study music", null, listOf(Color(0xFF2B4C7E), Color(0xFF1B2A41))),
-    Relax(R.string.inspo_mode_relax, R.string.inspo_mode_relax_detail, "chill relaxing music", null, listOf(Color(0xFF3E7C59), Color(0xFF1E3B2B))),
-    Energy(R.string.inspo_mode_energy, R.string.inspo_mode_energy_detail, "upbeat energy workout music", null, listOf(Color(0xFFB5523B), Color(0xFF4A1F17))),
-    Sleep(R.string.inspo_mode_sleep, R.string.inspo_mode_sleep_detail, "ambient sleep music", 30, listOf(Color(0xFF4B3B78), Color(0xFF1A1530))),
+    // moody's deep tones: blue to focus, green to relax, red for energy, plain surface to sleep
+    Focus(R.string.inspo_mode_focus, R.string.inspo_mode_focus_detail, "lofi focus study music", null, listOf(Moody.DeepBlue, Moody.DeepBlue)),
+    Relax(R.string.inspo_mode_relax, R.string.inspo_mode_relax_detail, "chill relaxing music", null, listOf(Moody.DeepGreen, Moody.DeepGreen)),
+    Energy(R.string.inspo_mode_energy, R.string.inspo_mode_energy_detail, "upbeat energy workout music", null, listOf(Moody.DeepRed, Moody.DeepRed)),
+    Sleep(R.string.inspo_mode_sleep, R.string.inspo_mode_sleep_detail, "ambient sleep music", 30, listOf(Moody.Raised, Moody.Raised)),
 }
 
 @Composable
@@ -50,8 +52,8 @@ fun ListeningModesRow(navController: NavController, playerConnection: PlayerConn
     Column(modifier.padding(vertical = 8.dp)) {
         Text(
             stringResource(R.string.inspo_modes_title),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
+            style = HomeLabelStyle,
+            color = Moody.Ink,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
         )
         LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -61,7 +63,7 @@ fun ListeningModesRow(navController: NavController, playerConnection: PlayerConn
                     Modifier
                         .width(148.dp)
                         .pressBounce(source)
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(RoundedCornerShape(Moody.RadiusL))
                         .background(Brush.linearGradient(mode.colors))
                         .clickable(interactionSource = source, indication = null) {
                             mode.sleepMinutes?.let { playerConnection.service.sleepTimer.start(it) }
@@ -69,8 +71,8 @@ fun ListeningModesRow(navController: NavController, playerConnection: PlayerConn
                         }
                         .padding(14.dp),
                 ) {
-                    Text(stringResource(mode.title), color = Color.White, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                    Text(stringResource(mode.detail), color = Color.White.copy(alpha = 0.75f), style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(mode.title), color = Moody.Ink, style = MaterialTheme.typography.titleMedium, fontFamily = com.mochyy.mochymusic.ui.theme.MoodyDisplay, fontWeight = FontWeight.Bold)
+                    Text(stringResource(mode.detail), color = Moody.Ink2, style = MaterialTheme.typography.bodySmall, fontFamily = com.mochyy.mochymusic.ui.theme.MoodyMono)
                 }
             }
         }

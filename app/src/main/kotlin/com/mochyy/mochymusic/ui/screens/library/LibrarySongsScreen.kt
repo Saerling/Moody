@@ -95,13 +95,14 @@ import com.mochyy.mochymusic.viewmodels.LibraryHomeViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
-private enum class SongFilterOption(val labelRes: Int) {
-    ALL(R.string.lib_filter_all),
-    DOWNLOADED(R.string.lib_filter_downloaded),
-    LIKED(R.string.lib_filter_liked),
+// each source keeps its moody color, the same dot the songs carry
+private enum class SongFilterOption(val labelRes: Int, val dot: Color?) {
+    ALL(R.string.lib_filter_all, null),
+    DOWNLOADED(R.string.lib_filter_downloaded, com.mochyy.mochymusic.ui.theme.Moody.Ink),
+    LIKED(R.string.lib_filter_liked, com.mochyy.mochymusic.ui.theme.Moody.Red),
     // where a song comes from, so local files and streamed ones can be told apart in one tap
-    LOCAL(R.string.inspo_filter_local),
-    STREAMING(R.string.inspo_filter_streaming),
+    LOCAL(R.string.inspo_filter_local, com.mochyy.mochymusic.ui.theme.Moody.Green),
+    STREAMING(R.string.inspo_filter_streaming, com.mochyy.mochymusic.ui.theme.Moody.Blue),
 }
 
 private enum class SongSortOption(val labelRes: Int) {
@@ -250,6 +251,7 @@ fun LibrarySongsScreen(
                     items(SongFilterOption.entries, key = { it.name }) { option ->
                         SongFilterChip(
                             label = stringResource(option.labelRes),
+                            dot = option.dot,
                             isSelected = option == activeFilter,
                             onSelect = { activeFilter = option },
                         )
@@ -566,17 +568,18 @@ private fun LibrarySongGridTile(
 @Composable
 private fun SongFilterChip(
     label: String,
+    dot: Color?,
     isSelected: Boolean,
     onSelect: () -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
     val background by animateColorAsState(
-        targetValue = if (isSelected) Color.White else Color(0xFF1E1E22),
+        targetValue = if (isSelected) com.mochyy.mochymusic.ui.theme.Moody.Ink else com.mochyy.mochymusic.ui.theme.Moody.Surface,
         animationSpec = tween(180),
         label = "songFilterChipBg",
     )
     val contentColor by animateColorAsState(
-        targetValue = if (isSelected) Color.Black else Color.White.copy(alpha = 0.85f),
+        targetValue = if (isSelected) com.mochyy.mochymusic.ui.theme.Moody.Night else com.mochyy.mochymusic.ui.theme.Moody.Ink,
         animationSpec = tween(180),
         label = "songFilterChipContent",
     )
@@ -593,7 +596,7 @@ private fun SongFilterChip(
                 .background(background)
                 .then(
                     if (!isSelected) {
-                        Modifier.border(BorderStroke(1.dp, Color(0xFF2E2E34)), CircleShape)
+                        Modifier.border(BorderStroke(1.dp, com.mochyy.mochymusic.ui.theme.Moody.Line), CircleShape)
                     } else {
                         Modifier
                     },
@@ -607,12 +610,18 @@ private fun SongFilterChip(
                 )
                 .padding(horizontal = 16.dp),
         ) {
-            Text(
-                text = label,
-                color = contentColor,
-                fontSize = 13.sp,
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (dot != null) {
+                    Box(Modifier.size(8.dp).clip(CircleShape).background(dot))
+                    Spacer(Modifier.width(7.dp))
+                }
+                Text(
+                    text = label,
+                    color = contentColor,
+                    fontSize = 14.sp,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                )
+            }
         }
     }
 }

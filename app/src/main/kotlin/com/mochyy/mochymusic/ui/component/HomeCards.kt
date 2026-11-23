@@ -60,18 +60,19 @@ val HomeCardSpacing = 12.dp
 
 private val HomeTracking = (-0.06).em
 
+// moody: section names in bricolage, a touch bigger
 val HomeLabelStyle = TextStyle(
-    fontFamily = InterFontFamily,
+    fontFamily = com.mochyy.mochymusic.ui.theme.MoodyDisplay,
     fontWeight = FontWeight.Bold,
-    fontSize = 18.sp,
+    fontSize = 20.sp,
     lineHeight = 22.sp,
     letterSpacing = HomeTracking,
 )
 
 val HomeTitleStyle = TextStyle(
-    fontFamily = InterFontFamily,
-    fontWeight = FontWeight.Bold,
-    fontSize = 24.sp,
+    fontFamily = com.mochyy.mochymusic.ui.theme.MoodyDisplay,
+    fontWeight = FontWeight.ExtraBold,
+    fontSize = 26.sp,
     lineHeight = 28.sp,
     letterSpacing = HomeTracking,
 )
