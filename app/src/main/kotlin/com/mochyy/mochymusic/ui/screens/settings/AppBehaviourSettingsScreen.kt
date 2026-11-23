@@ -111,13 +111,14 @@ private fun larpItems(): List<SettingsItem> {
 @Composable
 private fun appearanceItems(): List<SettingsItem> {
     val (pureBlack, onPureBlack) = rememberPreference(com.mochyy.mochymusic.constants.PureBlackKey, defaultValue = false)
-    val (font, onFont) = rememberPreference(com.mochyy.mochymusic.constants.AppFontKey, defaultValue = "inter")
+    val (font, onFont) = rememberPreference(com.mochyy.mochymusic.constants.AppFontKey, defaultValue = "moody")
     val choices = com.mochyy.mochymusic.ui.theme.UserFont.choices
     val fontLabel = when (font) {
         "system" -> stringResource(R.string.inspo_font_system)
         "serif" -> stringResource(R.string.inspo_font_serif)
         "mono" -> stringResource(R.string.inspo_font_mono)
-        else -> "Inter"
+        "inter" -> "Inter"
+        else -> "Atkinson"
     }
     return listOf(
         switchItem(

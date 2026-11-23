@@ -17,7 +17,7 @@
     <string name="inspo_pitch_black">Negro puro</string>
     <string name="inspo_pitch_black_desc">Fondos totalmente negros: cansan menos la vista de noche y ahorran batería en AMOLED</string>
     <string name="inspo_font">Fuente de la app</string>
-    <string name="inspo_font_desc">Toca para cambiar entre Inter, sistema, serif y mono</string>
+    <string name="inspo_font_desc">Toca para cambiar entre Atkinson, Inter, sistema, serif y mono</string>
     <string name="inspo_font_system">Sistema</string>
     <string name="inspo_font_serif">Serif</string>
     <string name="inspo_font_mono">Mono</string>

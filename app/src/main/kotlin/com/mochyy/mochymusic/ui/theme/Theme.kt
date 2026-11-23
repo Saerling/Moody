@@ -24,7 +24,7 @@ import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
 import com.materialkolor.score.Score
 
-val DefaultThemeColor = Color(0xFF8E8E8E)
+val DefaultThemeColor = Moody.Blue
 
 /**
  * mochy renders dark-only.
@@ -49,21 +49,34 @@ fun MochyTheme(
 
         if (darkTheme) {
             darkColorScheme(
-                primary = Color(0xFFE0E0E0),
-                onPrimary = Color.Black,
-                primaryContainer = Color(0xFF333333),
-                onPrimaryContainer = Color.White,
-                secondary = Color(0xFFB0B0B0),
-                onSecondary = Color.Black,
-                secondaryContainer = Color(0xFF2C2C2C),
-                onSecondaryContainer = Color.White,
-                background = Color.Black,
-                onBackground = Color.White,
-                surface = Color.Black,
-                onSurface = Color.White,
-                surfaceVariant = Color(0xFF1A1A1A),
-                onSurfaceVariant = Color.White,
-                surfaceTint = Color.Black
+                primary = Moody.Blue,
+                onPrimary = Moody.OnBlue,
+                primaryContainer = Moody.DeepBlue,
+                onPrimaryContainer = Moody.Ink,
+                secondary = Moody.Green,
+                onSecondary = Moody.OnGreen,
+                secondaryContainer = Moody.Raised,
+                onSecondaryContainer = Moody.Ink,
+                tertiary = Moody.Red,
+                onTertiary = Color.Black,
+                tertiaryContainer = Moody.DeepRed,
+                onTertiaryContainer = Moody.Ink,
+                error = Moody.Red,
+                onError = Color.Black,
+                background = Moody.Night,
+                onBackground = Moody.Ink,
+                surface = Moody.Night,
+                onSurface = Moody.Ink,
+                surfaceVariant = Moody.Surface,
+                onSurfaceVariant = Moody.Ink2,
+                surfaceContainerLowest = Moody.Night,
+                surfaceContainerLow = Moody.Surface,
+                surfaceContainer = Moody.Surface,
+                surfaceContainerHigh = Moody.Raised,
+                surfaceContainerHighest = Moody.Line,
+                outline = Moody.Ink3,
+                outlineVariant = Moody.Line,
+                surfaceTint = Moody.Night,
             )
         } else {
             lightColorScheme(
@@ -95,7 +108,8 @@ fun MochyTheme(
     }
 
     val font = InterFontFamily
-    val typography = remember(font) { appTypography(font) }
+    val display = DisplayFontFamily
+    val typography = remember(font, display) { appTypography(font, display) }
     MaterialTheme(
         colorScheme = colorScheme,
         typography = typography,

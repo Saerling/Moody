@@ -17,7 +17,7 @@
     <string name="inspo_pitch_black">Pitch black</string>
     <string name="inspo_pitch_black_desc">Pure black backgrounds, easier on the eyes at night and on AMOLED batteries</string>
     <string name="inspo_font">App font</string>
-    <string name="inspo_font_desc">Tap to switch between Inter, system, serif and mono</string>
+    <string name="inspo_font_desc">Tap to switch between Atkinson, Inter, system, serif and mono</string>
     <string name="inspo_font_system">System</string>
     <string name="inspo_font_serif">Serif</string>
     <string name="inspo_font_mono">Mono</string>

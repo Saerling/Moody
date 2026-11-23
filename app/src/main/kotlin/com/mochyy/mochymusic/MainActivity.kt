@@ -1516,7 +1516,7 @@ class MainActivity : ComponentActivity() {
                         speed = prefs[com.mochyy.mochymusic.constants.AnimationSpeedKey] ?: 1f,
                         elementBlur = prefs[com.mochyy.mochymusic.constants.ElementBlurKey] ?: true,
                         coverRadius = prefs[com.mochyy.mochymusic.constants.ThumbnailCornerRadiusKey] ?: 25f,
-                        font = prefs[com.mochyy.mochymusic.constants.AppFontKey] ?: "inter",
+                        font = prefs[com.mochyy.mochymusic.constants.AppFontKey] ?: "moody",
                     )
                 }
                 .distinctUntilChanged()
