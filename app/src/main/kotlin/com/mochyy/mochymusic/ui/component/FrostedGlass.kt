@@ -32,11 +32,13 @@ import com.mochyy.mochymusic.utils.rememberPreference
  */
 
 /** How much of the chrome colour covers the blurred app. */
-private const val FrostTintAlpha = 0.78f
+// moody's tinted frost: less cover, so more of the cover's hue reaches through
+private val FrostTintAlpha = com.mochyy.mochymusic.ui.theme.Moody.GlassTintAlpha
 
 /** The hairline is 2 real pixels on every screen, not 2dp: any thicker and it reads as a border. */
 private const val ChromeOutlineWidthPx = 2f
-private val ChromeOutlineColor = Color.White.copy(alpha = 0.05f)
+private val ChromeOutlineColor = Color.White.copy(alpha = com.mochyy.mochymusic.ui.theme.Moody.GlassEdgeAlpha)
+private val ChromeTopLightColor = Color.White.copy(alpha = com.mochyy.mochymusic.ui.theme.Moody.GlassHighlightAlpha)
 private val ChromeOutlineStroke = Stroke(ChromeOutlineWidthPx)
 
 /** Lifts the chrome off a light page without looking like a dark halo on a black one. */
@@ -142,6 +144,15 @@ fun DrawScope.drawChromeOutline(
         size = Size(size.width - ChromeOutlineWidthPx, size.height - ChromeOutlineWidthPx),
         cornerRadius = CornerRadius((cornerRadius - half).coerceAtLeast(0f)),
         style = ChromeOutlineStroke,
+        alpha = alpha,
+    )
+    // the 1px light along the top edge, between the round ends, that sells the glass as a pane lit from above
+    val r = cornerRadius.coerceAtMost(size.height / 2f)
+    drawLine(
+        color = ChromeTopLightColor,
+        start = Offset(topLeft.x + r, topLeft.y + ChromeOutlineWidthPx),
+        end = Offset(topLeft.x + size.width - r, topLeft.y + ChromeOutlineWidthPx),
+        strokeWidth = 1.dp.toPx(),
         alpha = alpha,
     )
 }

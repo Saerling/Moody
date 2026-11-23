@@ -114,7 +114,8 @@ internal fun Modifier.navHighlight(pill: NavPillState, tabCount: Int, drawn: () 
     // lifted, it swells a little past its slot and brightens, as if it rose off the bar
     val grow = lift * 3.dp.toPx()
     drawRoundRect(
-        color = ChromeHighlightColor.copy(alpha = ChromeHighlightColor.alpha * (1f + 0.7f * lift)),
+        // moody: the lit tab sits on a solid ink pill, the icon on it turns dark
+        color = com.mochyy.mochymusic.ui.theme.Moody.Ink.copy(alpha = 0.92f + 0.08f * lift),
         topLeft = Offset(rect.left - grow, rect.top - grow),
         size = Size(rect.width + grow * 2f, rect.height + grow * 2f),
         cornerRadius = CornerRadius(rect.height / 2f + grow),

@@ -369,7 +369,7 @@ private fun TabIcons(
         Icon(
             painter = litIcon,
             contentDescription = null,
-            tint = Color.White,
+            tint = com.mochyy.mochymusic.ui.theme.Moody.Night,
             modifier = Modifier
                 .size(iconSize)
                 .graphicsLayer {
