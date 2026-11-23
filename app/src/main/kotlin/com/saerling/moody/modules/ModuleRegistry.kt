@@ -19,7 +19,7 @@ import com.saerling.moody.module.LookModule
 import com.saerling.moody.module.LyricsModule
 import com.saerling.moody.module.MODULE_API_VERSION
 import com.saerling.moody.module.MetadataModule
-import com.saerling.moody.module.MochyModule
+import com.saerling.moody.module.MoodyModule
 import com.saerling.moody.module.ModuleArt
 import com.saerling.moody.module.ModuleFeature
 import com.saerling.moody.module.ModuleField
@@ -75,13 +75,13 @@ sealed interface ModuleOrigin {
     data class App(val packageName: String) : ModuleOrigin
     data class Web(val base: String) : ModuleOrigin
     data class File(val fileName: String) : ModuleOrigin
-    /** a zip that brought code of its own, signed with mochy's key */
+    /** a zip that brought code of its own, signed with moody's key */
     data class Code(val fileName: String) : ModuleOrigin
 }
 
 /** a module as the settings show it */
 data class ModuleEntry(
-    val module: MochyModule,
+    val module: MoodyModule,
     val origin: ModuleOrigin,
     val enabled: Boolean,
     /** choice id to the option picked; a choice not in here is on its first option */
@@ -131,9 +131,9 @@ class ModuleRegistry @Inject constructor(
     }
 
     @Volatile
-    private var loaded: List<Pair<MochyModule, ModuleOrigin>>? = null
+    private var loaded: List<Pair<MoodyModule, ModuleOrigin>>? = null
 
-    private val modules: List<Pair<MochyModule, ModuleOrigin>>
+    private val modules: List<Pair<MoodyModule, ModuleOrigin>>
         get() = loaded ?: synchronized(this) { loaded ?: load().also { loaded = it } }
 
     private val _entries = MutableStateFlow<List<ModuleEntry>>(emptyList())
@@ -146,9 +146,9 @@ class ModuleRegistry @Inject constructor(
         scope.launch { refresh() }
     }
 
-    fun module(id: String): MochyModule? = modules.firstOrNull { it.first.info.id == id }?.first
+    fun module(id: String): MoodyModule? = modules.firstOrNull { it.first.info.id == id }?.first
 
-    fun all(): List<MochyModule> = modules.map { it.first }
+    fun all(): List<MoodyModule> = modules.map { it.first }
 
     // youtube starts on, modules start off until they're turned on (or signed in to)
     fun isEnabled(id: String): Boolean = prefs.getBoolean("enabled_$id", id == SourceModules.YouTubeId)
@@ -173,7 +173,7 @@ class ModuleRegistry @Inject constructor(
     fun raise(id: String) = setOrder(listOf(id))
 
     // a look that changes settings, the player, the font or the glass; several can be on, the higher one wins where they meet, a module with only pages doesn't count
-    private fun restyles(module: MochyModule): Boolean =
+    private fun restyles(module: MoodyModule): Boolean =
         module is LookModule && ModuleFeature.Look in module.adds && (module.look.isNotEmpty() || (module as? SkinSource)?.skin?.restyles == true)
 
     fun picks(id: String): Map<String, String> {
@@ -191,13 +191,13 @@ class ModuleRegistry @Inject constructor(
     /** what each of a module's own settings is set to, the field's default until someone changes it */
     fun fieldValues(id: String): Map<String, String> = module(id)?.let(::valuesFor).orEmpty()
 
-    private fun valuesFor(module: MochyModule): Map<String, String> {
+    private fun valuesFor(module: MoodyModule): Map<String, String> {
         val fields = runCatching { (module as? ModuleFields)?.fields }.getOrNull() ?: return emptyMap()
         return fields.associate { field -> field.id to (prefs.getString("field_${module.info.id}_${field.id}", null) ?: field.default) }
     }
 
     // the module hears every value before its first call, so a song asked for straight after a start already gets them
-    private fun handValues(module: MochyModule) {
+    private fun handValues(module: MoodyModule) {
         val values = valuesFor(module).takeIf { it.isNotEmpty() } ?: return
         runCatching { (module as? ModuleFields)?.onFields(values) }
     }
@@ -307,7 +307,7 @@ class ModuleRegistry @Inject constructor(
             // the zip it came in and the manifest's folder inside it, to unpack its pictures and fonts from on install
             val zip: Uri? = null,
             val zipRoot: String = "",
-            // the zip's own code, already checked to be signed like mochy, waiting in the cache to be installed
+            // the zip's own code, already checked to be signed like moody, waiting in the cache to be installed
             val code: File? = null,
             // where a newer copy can be found later: the github project or the link it came from
             val source: ModuleSource? = null,
@@ -318,11 +318,11 @@ class ModuleRegistry @Inject constructor(
         data object Website : LinkCheck
         data object NotAZip : LinkCheck
         data object NeedsUrl : LinkCheck
-        /** its code isn't signed with this mochy's key, so it can't run here */
+        /** its code isn't signed with this moody's key, so it can't run here */
         data object NotSigned : LinkCheck
         /** a github project with no published release */
         data object NoRelease : LinkCheck
-        /** the newest release has no zip with mochyymodule in its name */
+        /** the newest release has no zip with moodymodule in its name */
         data object NoModuleInRelease : LinkCheck
     }
 
@@ -382,7 +382,7 @@ class ModuleRegistry @Inject constructor(
     // a zip that brings its own code: checked to be signed like moody now, so the sheet can say so before anything is added
     private fun checkCode(uri: Uri, text: String, root: String, manifest: WebModuleManifest, code: String): LinkCheck {
         val apk = CodeModules.extract(context, uri, root + code.trimStart('/')) ?: return LinkCheck.NotAModule
-        if (!CodeModules.signedLikeMochy(context, apk)) return LinkCheck.NotSigned
+        if (!CodeModules.signedLikeMoody(context, apk)) return LinkCheck.NotSigned
         val adds = buildSet {
             if (manifest.playsSongs) add(ModuleFeature.AudioSource)
             if (manifest.hasLyrics) add(ModuleFeature.Lyrics)
@@ -560,8 +560,8 @@ class ModuleRegistry @Inject constructor(
 
     // ---- loading --------------------------------------------------------------------------------
 
-    private fun load(): List<Pair<MochyModule, ModuleOrigin>> {
-        val builtIn = listOf<MochyModule>(SpotifyModule(), AppleMusicModule(), MonochromeModule(), JioSaavnModule()).map { it to ModuleOrigin.BuiltIn }
+    private fun load(): List<Pair<MoodyModule, ModuleOrigin>> {
+        val builtIn = listOf<MoodyModule>(SpotifyModule(), AppleMusicModule(), MonochromeModule(), JioSaavnModule()).map { it to ModuleOrigin.BuiltIn }
         val apps = discover()
         val savedCode = savedCodeModules()
         CodeModules.tidy(context, savedCode.map { it.optString("folder") }.toSet())
@@ -607,7 +607,7 @@ class ModuleRegistry @Inject constructor(
         }
     }
 
-    private fun hostFor(module: MochyModule) = object : ModuleHost {
+    private fun hostFor(module: MoodyModule) = object : ModuleHost {
         private val store = context.getSharedPreferences("module_${module.info.id}", Context.MODE_PRIVATE)
 
         override val storage = object : ModuleStorage {
@@ -636,13 +636,13 @@ class ModuleRegistry @Inject constructor(
 
     /** module apps installed on the phone, signed like moody and built for this api */
     @SuppressLint("QueryPermissionsNeeded")
-    private fun discover(): List<Pair<MochyModule, ModuleOrigin>> = runCatching {
+    private fun discover(): List<Pair<MoodyModule, ModuleOrigin>> = runCatching {
         val pm = context.packageManager
         pm.queryIntentServices(Intent(ModuleAction), PackageManager.GET_META_DATA).mapNotNull { info ->
             val service = info.serviceInfo ?: return@mapNotNull null
             val pkg = service.packageName
             val entry = service.metaData?.getString(EntryMetaKey) ?: return@mapNotNull null
-            // its code runs inside mochy, so only an app signed with mochy's own key is let in
+            // its code runs inside moody, so only an app signed with moody's own key is let in
             if (pm.checkSignatures(context.packageName, pkg) != PackageManager.SIGNATURE_MATCH) {
                 Timber.tag(Tag).w("Skipping module $pkg: not signed with the Moody signing key")
                 return@mapNotNull null
@@ -650,7 +650,7 @@ class ModuleRegistry @Inject constructor(
             runCatching {
                 val app = service.applicationInfo
                 val loader = PathClassLoader(app.sourceDir, app.nativeLibraryDir, javaClass.classLoader)
-                val module = loader.loadClass(entry).getDeclaredConstructor().newInstance() as MochyModule
+                val module = loader.loadClass(entry).getDeclaredConstructor().newInstance() as MoodyModule
                 if (module.info.apiVersion != MODULE_API_VERSION) {
                     Timber.tag(Tag).w("Skipping module $pkg: built for API ${module.info.apiVersion}, Moody has $MODULE_API_VERSION")
                     null

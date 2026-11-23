@@ -1,4 +1,4 @@
-// the modules people can find from the modules page, read from modules/catalog.json in mochy's repo so the list grows without an app update
+// the modules people can find from the modules page, read from modules/catalog.json in moody's repo so the list grows without an app update
 
 package com.saerling.moody.modules
 

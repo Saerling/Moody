@@ -74,7 +74,7 @@ class TransportFadingPlayer(
         listeners -= listener
     }
 
-    // while mochy's own usb driver plays, android's music volume no longer reaches the dac: the volume keys and the system panel turn the dac's own knob instead
+    // while moody's own usb driver plays, android's music volume no longer reaches the dac: the volume keys and the system panel turn the dac's own knob instead
     private val dac: AudioPass.DacVolume? get() = pass?.dacVolume?.value
 
     override fun getDeviceInfo(): DeviceInfo = if (dac != null) DacDevice else super.getDeviceInfo()

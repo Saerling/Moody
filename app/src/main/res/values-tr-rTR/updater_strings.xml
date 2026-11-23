@@ -35,7 +35,7 @@
     <string name="mobile_network_warning">Mobil ağda ya da dolaşımdayken güncelleme indirmek ek ücrete yol açabilir.</string>
     <string name="update_size">Güncelleme boyutu: %1$s MB</string>
     <string name="check_internet_connection">İnternet bağlantını kontrol edip tekrar dene.</string>
-    <string name="mochy_music_version">Moody sürüm %1$s</string>
+    <string name="moody_music_version">Moody sürüm %1$s</string>
     <string name="last_checked">Son kontrol: %1$s</string>
     <string name="install">Kur</string>
     <string name="check_for_update">Güncellemeyi kontrol et</string>
@@ -51,7 +51,7 @@
     <string name="update_notifications_subtitle">Yeni güncelleme bulununca bildirim gösterir</string>
     <string name="settings_check_updates_title">Güncellemeleri kontrol et</string>
     <string name="later">Sonra</string>
-    <string name="mochy_music_title">Moody</string>
+    <string name="moody_music_title">Moody</string>
     <string name="developer_section">GELİŞTİRİCİ</string>
     <string name="collaborator_section">KATKIDA BULUNAN</string>
     <string name="app_info_section">UYGULAMA BİLGİSİ</string>

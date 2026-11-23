@@ -97,17 +97,18 @@ val SearchTitleBlockHeight = 62.dp
 
 val SearchTopClearance = 18.dp
 
+// moody's palette for search and the library lists
 object SearchColors {
-    val Field = Color(0xFF141416)
-    val FieldFocused = Color(0xFF1E1E21)
-    val Tile = Color(0xFF121214)
-    val TileHigh = Color(0xFF1C1C1F)
-    val Divider = Color(0xFF232326)
-    val Primary = Color.White
-    val Secondary = Color(0xFF9A9AA0)
-    val Placeholder = Color(0xFF77777D)
+    val Field = com.saerling.moody.ui.theme.Moody.Surface
+    val FieldFocused = com.saerling.moody.ui.theme.Moody.Raised
+    val Tile = com.saerling.moody.ui.theme.Moody.Surface
+    val TileHigh = com.saerling.moody.ui.theme.Moody.Raised
+    val Divider = com.saerling.moody.ui.theme.Moody.Raised
+    val Primary = com.saerling.moody.ui.theme.Moody.Ink
+    val Secondary = com.saerling.moody.ui.theme.Moody.Ink2
+    val Placeholder = com.saerling.moody.ui.theme.Moody.Ink3
 
-    fun page(pureBlack: Boolean): Color = Color.Black
+    fun page(pureBlack: Boolean): Color = com.saerling.moody.ui.theme.Moody.Night
 }
 
 val SearchCollapseEasing = CubicBezierEasing(0.57f, 0.53f, 0f, 1f)

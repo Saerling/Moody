@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-// the line being sung floating over other apps: shown while it's turned on and allowed, a song is loaded and mochy itself is out of sight
+// the line being sung floating over other apps: shown while it's turned on and allowed, a song is loaded and moody itself is out of sight
 class FloatingLyrics(
     private val context: Context,
     private val database: MusicDatabase,
@@ -52,7 +52,7 @@ class FloatingLyrics(
 ) {
     private val appVisible = MutableStateFlow(true)
 
-    // dropped on close: hidden until mochy is opened again
+    // dropped on close: hidden until moody is opened again
     private val dismissed = MutableStateFlow(false)
     private val state = PillState { player.value }
     private var job: Job? = null

@@ -1,4 +1,4 @@
-// the stream and phone words a module player's text can show: codec, rate, bitrate, bits, size, lossy or lossless, the output, the volume and how busy mochy is (docs/wiki, text blocks)
+// the stream and phone words a module player's text can show: codec, rate, bitrate, bits, size, lossy or lossless, the output, the volume and how busy moody is (docs/wiki, text blocks)
 
 package com.saerling.moody.ui.player.styles
 
@@ -48,7 +48,7 @@ internal class SkinAudio(initial: Map<String, String> = emptyMap()) {
     var fields by mutableStateOf(initial)
         internal set
 
-    // a value mochy doesn't know yet shows as a dash, so the layout never jumps around an empty gap
+    // a value moody doesn't know yet shows as a dash, so the layout never jumps around an empty gap
     fun fill(text: String): String = SkinAudioField.replace(text) { fields[it.groupValues[1].lowercase()] ?: Unknown }
 }
 
@@ -112,7 +112,7 @@ private fun streamWords(facts: StreamFacts?, details: StreamDetails, youtube: Fo
     }
 }
 
-// the phone's media volume and mochy's share of the cpu, once a second, off the main thread since the volume is a binder call
+// the phone's media volume and moody's share of the cpu, once a second, off the main thread since the volume is a binder call
 private fun liveFlow(android: Context): Flow<Map<String, String>> = flow {
     val manager = android.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     val cores = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)

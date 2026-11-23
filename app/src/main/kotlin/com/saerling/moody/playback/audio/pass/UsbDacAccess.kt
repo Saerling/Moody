@@ -30,7 +30,7 @@ internal class UsbDacAccess(context: Context, private val onChanged: () -> Unit)
     /** told when a dac goes away, so a stream to it stops at once instead of at its next write */
     var onDetached: ((Int) -> Unit)? = null
 
-    /** null with no dac plugged in, else whether android lets mochy open it */
+    /** null with no dac plugged in, else whether android lets moody open it */
     private val _permitted = MutableStateFlow<Boolean?>(null)
     val permitted: StateFlow<Boolean?> = _permitted.asStateFlow()
 

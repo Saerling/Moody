@@ -1,4 +1,4 @@
-// last.fm or libre.fm sign-in right inside mochy, the password goes to the service once and only the key it sends back is kept
+// last.fm or libre.fm sign-in right inside moody, the password goes to the service once and only the key it sends back is kept
 
 package com.saerling.moody.ui.screens.settings.integrations
 

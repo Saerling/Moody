@@ -245,7 +245,7 @@ import com.saerling.moody.constants.CrossmixAlwaysMixKey
 import com.saerling.moody.utils.dataStore
 import com.saerling.moody.utils.get
 import com.saerling.moody.utils.reportException
-import com.saerling.moody.widget.MochyWidgetManager
+import com.saerling.moody.widget.MoodyWidgetManager
 import com.saerling.moody.widget.MusicWidgetReceiver
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -348,7 +348,7 @@ class MusicService :
     lateinit var sourceModules: com.saerling.moody.modules.SourceModules
 
     @Inject
-    lateinit var widgetManager: MochyWidgetManager
+    lateinit var widgetManager: MoodyWidgetManager
 
     private lateinit var audioManager: AudioManager
     private var audioFocusRequest: AudioFocusRequest? = null
@@ -800,7 +800,7 @@ class MusicService :
             val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(getString(R.string.music_player))
                 .setContentText("")
-                .setSmallIcon(R.drawable.mochy_notification)
+                .setSmallIcon(R.drawable.moody_notification)
                 .setContentIntent(pending)
                 .setOngoing(true)
                 .build()
@@ -818,7 +818,7 @@ class MusicService :
                 R.string.music_player
             )
                 .apply {
-                    setSmallIcon(R.drawable.mochy_notification)
+                    setSmallIcon(R.drawable.moody_notification)
                 },
         )
         audioOutputs.onRouteChanged = ::applyOutputRoute
@@ -3913,7 +3913,7 @@ class MusicService :
                 )
             }
             val notification = NotificationCompat.Builder(this, ERROR_CHANNEL_ID)
-                .setSmallIcon(R.drawable.mochy_notification)
+                .setSmallIcon(R.drawable.moody_notification)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setStyle(NotificationCompat.BigTextStyle().bigText(message))
@@ -4126,7 +4126,7 @@ class MusicService :
 
     /**
      * The app's top banner (the one "Added to playlist" uses), with the song's cover. Only while
-     * Mochy is on screen: one raised in the background would greet the user later, for a song
+     * Moody is on screen: one raised in the background would greet the user later, for a song
      * that's long gone.
      */
     private fun showBanner(text: String, warning: Boolean = false) {

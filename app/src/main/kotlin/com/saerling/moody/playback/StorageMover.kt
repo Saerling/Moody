@@ -114,7 +114,7 @@ class StorageMover @Inject constructor(
         }
     }
 
-    // writes and removes a small file first, so a folder android won't let mochy write in fails here instead of after the restart
+    // writes and removes a small file first, so a folder android won't let moody write in fails here instead of after the restart
     private fun checkWritable(root: File) {
         if (!root.exists() && !root.mkdirs()) throw IOException("couldn't make ${root.path}")
         val probe = File(root, ".mochy-write-check")

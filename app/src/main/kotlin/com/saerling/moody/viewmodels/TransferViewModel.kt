@@ -71,7 +71,7 @@ class TransferViewModel @Inject constructor(
     suspend fun check(source: Uri): Result<TransferManifest> =
         importer.peek(source).onSuccess { _manifest.value = it }
 
-    /** true when the zip has local songs and mochy can't see the phone's music yet, so it's worth asking first */
+    /** true when the zip has local songs and moody can't see the phone's music yet, so it's worth asking first */
     fun wantsAudioPermission(manifest: TransferManifest): Boolean =
         manifest.localSongs > 0 && ContextCompat.checkSelfPermission(context, AudioPermission) != PackageManager.PERMISSION_GRANTED
 
@@ -100,7 +100,7 @@ class TransferViewModel @Inject constructor(
     }
 
     companion object {
-        /** the permission that lets mochy find local songs again, it changed name in android 13 */
+        /** the permission that lets moody find local songs again, it changed name in android 13 */
         val AudioPermission: String =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE
     }

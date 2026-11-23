@@ -90,10 +90,10 @@ private fun shareText(size: Float, weight: FontWeight = FontWeight.Bold, color: 
     TextStyle(fontFamily = InterFontFamily, fontWeight = weight, fontSize = size.sp, letterSpacing = tracking.sp, color = color)
 
 @Composable
-internal fun MochyMark(color: Color, size: Float = 14f) {
+internal fun MoodyMark(color: Color, size: Float = 14f) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
-            painter = painterResource(R.drawable.ic_mochy_mark),
+            painter = painterResource(R.drawable.ic_moody_mark),
             contentDescription = null,
             tint = color,
             modifier = Modifier.size((size + 2f).dp),
@@ -137,7 +137,7 @@ private fun SongHeader(song: ShareSong, color: Color, cover: Float, title: Float
 /**
  * The cinematic style: the words straight on the background, each one as its look says - bigger,
  * in capitals, glowing. Lines sit on their own, so a big word only pushes its own line apart. The
- * words shrink to fit when there are many, the Mochy mark always keeps its place at the bottom,
+ * words shrink to fit when there are many, the Moody mark always keeps its place at the bottom,
  * and the song slides past the words when it moves above or below them.
  */
 @Composable
@@ -187,7 +187,7 @@ internal fun CinematicLayout(
                     }
                 }
             },
-            { MochyMark(ink) },
+            { MoodyMark(ink) },
         ),
         modifier = Modifier.fillMaxSize(),
     ) { (headerPart, wordsPart, markPart), constraints ->

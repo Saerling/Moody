@@ -99,7 +99,7 @@ fun NavController.openSettingsPage(route: String) {
 fun SettingsListPane(navController: NavController, selectedRoute: String?, modifier: Modifier = Modifier) {
     val windowWidth = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp.dp
     Box(modifier = modifier.width(settingsListWidth(windowWidth)).fillMaxHeight()) {
-        MochySettingsScreen(navController = navController, pane = SettingsPane(selectedRoute))
+        MoodySettingsScreen(navController = navController, pane = SettingsPane(selectedRoute))
         Box(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
@@ -125,7 +125,7 @@ fun SettingsPanePlaceholder() {
             modifier = Modifier.padding(horizontal = 40.dp),
         ) {
             Icon(
-                painter = painterResource(R.drawable.ic_mochy_mark),
+                painter = painterResource(R.drawable.ic_moody_mark),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
                 modifier = Modifier.size(40.dp),

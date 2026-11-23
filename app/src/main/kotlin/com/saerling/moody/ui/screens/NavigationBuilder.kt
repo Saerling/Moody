@@ -104,7 +104,6 @@ import com.saerling.moody.ui.screens.search.OnlineSearchResult
 import com.saerling.moody.ui.screens.search.SearchScreen
 import com.saerling.moody.utils.rememberEnumPreference
 import com.saerling.moody.utils.rememberPreference
-import com.saerling.moody.ui.screens.settings.ProfileScreen
 import com.saerling.moody.ui.screens.library.LibraryAlbumsScreen
 import com.saerling.moody.ui.screens.SectionDetailScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -229,7 +228,7 @@ fun NavGraphBuilder.navigationBuilder(
     ) {
 
         CompositionLocalProvider(LocalNavAnimatedContentScope provides this) {
-            // moody's home, built from scratch; the old mochy home is gone
+            // moody's home, built from scratch; the old moody home is gone
             com.saerling.moody.ui.screens.moody.MoodyHome(navController = navController)
         }
     }
@@ -289,10 +288,8 @@ fun NavGraphBuilder.navigationBuilder(
         val pureBlackEnabled by rememberPreference(PureBlackKey, defaultValue = false)
         val useDarkTheme = ForceDarkTheme
         CompositionLocalProvider(LocalNavAnimatedContentScope provides this) {
-            com.saerling.moody.ui.screens.library.LibraryHomeScreen(
-                navController = navController,
-                pureBlack = remember(pureBlackEnabled, useDarkTheme) { pureBlackEnabled && useDarkTheme },
-            )
+            // moody's library, built from scratch
+            com.saerling.moody.ui.screens.moody.MoodyLibrary(navController = navController)
         }
     }
 
@@ -376,7 +373,7 @@ fun NavGraphBuilder.navigationBuilder(
     }
 
     composable(Screens.Settings.route) {
-        ProfileScreen(navController = navController)
+        com.saerling.moody.ui.screens.moody.MoodySettings(navController = navController)
     }
 
     composable("stats") {
@@ -396,7 +393,7 @@ fun NavGraphBuilder.navigationBuilder(
         if (com.saerling.moody.ui.utils.isWideLayout()) {
             com.saerling.moody.ui.screens.settings.SettingsPanePlaceholder()
         } else {
-            com.saerling.moody.ui.screens.settings.MochySettingsScreen(navController = navController)
+            com.saerling.moody.ui.screens.settings.MoodySettingsScreen(navController = navController)
         }
     }
 

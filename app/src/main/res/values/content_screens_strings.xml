@@ -2,7 +2,7 @@
 <resources>
     <!-- About Sheet -->
     <string name="about_app">About app</string>
-    <string name="about_mochy_music_version">Moody | %1$s</string>
+    <string name="about_moody_music_version">Moody | %1$s</string>
     <string name="about_app_description">Moody is a music app but\nkinda cool.</string>
     <string name="about_actions">Actions</string>
     <string name="about_support_me">Support me please :3 \u2192</string>

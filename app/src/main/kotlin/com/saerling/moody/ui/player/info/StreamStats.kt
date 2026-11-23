@@ -119,7 +119,7 @@ private fun decoderCard(c: Context, input: StatsInput): StatCard {
 private fun resamplerCard(c: Context, input: StatsInput): StatCard {
     val d = input.details
     val effects = input.effects
-    if (d.resampledFrom != null && d.resampledTo != null) return mochyResamplerCard(c, d, effects)
+    if (d.resampledFrom != null && d.resampledTo != null) return moodyResamplerCard(c, d, effects)
     val inRate = d.decodedSampleRate ?: d.sampleRate ?: return StatCard(c.t(R.string.pc_stat_resampler), emptyList())
     val outRate = input.mixer?.sampleRate ?: input.systemMixerRate?.takeIf { input.device?.kind in FixedRateKinds && input.castingTo == null }
     val timeStretch = effects.speed != 1f || effects.pitch != 1f
@@ -145,11 +145,11 @@ private fun resamplerCard(c: Context, input: StatsInput): StatCard {
     )
 }
 
-// mochy's own filter did the work, so android's mixer is handed the rate it already runs at
-private fun mochyResamplerCard(c: Context, d: StreamDetails, effects: EffectsSnapshot): StatCard = StatCard(
+// moody's own filter did the work, so android's mixer is handed the rate it already runs at
+private fun moodyResamplerCard(c: Context, d: StreamDetails, effects: EffectsSnapshot): StatCard = StatCard(
     title = c.t(R.string.pc_stat_resampler),
     lines = listOfNotNull(
-        c.t(R.string.pc_stat_type) to c.t(R.string.pc_stat_rs_mochy),
+        c.t(R.string.pc_stat_type) to c.t(R.string.pc_stat_rs_moody),
         c.t(R.string.pc_stat_io_rate) to "${kHz(d.resampledFrom!!)} → ${kHz(d.resampledTo!!)}",
         d.resamplerPassbandHz?.let { c.t(R.string.pc_stat_passband) to c.t(R.string.pc_stat_flat_to, kHz(it.toInt())) },
         c.t(R.string.pc_stat_cutoff) to kHz(minOf(d.resampledFrom, d.resampledTo) / 2),

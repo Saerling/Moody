@@ -19,7 +19,7 @@ import com.saerling.moody.MainActivity
 import com.saerling.moody.R
 import com.saerling.moody.ui.component.TopToaster
 
-// the phone's side of "your tv and phone are in step": a banner while mochy is open, a quiet notification otherwise
+// the phone's side of "your tv and phone are in step": a banner while moody is open, a quiet notification otherwise
 internal object PhoneLinkNotices {
     private const val ChannelId = "tv_link_events"
     private const val NoticeId = 4_712
@@ -64,7 +64,7 @@ internal object PhoneLinkNotices {
         manager.notify(
             NoticeId,
             NotificationCompat.Builder(context, ChannelId)
-                .setSmallIcon(R.drawable.mochy_notification)
+                .setSmallIcon(R.drawable.moody_notification)
                 .setContentTitle(title)
                 .setContentText(detail)
                 .setContentIntent(open)

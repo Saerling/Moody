@@ -4,7 +4,7 @@ package com.saerling.moody.playback.audio.pass
 
 import java.nio.ByteBuffer
 
-/** one output only mochy plays to, opened at one fixed format; nothing in here mixes, resamples or scales a sample */
+/** one output only moody plays to, opened at one fixed format; nothing in here mixes, resamples or scales a sample */
 internal interface PassTransport {
     val sampleRate: Int
     val channels: Int

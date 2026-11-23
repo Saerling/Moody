@@ -205,7 +205,7 @@ object YTPlayerUtils {
     /**
      * Headers googlevideo expects alongside a stream url. It checks these against the client
      * named in the url's own `c=` parameter, so a WEB_REMIX url fetched without the YouTube
-     * Music origin is refused. mochy previously sent none of this.
+     * Music origin is refused. moody previously sent none of this.
      */
     internal fun YouTubeClient.streamHeaders(): Map<String, String> =
         buildMap {

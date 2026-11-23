@@ -25,7 +25,7 @@ import com.saerling.moody.R
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-// the two pills a carried bubble can be dropped on: close hides it until mochy opens again, never turns floating lyrics off
+// the two pills a carried bubble can be dropped on: close hides it until moody opens again, never turns floating lyrics off
 internal enum class PillDrop { CLOSE, NEVER }
 
 private const val RestFill = 0xF0242528.toInt()

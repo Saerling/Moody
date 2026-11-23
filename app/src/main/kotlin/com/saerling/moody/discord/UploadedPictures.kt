@@ -91,7 +91,7 @@ internal suspend fun loadLocalPicture(context: Context, source: String, size: In
     Bitmap.createBitmap(image, (image.width - side) / 2, (image.height - side) / 2, side, side)
 }
 
-// keeps a picked picture in mochy's own folder (the picker's link stops working later) and gives back its file uri, or null if it can't be read
+// keeps a picked picture in moody's own folder (the picker's link stops working later) and gives back its file uri, or null if it can't be read
 internal suspend fun savePresencePicture(context: Context, picked: Uri, slot: String): String? {
     val picture = loadLocalPicture(context, picked.toString(), 512) ?: return null
     return withContext(Dispatchers.IO) {

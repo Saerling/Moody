@@ -23,7 +23,7 @@ import com.saerling.moody.eq.VolumeSettings
 import com.saerling.moody.extensions.toEnum
 import kotlinx.serialization.Serializable
 
-/** each of these changes the sound on mochy's side, and an output that takes the song untouched can't, so songs play the normal way while one is on */
+/** each of these changes the sound on moody's side, and an output that takes the song untouched can't, so songs play the normal way while one is on */
 enum class PassBlocker { EQUALIZER, AUDIO_FX, VOLUME, NORMALIZATION, SPEED, TRANSITIONS, SILENCE_OR_HAPTICS }
 
 /** the pieces of audio lab the blockers are read from, gathered so one call can decide */

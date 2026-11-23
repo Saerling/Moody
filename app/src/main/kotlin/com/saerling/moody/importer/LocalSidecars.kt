@@ -15,7 +15,7 @@ data class LocalFile(val uri: Uri, val name: String?, val lyrics: Uri? = null, v
 // a file seen in a folder or a pick, before it's known what it belongs to
 class NamedFile(val uri: Uri, val name: String, val kind: Kind)
 
-// lyrics and covers kept next to songs the way other players and mochy's own export leave them
+// lyrics and covers kept next to songs the way other players and moody's own export leave them
 object LocalSidecars {
     // a cover past this is a photo someone left in the folder, not album art
     private const val MaxCoverBytes = 20 * 1024 * 1024

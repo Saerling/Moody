@@ -149,7 +149,7 @@
 }
 
 ## Modules from a zip
-# a zip module's own code reaches mochy only through these, by their original names
+# a zip module's own code reaches moody only through these, by their original names
 -keep class com.saerling.moody.module.bridge.shared.** { *; }
 
 ## Kotlin Reflection Fix

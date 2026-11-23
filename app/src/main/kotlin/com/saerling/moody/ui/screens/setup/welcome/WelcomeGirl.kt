@@ -95,7 +95,7 @@ internal fun WelcomeGirl(
     motion: GirlMotion,
     seconds: FloatState,
     modifier: Modifier = Modifier,
-    screen: @Composable BoxScope.() -> Unit = { MochyPhoneScreen() },
+    screen: @Composable BoxScope.() -> Unit = { MoodyPhoneScreen() },
 ) {
     BoxWithConstraints(modifier) {
         val rawScale = if (constraints.hasBoundedWidth && constraints.maxWidth > 0) {
@@ -153,9 +153,9 @@ internal fun WelcomeGirl(
     }
 }
 
-// what her phone shows for now: plain gray with the mochy mark
+// what her phone shows for now: plain gray with the moody mark
 @Composable
-internal fun BoxScope.MochyPhoneScreen() {
+internal fun BoxScope.MoodyPhoneScreen() {
     Box(
         modifier = Modifier
             .matchParentSize()
@@ -163,7 +163,7 @@ internal fun BoxScope.MochyPhoneScreen() {
         contentAlignment = Alignment.Center,
     ) {
         Icon(
-            painter = painterResource(R.drawable.ic_mochy_mark),
+            painter = painterResource(R.drawable.ic_moody_mark),
             contentDescription = null,
             tint = Color.White.copy(alpha = 0.92f),
             modifier = Modifier

@@ -7,7 +7,7 @@ import com.saerling.moody.module.HttpResponse
 import com.saerling.moody.module.ItemListModule
 import com.saerling.moody.module.ItemProblem
 import com.saerling.moody.module.ItemsAdded
-import com.saerling.moody.module.MochyModule
+import com.saerling.moody.module.MoodyModule
 import com.saerling.moody.module.ModuleFeature
 import com.saerling.moody.module.ModuleHost
 import com.saerling.moody.module.ModuleStorage
@@ -35,7 +35,7 @@ import java.io.IOException
 import java.net.URLClassLoader
 import kotlin.io.path.createTempDirectory
 
-// a module behind the bridge in a class loader of its own, the way mochy loads one from a zip: if anything but the shared package crossed, these would throw
+// a module behind the bridge in a class loader of its own, the way moody loads one from a zip: if anything but the shared package crossed, these would throw
 class BridgeTest {
 
     private class FakeHost : ModuleHost {
@@ -64,10 +64,10 @@ class BridgeTest {
 
     private val song = TrackQuery("Espresso", listOf("Sabrina Carpenter"), durationMs = 175_000)
 
-    // the module's own copy of everything it runs on, mochy's classes only reachable through the shared package
+    // the module's own copy of everything it runs on, moody's classes only reachable through the shared package
     private fun isolated(): URLClassLoader {
         val homes = listOf(
-            ModuleSide::class.java, FakeModule::class.java, MochyModule::class.java, KotlinVersion::class.java,
+            ModuleSide::class.java, FakeModule::class.java, MoodyModule::class.java, KotlinVersion::class.java,
             Job::class.java, Json::class.java, SerializationException::class.java,
         ).map { it.protectionDomain.codeSource.location }.distinct()
         return URLClassLoader(homes.toTypedArray(), BridgeOnlyParent(javaClass.classLoader))
@@ -99,7 +99,7 @@ class BridgeTest {
         assertEquals("Scripts", (module as ItemListModule).itemsLabel)
         assertEquals(AccountState.SignedIn("ready"), module.accountState())
         assertEquals(listOf("quality"), module.choices.map { it.id })
-        // attach reached mochy's storage and its private folder
+        // attach reached moody's storage and its private folder
         assertEquals(host.folder.path, host.saved["folder"])
     }
 
@@ -117,7 +117,7 @@ class BridgeTest {
         val drm = stream.drm as StreamDrm.Widevine
         assertArrayEquals(byteArrayOf(1, 2, 3), drm.initData.single())
         assertArrayEquals(byteArrayOf(3, 2, 1), drm.license.acquire(byteArrayOf(1, 2, 3)))
-        // its http went through mochy, and the answer came back with its headers
+        // its http went through moody, and the answer came back with its headers
         assertEquals("https://fake.example/search?q=Espresso", host.requests.single().url)
         assertTrue(host.logs.any { it == "search said application/json {\"ok\":true}" })
     }

@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.saerling.moody.lyrics.LyricsEntry
 import com.saerling.moody.lyrics.LyricsUtils
-import com.saerling.moody.ui.player.share.MochyMark
+import com.saerling.moody.ui.player.share.MoodyMark
 import com.saerling.moody.ui.player.share.SweptText
 import com.saerling.moody.ui.player.share.timedPieces
 import com.saerling.moody.ui.theme.InterFontFamily
@@ -88,7 +88,7 @@ internal fun MusicOnlyCard(session: SongShareSession, positionMs: () -> Long, mo
             ClipProgress(session, positionMs, ink)
         }
         Spacer(Modifier.height(12.dp))
-        MochyMark(ink, size = 12f)
+        MoodyMark(ink, size = 12f)
     }
 }
 
@@ -113,7 +113,7 @@ internal fun LyricsCard(session: SongShareSession, positionMs: () -> Long, movin
         Spacer(Modifier.height(14.dp))
         CardLyrics(session, ink, sung = moving && session.lyricsSynced, positionMs)
         Spacer(Modifier.height(16.dp))
-        MochyMark(ink, size = 12f)
+        MoodyMark(ink, size = 12f)
     }
 }
 

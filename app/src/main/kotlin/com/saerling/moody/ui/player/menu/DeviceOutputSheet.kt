@@ -101,7 +101,7 @@ fun DeviceOutputSheet(onDismiss: () -> Unit) {
     var tappedTarget by remember { mutableStateOf<String?>(null) }
     val (passthrough) = rememberPreference(UsbPassthroughKey, false)
     val anyChosen = devices.any { it.isChosen }
-    // larping, whatever is really playing turns into the level's dac, fed straight from mochy
+    // larping, whatever is really playing turns into the level's dac, fed straight from moody
     val larp =
         com.saerling.moody.ui.player
             .rememberLarpMode()

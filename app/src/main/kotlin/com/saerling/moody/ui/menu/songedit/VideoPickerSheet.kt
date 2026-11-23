@@ -68,7 +68,7 @@ import kotlinx.coroutines.withContext
 
 private const val SearchSettleMs = 400L
 
-// what the song's video should be: whatever mochy finds, none at all, or one picked here
+// what the song's video should be: whatever moody finds, none at all, or one picked here
 internal sealed interface VideoChoice {
     data object Auto : VideoChoice
     data object None : VideoChoice

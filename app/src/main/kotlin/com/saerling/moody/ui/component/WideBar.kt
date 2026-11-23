@@ -172,7 +172,7 @@ fun WideBarBackground(
 ) {
     val glassState = LocalGlassState.current ?: remember { GlassState() }
     val accentWash = rememberChromeAccentWash()
-    // a look's glass that draws its own edge leaves mochy's hairline and shadow out
+    // a look's glass that draws its own edge leaves moody's hairline and shadow out
     val moduleGlass = rememberChromeModuleGlass()
     Box(modifier = modifier) {
         Box(
@@ -225,7 +225,7 @@ fun WideBarTabs(
                 .width(bar.tabsWidth)
                 .height(bar.height)
                 .padding(horizontal = NavRowPadding)
-                // the wide bar's tabs sit apart from its glass, so mochy draws this pill even when the look's glass draws the nav bar's
+                // the wide bar's tabs sit apart from its glass, so moody draws this pill even when the look's glass draws the nav bar's
                 .navHighlight(pill, navigationItems.size)
                 .navPillDrag(pill, navigationItems.size, selectedIndex) { index ->
                     navigationItems.getOrNull(index)?.let { onItemClick(it, index == selectedIndex) }

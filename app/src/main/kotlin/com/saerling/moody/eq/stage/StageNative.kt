@@ -8,7 +8,7 @@ import java.nio.ByteBuffer
 internal object StageNative {
 
     /** loads the library the first time the room is wanted, so nobody else pays for it */
-    val loaded: Boolean by lazy { runCatching { System.loadLibrary("mochystage") }.isSuccess }
+    val loaded: Boolean by lazy { runCatching { System.loadLibrary("moodystage") }.isSuccess }
 
     // the parameter array's layout, the same as engine.h
     const val Enabled = 0

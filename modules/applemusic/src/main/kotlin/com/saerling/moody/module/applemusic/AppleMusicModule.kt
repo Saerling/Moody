@@ -35,13 +35,13 @@ import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Plays the user's own Apple Music subscription inside Mochy.
+ * Plays the user's own Apple Music subscription inside Moody.
  *
  * Signing in happens on music.apple.com itself; the module keeps the web player's developer token
  * and the account's music-user token. A song is found in the catalog by title, artist and length,
  * its web-playback stream is opened, and the device's Widevine CDM decrypts it inside the
  * platform, licensed by Apple's web license server exactly as the web player in Chrome is.
- * Mochy's own player does the playing, so every effect applies.
+ * Moody's own player does the playing, so every effect applies.
  *
  * What it can't do: lossless, Atmos and Apple's Spatial mix (only in streams encoded for FairPlay,
  * Apple's own DRM) and downloads (no offline licenses; the audio is never decrypted outside the

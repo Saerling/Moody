@@ -26,7 +26,7 @@ data class DeviceSong(
     val artworkUri: String?,
 )
 
-/** finds the music already on the phone, once the user lets mochy read its storage */
+/** finds the music already on the phone, once the user lets moody read its storage */
 object DeviceMusicScanner {
     /** android 13 split audio out of the general storage permission */
     val permission: String

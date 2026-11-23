@@ -29,7 +29,7 @@ import com.saerling.moody.module.TrackQuery
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.awaitCancellation
 
-// a module the bridge test loads on its own class loader, it reports back only through mochy's host
+// a module the bridge test loads on its own class loader, it reports back only through moody's host
 class FakeModule : SourceModule, ItemListModule {
 
     override val info = ModuleInfo("fake", "Fake", "1.0", "Answers the bridge test")
@@ -97,7 +97,7 @@ class FakeModule : SourceModule, ItemListModule {
     }
 }
 
-// a module built against an older api, which mochy has to turn away
+// a module built against an older api, which moody has to turn away
 class OldModule : SourceModule {
     override val info = ModuleInfo("old", "Old", "1.0", "Too old", apiVersion = 2)
     override fun attach(host: ModuleHost) = Unit

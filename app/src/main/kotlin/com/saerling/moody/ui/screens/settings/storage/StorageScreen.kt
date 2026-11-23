@@ -1,4 +1,4 @@
-// settings → storage: how much room mochy takes on each drive, the cache limit, clearing things, where things are saved and exporting songs
+// settings → storage: how much room moody takes on each drive, the cache limit, clearing things, where things are saved and exporting songs
 
 package com.saerling.moody.ui.screens.settings.storage
 
@@ -67,7 +67,7 @@ fun StorageScreen(navController: NavController, viewModel: StorageViewModel = hi
     LaunchedEffect(downloads?.size) { viewModel.measure() }
 
     SubSettingsScaffold(title = stringResource(R.string.storage), onBack = { navController.navigateUp() }) {
-        // one overall card per drive mochy keeps things on, the phone first
+        // one overall card per drive moody keeps things on, the phone first
         val drives = usage?.drives
         if (drives == null) {
             OverallCard(null)
@@ -110,9 +110,9 @@ private fun SectionText(text: String) {
 @Composable
 private fun headline(usage: StorageUsage): String =
     if (usage.drives.size == 1) {
-        stringResource(R.string.storage_uses, percentOf(usage.mochy, usage.phone.total), formatSize(usage.mochy))
+        stringResource(R.string.storage_uses, percentOf(usage.moody, usage.phone.total), formatSize(usage.moody))
     } else {
-        stringResource(R.string.storage_uses_drives, formatSize(usage.mochy), usage.drives.size)
+        stringResource(R.string.storage_uses_drives, formatSize(usage.moody), usage.drives.size)
     }
 
 // like 1.4%, or <0.1% for a sliver, so a small app never reads as using nothing
@@ -136,16 +136,16 @@ private fun OverallCard(drive: DriveUsage?) {
         Spacer(Modifier.height(14.dp))
         UsageBar(
             parts = listOf(
-                BarPart(MochyGreen, drive?.mochy ?: 0),
+                BarPart(MoodyGreen, drive?.moody ?: 0),
                 BarPart(OthersGrey, drive?.othersUsed ?: 0),
             ),
             total = drive?.total ?: 0,
         )
         Spacer(Modifier.height(14.dp))
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            LegendSwatch(MochyGreen)
+            LegendSwatch(MoodyGreen)
             Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.storage_legend_mochy), style = storageText(16f, FontWeight.SemiBold))
+            Text(stringResource(R.string.storage_legend_moody), style = storageText(16f, FontWeight.SemiBold))
             Spacer(Modifier.width(16.dp))
             LegendSwatch(OthersGrey)
             Spacer(Modifier.width(8.dp))
@@ -165,16 +165,16 @@ private fun BreakdownCard(usage: StorageUsage?) {
         UsageBar(
             parts = listOf(
                 BarPart(CacheOrange, usage?.cache ?: 0),
-                BarPart(MochyGreen, usage?.downloads ?: 0),
+                BarPart(MoodyGreen, usage?.downloads ?: 0),
                 BarPart(DatabaseRed, usage?.database ?: 0),
                 BarPart(AppDataBlue, usage?.appData ?: 0),
             ),
-            total = usage?.mochy ?: 0,
+            total = usage?.moody ?: 0,
         )
         Spacer(Modifier.height(16.dp))
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             LegendRow(CacheOrange, stringResource(R.string.storage_legend_cache), usage?.let { formatSize(it.cache) })
-            LegendRow(MochyGreen, stringResource(R.string.storage_legend_downloads), usage?.let { formatSize(it.downloads) })
+            LegendRow(MoodyGreen, stringResource(R.string.storage_legend_downloads), usage?.let { formatSize(it.downloads) })
             LegendRow(DatabaseRed, stringResource(R.string.storage_legend_database), usage?.let { formatSize(it.database) })
             LegendRow(AppDataBlue, stringResource(R.string.storage_legend_app_data), usage?.let { formatSize(it.appData) })
         }

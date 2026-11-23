@@ -1,4 +1,4 @@
-// the module browser: mochy's bar's modules from the feed, the search and the kind picked, and fetching a module's zip to add
+// the module browser: moody's bar's modules from the feed, the search and the kind picked, and fetching a module's zip to add
 
 package com.saerling.moody.viewmodels
 

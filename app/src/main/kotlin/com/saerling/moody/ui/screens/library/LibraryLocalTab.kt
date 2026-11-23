@@ -50,7 +50,7 @@ internal fun LazyListScope.libraryLocalTab(
         )
     }
 
-    // once Mochy may read the storage, the import card itself lists the phone's songs
+    // once Moody may read the storage, the import card itself lists the phone's songs
     if (!hasStorageAccess) {
         item(key = "local_storage") {
             Text(

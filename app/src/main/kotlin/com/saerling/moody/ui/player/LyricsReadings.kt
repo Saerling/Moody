@@ -192,7 +192,7 @@ fun LyricsReadings(
 // one line's romanisation: the whole line read out, its timed pieces when the line has timing, and the ruby over japanese and chinese words
 class LineReading(val text: String?, val words: List<WordTimestamp>?, val ruby: List<RubyToken>?)
 
-// the switch for the language a song is sung in, or null when it's in nothing mochy can romanise
+// the switch for the language a song is sung in, or null when it's in nothing moody can romanise
 fun romanizeSwitchFor(lines: List<LyricsEntry>): Preferences.Key<Boolean>? {
     val body = lines.joinToString(" ") { it.text }
     return switchFor(body, LyricsUtils.romanizableScript(body))

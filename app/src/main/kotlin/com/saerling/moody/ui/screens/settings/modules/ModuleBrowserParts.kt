@@ -56,7 +56,7 @@ private val BrowserCardShape = RoundedCornerShape(36.dp)
 /** what a module's button says: it can be added, a newer one is out, it's already in, or it's paid and not theirs yet */
 enum class BrowserAction { Add, Update, Added, Locked }
 
-/** the back button and, once someone's signed in, their avatar with a dot that's green while they're in mochy's bar */
+/** the back button and, once someone's signed in, their avatar with a dot that's green while they're in moody's bar */
 @Composable
 internal fun BrowserHeader(person: FeedPerson?, onBack: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {

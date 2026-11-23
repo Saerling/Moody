@@ -351,7 +351,7 @@ fun PlayerActionMenu(
                     title = stringResource(R.string.menu_change_output),
                     onClick = { showAudioDevices = true },
                 )
-                // a linked tv with mochy open: play there, line it up there, or work it as a remote
+                // a linked tv with moody open: play there, line it up there, or work it as a remote
                 DeviceMenuRows(onDismiss = onDismiss)
                 Spacer(modifier = Modifier.height(8.dp))
                 SleepTimerRow(onClick = { showSleepTimer = true })
@@ -521,7 +521,7 @@ internal fun MenuRow(
     }
 }
 
-/** The phone doesn't sleep while Mochy is open: for following lyrics, or a phone on a car mount. */
+/** The phone doesn't sleep while Moody is open: for following lyrics, or a phone on a car mount. */
 @Composable
 private fun KeepScreenOnRow() {
     val (keepScreenOn, setKeepScreenOn) = rememberPreference(KeepScreenOn, defaultValue = false)
@@ -533,7 +533,7 @@ private fun KeepScreenOnRow() {
     )
 }
 
-// the line being sung floating over other apps once mochy is out of sight
+// the line being sung floating over other apps once moody is out of sight
 @Composable
 private fun FloatingLyricsRow() {
     val (floating, setFloating) = com.saerling.moody.floating.rememberFloatingLyricsSwitch()

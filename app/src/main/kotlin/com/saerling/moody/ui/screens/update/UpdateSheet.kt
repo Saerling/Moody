@@ -226,7 +226,7 @@ private fun ColumnScope.UpdateSheetContent(
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_mochy_mark),
+                    painter = painterResource(R.drawable.ic_moody_mark),
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(38.dp),
@@ -548,7 +548,7 @@ private fun ColumnScope.UpdateDetailContent(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Icon(
-            painter = painterResource(R.drawable.ic_mochy_mark),
+            painter = painterResource(R.drawable.ic_moody_mark),
             contentDescription = null,
             modifier = Modifier.size(22.dp),
         )
@@ -734,7 +734,7 @@ internal fun AppIconImage(modifier: Modifier = Modifier) {
             modifier = modifier.background(MenuSurface),
         ) {
             Icon(
-                painter = painterResource(R.drawable.ic_mochy_mark),
+                painter = painterResource(R.drawable.ic_moody_mark),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(0.6f),
             )

@@ -19,7 +19,7 @@ internal fun JsonObject.float(name: String): Float? =
 internal fun JsonObject.bool(name: String): Boolean? =
     (this[name] as? JsonPrimitive)?.let { it.booleanOrNull ?: it.contentOrNull?.trim()?.lowercase()?.toBooleanStrictOrNull() }
 
-/** a shader's own float uniforms by name, leaving out the ones mochy fills in itself */
+/** a shader's own float uniforms by name, leaving out the ones moody fills in itself */
 internal fun shaderUniforms(element: JsonElement?, reserved: Set<String>): Map<String, Float> =
     (element as? JsonObject).orEmpty().entries
         .filter { (name, _) -> UniformName.matches(name) && name !in reserved }

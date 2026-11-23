@@ -163,7 +163,7 @@ private val SplashIconSize = 288.dp
 private const val SplashViewport = 235f
 private const val SplashMaskRadius = 96f / 288f * SplashViewport
 
-// ic_splash_mark and ic_mochy_mark are the same shapes; the splash one sits 58,48 further in
+// ic_splash_mark and ic_moody_mark are the same shapes; the splash one sits 58,48 further in
 private val MarkOffset = Offset(58f, 48f)
 private const val MarkViewportWidth = 128f
 private const val MarkViewportHeight = 139f
@@ -475,7 +475,7 @@ private class LaunchMarkArt {
         strokeJoin = Paint.Join.ROUND
     }
 
-    // ic_mochy_mark: the same outline and face, white, nothing filled
+    // ic_moody_mark: the same outline and face, white, nothing filled
     private val lightOutline = paint(android.graphics.Color.WHITE) {
         style = Paint.Style.STROKE
         strokeWidth = 19f
@@ -545,7 +545,7 @@ private class LaunchIconArt(context: Context, icon: AppIcon) {
 /** the icon and the mark at one point of the prelude, and the blur over both */
 private class PreludeLook(val iconAlpha: Float, val iconScale: Float, val markAlpha: Float, val markScale: Float, val blur: Float)
 
-// mochy winds up a little and zooms out, then the mark pops in past its size and settles while the ripple runs out
+// moody winds up a little and zooms out, then the mark pops in past its size and settles while the ripple runs out
 private fun preludeLook(t: Float): PreludeLook {
     val out = (t / 0.5f).coerceIn(0f, 1f)
     val pop = ((t - 0.38f) / 0.62f).coerceIn(0f, 1f)

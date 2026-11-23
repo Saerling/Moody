@@ -1,4 +1,4 @@
-// where the module feed's sign-in sends the browser back to: it keeps the session and brings mochy back to the front, on the module browser
+// where the module feed's sign-in sends the browser back to: it keeps the session and brings moody back to the front, on the module browser
 
 package com.saerling.moody.modules.browser
 
@@ -33,7 +33,7 @@ class ModuleBrowserLoginActivity : Activity() {
         intent?.data?.let { redirect ->
             EntryPointAccessors.fromApplication(applicationContext, ModuleFeedEntryPoint::class.java).moduleFeed().finishSignIn(redirect)
         }
-        // mochy comes back as it was, still on the browser, which reloads once the session lands
+        // moody comes back as it was, still on the browser, which reloads once the session lands
         startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP))
         finish()
     }

@@ -38,7 +38,7 @@ import com.saerling.moody.playback.MusicService
 import com.saerling.moody.playback.MusicService.MusicBinder
 import com.saerling.moody.playback.PlayerConnection
 import com.saerling.moody.ui.launch.LaunchGate
-import com.saerling.moody.ui.theme.MochyTheme
+import com.saerling.moody.ui.theme.MoodyTheme
 import com.saerling.moody.utils.SyncUtils
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -82,7 +82,7 @@ class TvActivity : ComponentActivity() {
         TvProfiles.load(this)
         val skipPicker = TvProfiles.takePickedBeforeRestart(this) && TvProfiles.active() != null
         setContent {
-            MochyTheme(darkTheme = true, pureBlack = true) {
+            MoodyTheme(darkTheme = true, pureBlack = true) {
                 CompositionLocalProvider(LocalTvLink provides remember { TvLink(phoneSync, pairing) }) {
                     TvRoot(
                         player = playerConnection,

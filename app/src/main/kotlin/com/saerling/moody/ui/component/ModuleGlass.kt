@@ -111,7 +111,7 @@ internal fun ModuleChromeGlass(
     }
 }
 
-// mochy's uniforms first, then the module's own; a name the shader doesn't declare is skipped, so a shader only takes what it uses
+// moody's uniforms first, then the module's own; a name the shader doesn't declare is skipped, so a shader only takes what it uses
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 private fun glassEffect(
     glass: ActiveGlass,

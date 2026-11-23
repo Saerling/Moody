@@ -1,4 +1,4 @@
-// "find more sources": add a module from a pasted link, a zip on the phone or mochy's catalog, after seeing what it adds
+// "find more sources": add a module from a pasted link, a zip on the phone or moody's catalog, after seeing what it adds
 
 package com.saerling.moody.ui.screens.settings.modules
 

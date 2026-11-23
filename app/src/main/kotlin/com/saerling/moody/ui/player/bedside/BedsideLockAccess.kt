@@ -59,7 +59,7 @@ private val isMiui: Boolean by lazy {
     !systemProperty("ro.miui.ui.version.name").isNullOrEmpty() || !systemProperty("ro.mi.os.version.name").isNullOrEmpty()
 }
 
-// whether the phone lets mochy stand over the lock screen; only miui and hyperos ever say no
+// whether the phone lets moody stand over the lock screen; only miui and hyperos ever say no
 internal fun canShowOnLockScreen(context: Context): Boolean {
     if (!LockScreenSupported || !isMiui) return true
     return try {

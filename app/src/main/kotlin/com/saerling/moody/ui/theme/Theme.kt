@@ -27,7 +27,7 @@ import com.materialkolor.score.Score
 val DefaultThemeColor = Moody.Blue
 
 /**
- * mochy renders dark-only.
+ * moody renders dark-only.
  *
  * The light palette was never finished - large parts of the UI hardcode white text and dark
  * glass - so on a light-mode phone the app looked broken rather than light. Pinned here as one
@@ -36,7 +36,7 @@ val DefaultThemeColor = Moody.Blue
 const val ForceDarkTheme = true
 
 @Composable
-fun MochyTheme(
+fun MoodyTheme(
     darkTheme: Boolean = ForceDarkTheme,
     pureBlack: Boolean = false,
     content: @Composable () -> Unit,

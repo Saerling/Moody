@@ -120,7 +120,7 @@ internal class SongShareSession(val song: MediaMetadata) {
     // a page with the picture on it is up and wants the song playing under it
     var previewWanted by mutableStateOf(false)
 
-    // mochy is the app in front; leaving for instagram or anywhere else stops the song
+    // moody is the app in front; leaving for instagram or anywhere else stops the song
     var onScreen by mutableStateOf(true)
 
     var background by mutableStateOf<SongBackground>(SongBackground.Still(ShareBackground.FromMusic))

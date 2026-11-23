@@ -10,7 +10,7 @@ import okhttp3.Request
 import org.json.JSONObject
 import java.security.MessageDigest
 
-/** where mochy can look for a newer copy of a module */
+/** where moody can look for a newer copy of a module */
 sealed interface ModuleSource {
     /** a github project's release zip, with the tag and file stamp it was added at */
     data class GitHub(val owner: String, val repo: String, val tag: String, val stamp: String) : ModuleSource

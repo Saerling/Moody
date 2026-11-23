@@ -6,7 +6,7 @@ import android.media.AudioDeviceInfo
 import android.os.Build
 import java.nio.ByteBuffer
 
-/** an aaudio output opened only for mochy, at the song's own rate: the usb dac, or a music player's own headphone jack */
+/** an aaudio output opened only for moody, at the song's own rate: the usb dac, or a music player's own headphone jack */
 internal class ExclusivePass private constructor(
     private var handle: Long,
     override val sampleRate: Int,

@@ -57,7 +57,7 @@ private fun ShaderFill(program: SkinProgram, source: SkinShaderSource, context: 
     )
 }
 
-// mochy's uniforms first, then the module's own; only names the source declares, so a frame never throws for one it left out
+// moody's uniforms first, then the module's own; only names the source declares, so a frame never throws for one it left out
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 private fun DrawScope.setUniforms(program: SkinProgram, source: SkinShaderSource, context: SkinContext, playing: Boolean) {
     val shader = program.shader

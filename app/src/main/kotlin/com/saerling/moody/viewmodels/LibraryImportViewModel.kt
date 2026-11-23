@@ -131,7 +131,7 @@ class LibraryImportViewModel @Inject constructor(
         TopToaster.show(context.resources.getQuantityString(R.plurals.lib_local_repaired, count, count), iconRes = R.drawable.library_music)
     }
 
-    /** True if Mochy has music folders the user picked. */
+    /** True if Moody has music folders the user picked. */
     fun hasFolders(): Boolean = LocalFolders.read(context).isNotEmpty()
 
     private fun startFolderImport(files: List<LocalFile>, emptyMessage: String?): Boolean {

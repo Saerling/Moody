@@ -48,7 +48,7 @@ class AudioPass(context: Context, private val outputs: AudioOutputs) {
     private val _dacVolume = MutableStateFlow<DacVolume?>(null)
     val dacVolume: StateFlow<DacVolume?> = _dacVolume.asStateFlow()
 
-    /** whether the dac is mochy's to open, null with none plugged in */
+    /** whether the dac is moody's to open, null with none plugged in */
     val usbPermitted: StateFlow<Boolean?> get() = usb.permitted
 
     @Volatile private var enabled = false

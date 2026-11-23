@@ -1,4 +1,4 @@
-// about app, upstream credits and license sheets pushed from the version sheet or the mochy page
+// about app, upstream credits and license sheets pushed from the version sheet or the moody page
 
 package com.saerling.moody.ui.screens.update
 
@@ -359,7 +359,7 @@ private fun ColumnScope.AboutSheetContent(
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_mochy_mark),
+                        painter = painterResource(R.drawable.ic_moody_mark),
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(38.dp),
@@ -375,7 +375,7 @@ private fun ColumnScope.AboutSheetContent(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = stringResource(R.string.about_mochy_music_version, installed),
+                    text = stringResource(R.string.about_moody_music_version, installed),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = (-0.4).sp,

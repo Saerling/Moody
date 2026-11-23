@@ -171,7 +171,7 @@ internal fun moduleOrigin(entry: ModuleEntry): String = stringResource(
     entry.module.info.version,
 )
 
-/** a module only changes how mochy looks (or adds pages and menu rows), it brings nothing to play or read */
+/** a module only changes how moody looks (or adds pages and menu rows), it brings nothing to play or read */
 internal val ModuleEntry.isLookOnly: Boolean
     get() = adds(ModuleFeature.Look) && !adds(ModuleFeature.AudioSource) && !adds(ModuleFeature.Lyrics) && !adds(ModuleFeature.Metadata)
 

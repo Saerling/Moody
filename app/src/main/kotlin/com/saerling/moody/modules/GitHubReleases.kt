@@ -1,4 +1,4 @@
-// a github project's link turned into the module zip on its newest release, the one with mochyymodule in its file name
+// a github project's link turned into the module zip on its newest release, the one with moodymodule in its file name
 
 package com.saerling.moody.modules
 
@@ -84,7 +84,7 @@ internal object GitHubReleases {
 
     private class Asset(val name: String, val url: String, val stamp: String)
 
-    // the zips with mochyymodule in their name; with a debug and a release one side by side, the one signed like this mochy
+    // the zips with moodymodule in their name; with a debug and a release one side by side, the one signed like this moody
     private fun pickAsset(release: JSONObject, preferDebug: Boolean): Asset? {
         val assets = release.optJSONArray("assets") ?: return null
         val zips = (0 until assets.length()).mapNotNull { i ->

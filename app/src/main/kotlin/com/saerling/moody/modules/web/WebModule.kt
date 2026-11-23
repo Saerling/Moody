@@ -1,4 +1,4 @@
-// a module added from a link: a service that answers search, stream, lyrics and song facts over plain http, no code of its own runs in mochy
+// a module added from a link: a service that answers search, stream, lyrics and song facts over plain http, no code of its own runs in moody
 
 package com.saerling.moody.modules.web
 

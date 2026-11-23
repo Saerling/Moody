@@ -203,7 +203,7 @@ private fun TvGreeting(seen: MutableSet<Any>, leave: () -> Float, modifier: Modi
         },
     ) {
         Icon(
-            painterResource(R.drawable.ic_mochy_mark),
+            painterResource(R.drawable.ic_moody_mark),
             contentDescription = null,
             tint = Color.White,
             modifier = Modifier
@@ -272,7 +272,7 @@ internal fun TvPairWelcome(pairing: TvPairing, onPaired: (TvProfile) -> Unit, on
     }
 }
 
-// a phone drawn from the concept's grey slab, with a tiny copy of mochy's tv page on it
+// a phone drawn from the concept's grey slab, with a tiny copy of moody's tv page on it
 @Composable
 private fun TvPhoneMock(tvName: String, modifier: Modifier = Modifier) {
     Box(modifier.clip(RoundedCornerShape(topStart = 52.dp, topEnd = 52.dp)).background(Color(0xFF1F1F1F))) {
@@ -286,7 +286,7 @@ private fun TvPhoneMock(tvName: String, modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(Modifier.size(26.dp).clip(CircleShape).background(Color(0xFF3A3A3A)), contentAlignment = Alignment.Center) {
-                    Icon(painterResource(R.drawable.ic_mochy_mark), contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
+                    Icon(painterResource(R.drawable.ic_moody_mark), contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
                 }
                 Spacer(Modifier.width(10.dp))
                 Text(tvName, style = TvText.Item)

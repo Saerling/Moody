@@ -17,7 +17,7 @@ import com.saerling.moody.link.phone.PhonePairing
 import com.saerling.moody.lyrics.LyricsHelper
 import kotlinx.coroutines.launch
 
-// one run of mochy on the car screen: binds the music service while it lasts and starts on the tabs
+// one run of moody on the car screen: binds the music service while it lasts and starts on the tabs
 @UnstableApi
 class CarSession(
     private val database: MusicDatabase,

@@ -196,7 +196,7 @@ class App : Application(), SingletonImageLoader.Factory {
         }
 
         applicationScope.launch(Dispatchers.IO) {
-            // a paired device can reach this phone again as soon as mochy is up, after the intro has had the main thread
+            // a paired device can reach this phone again as soon as moody is up, after the intro has had the main thread
             if (isTelevision() || !com.saerling.moody.link.phone.PhoneLinkHost.hasPairedDevices(this@App)) return@launch
             com.saerling.moody.ui.launch.LaunchGate.awaitIntro()
             phoneLink.get().refresh()

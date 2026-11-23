@@ -1,4 +1,4 @@
-// dev spaces: a pager with a page for each person who makes mochy, the repo numbers are fetched on every open
+// dev spaces: a pager with a page for each person who makes moody, the repo numbers are fetched on every open
 
 package com.saerling.moody.ui.screens.settings.devspace
 

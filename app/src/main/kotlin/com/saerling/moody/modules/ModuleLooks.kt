@@ -1,4 +1,4 @@
-// puts the values of every look module that's on onto mochy's look settings, and gives the user's own back once no look sets them
+// puts the values of every look module that's on onto moody's look settings, and gives the user's own back once no look sets them
 
 package com.saerling.moody.modules
 
@@ -49,7 +49,7 @@ internal class ModuleLooks(private val context: Context) {
     // two syncs at once would each read the other's half-written holds
     private val lock = Mutex()
 
-    /** puts the looks that are on onto mochy's settings, the first in [looks] winning where two set the same one, and gives back the user's own where none does anymore */
+    /** puts the looks that are on onto moody's settings, the first in [looks] winning where two set the same one, and gives back the user's own where none does anymore */
     suspend fun sync(looks: List<Map<String, String>>) = lock.withLock {
         val wanted = LinkedHashMap<String, String>()
         looks.forEach { look ->

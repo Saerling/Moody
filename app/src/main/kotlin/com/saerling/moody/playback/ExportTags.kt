@@ -9,7 +9,7 @@ import java.io.EOFException
 import java.io.InputStream
 import java.io.OutputStream
 
-// a song's details written into its exported file, so other players and mochy's own import know what it is
+// a song's details written into its exported file, so other players and moody's own import know what it is
 internal class ExportTags(
     val title: String,
     val artist: String?,

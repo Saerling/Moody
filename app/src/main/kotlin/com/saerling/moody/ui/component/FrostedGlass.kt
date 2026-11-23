@@ -114,7 +114,7 @@ fun FrostedChromeGlass(
     }
 }
 
-/** the look's glass while the bars draw it, so a bar can leave out the hairline, shadow or pill the glass draws itself; null while they keep mochy's frost */
+/** the look's glass while the bars draw it, so a bar can leave out the hairline, shadow or pill the glass draws itself; null while they keep moody's frost */
 @Composable
 internal fun rememberChromeModuleGlass(): com.saerling.moody.modules.skin.ActiveGlass? {
     // a look module can swap the frost for a glass shader of its own; android 13+ runs it, older phones and blur switched off keep the frost

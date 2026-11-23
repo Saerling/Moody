@@ -46,7 +46,7 @@ data class StreamDetails(
     val tunneling: Boolean = false,
     val underruns: Int = 0,
     val fileSizeBytes: Long? = null,
-    /** mochy's own resampler, when it's converting this song */
+    /** moody's own resampler, when it's converting this song */
     val resampledFrom: Int? = null,
     val resampledTo: Int? = null,
     val resamplerTaps: Int? = null,

@@ -1,4 +1,4 @@
-// what a module's player draws behind its blocks: one of mochy's backgrounds, colours, a picture or its own shader, with more layers stacked on top
+// what a module's player draws behind its blocks: one of moody's backgrounds, colours, a picture or its own shader, with more layers stacked on top
 
 package com.saerling.moody.ui.player.styles
 

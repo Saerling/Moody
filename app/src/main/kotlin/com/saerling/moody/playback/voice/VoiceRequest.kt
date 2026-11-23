@@ -127,7 +127,7 @@ object VoiceSearch {
     private fun clean(text: String?): String {
         val trimmed = text?.trim().orEmpty()
         if (trimmed.isEmpty()) return trimmed
-        return trimmed.replace(OnMochy, "").replace(PlayWord, "").trim().replace(Spaces, " ")
+        return trimmed.replace(OnMoody, "").replace(PlayWord, "").trim().replace(Spaces, " ")
     }
 
     private fun joined(vararg parts: String) = parts.filter { it.isNotEmpty() }.joinToString(" ")
@@ -150,7 +150,7 @@ object VoiceSearch {
     private val Accents = Regex("\\p{InCombiningDiacriticalMarks}+")
     private val NotWord = Regex("[^\\p{L}\\p{N}]+")
     private val Spaces = Regex("\\s+")
-    private val OnMochy = Regex("(^|\\s+)(on|in|from|with|using)\\s+mochy(\\s+music)?\\s*$", RegexOption.IGNORE_CASE)
+    private val OnMoody = Regex("(^|\\s+)(on|in|from|with|using)\\s+mochy(\\s+music)?\\s*$", RegexOption.IGNORE_CASE)
     private val PlayWord = Regex("^play\\s+", RegexOption.IGNORE_CASE)
     private val ShuffleWords = Regex("^shuffle\\b\\s*|\\s*\\bon shuffle$|\\s*\\bshuffled$", RegexOption.IGNORE_CASE)
     private val LikedWords = Regex(

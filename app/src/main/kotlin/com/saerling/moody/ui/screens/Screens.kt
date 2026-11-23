@@ -37,8 +37,8 @@ sealed class Screens(
 
     object Settings : Screens(
         titleId = R.string.settings,
-        iconIdInactive = R.drawable.nav_mochy_outline,
-        iconIdActive = R.drawable.nav_mochy_filled,
+        iconIdInactive = R.drawable.nav_moody_outline,
+        iconIdActive = R.drawable.nav_moody_filled,
         route = "settings"
     )
 

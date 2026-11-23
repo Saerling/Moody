@@ -1,4 +1,4 @@
-// mochy → settings → integrations: a row per service, always all of them, tapping one opens its own page
+// moody → settings → integrations: a row per service, always all of them, tapping one opens its own page
 
 package com.saerling.moody.ui.screens.settings.integrations
 

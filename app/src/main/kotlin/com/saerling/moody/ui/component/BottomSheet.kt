@@ -327,7 +327,7 @@ fun BottomSheet(
 
             // where the mini player sits across the screen, and whether the wide bar's glass already lies under it
             val pillFrame = LocalMiniPillFrame.current
-            // a look's glass that draws its own edge leaves mochy's hairline and shadow off the mini player
+            // a look's glass that draws its own edge leaves moody's hairline and shadow off the mini player
             val moduleGlass = rememberChromeModuleGlass()
             val currentPillFrame by androidx.compose.runtime.rememberUpdatedState(pillFrame)
             // in the wide bar the pill is a stadium like the bar round it, so it lifts out of it cleanly

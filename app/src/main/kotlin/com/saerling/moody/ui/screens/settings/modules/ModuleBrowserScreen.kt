@@ -1,4 +1,4 @@
-// the module browser: mochy's bar's module forums, searched and sorted by kind, each added with one tap through the usual add sheet
+// the module browser: moody's bar's module forums, searched and sorted by kind, each added with one tap through the usual add sheet
 
 package com.saerling.moody.ui.screens.settings.modules
 

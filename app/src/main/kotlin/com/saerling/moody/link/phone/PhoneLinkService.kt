@@ -23,7 +23,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
-// keeps the phone reachable for its paired devices while mochy is closed, with a quiet notification saying so
+// keeps the phone reachable for its paired devices while moody is closed, with a quiet notification saying so
 @AndroidEntryPoint
 class PhoneLinkService : Service() {
     @Inject
@@ -112,7 +112,7 @@ class PhoneLinkService : Service() {
             android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT,
         )
         return NotificationCompat.Builder(this, ChannelId)
-            .setSmallIcon(R.drawable.mochy_notification)
+            .setSmallIcon(R.drawable.moody_notification)
             .setContentTitle(title)
             .setContentText(text)
             .setContentIntent(open)
@@ -132,7 +132,7 @@ class PhoneLinkService : Service() {
         // a tv that fetched a song from here this recently counts as streaming
         private const val StreamingForMs = 3 * 60_000L
 
-        // android 12+ refuses this from the background, the link then only runs while mochy itself is up
+        // android 12+ refuses this from the background, the link then only runs while moody itself is up
         fun start(context: Context) {
             if (context.isTelevision()) return
             if (!PhoneLinkHost.hasPairedDevices(context) || !PhoneLinkHost.staysReachable(context)) return
@@ -146,7 +146,7 @@ class PhoneLinkService : Service() {
     }
 }
 
-// a phone that restarts comes back on for its devices without opening mochy first
+// a phone that restarts comes back on for its devices without opening moody first
 class PhoneLinkBootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED && intent.action != Intent.ACTION_MY_PACKAGE_REPLACED) return

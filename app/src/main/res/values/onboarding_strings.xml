@@ -103,7 +103,7 @@
 
     <!-- hello / done -->
     <string name="onb_hello">Hello!</string>
-    <string name="onb_welcome_to_mochy">welcome to Moody!</string>
+    <string name="onb_welcome_to_moody">welcome to Moody!</string>
     <string name="onb_all_good">You\'re good to go</string>
 
     <!-- blur warning -->

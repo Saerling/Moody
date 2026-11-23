@@ -35,7 +35,7 @@ import com.saerling.moody.ui.player.menu.openModuleTarget
 import com.saerling.moody.utils.makeTimeString
 import androidx.media3.common.Player
 
-/** one control or custom action as a circle, with mochy's icon or the module's own picture */
+/** one control or custom action as a circle, with moody's icon or the module's own picture */
 @Composable
 internal fun SkinButton(block: SkinBlock.Button, context: SkinContext, modifier: Modifier) {
     val on = rememberTargetOn(block.target)

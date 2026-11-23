@@ -42,19 +42,19 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 
-/** one drive mochy keeps things on, for its own overall card */
+/** one drive moody keeps things on, for its own overall card */
 data class DriveUsage(
     val label: String,
     val isPhone: Boolean,
     val total: Long,
     val free: Long,
-    /** what mochy has on this drive */
-    val mochy: Long,
+    /** what moody has on this drive */
+    val moody: Long,
 ) {
-    val othersUsed: Long get() = (total - free - mochy).coerceAtLeast(0L)
+    val othersUsed: Long get() = (total - free - moody).coerceAtLeast(0L)
 }
 
-/** How much room Mochy takes, in the four parts the Storage page shows, and every drive it sits on. */
+/** How much room Moody takes, in the four parts the Storage page shows, and every drive it sits on. */
 data class StorageUsage(
     /** the phone first, then any memory card holding downloads or the cache */
     val drives: List<DriveUsage>,
@@ -66,7 +66,7 @@ data class StorageUsage(
     /** the app itself and its settings, everything not counted above */
     val appData: Long,
 ) {
-    val mochy: Long get() = cache + downloads + database + appData
+    val moody: Long get() = cache + downloads + database + appData
     val phone: DriveUsage get() = drives.first()
 }
 
@@ -120,7 +120,7 @@ class StorageViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    /** Walks Mochy's folders again. The page calls it on open and whenever the downloads change. */
+    /** Walks Moody's folders again. The page calls it on open and whenever the downloads change. */
     fun measure() {
         viewModelScope.launch { _usage.value = withContext(Dispatchers.IO) { readUsage() } }
     }
@@ -150,7 +150,7 @@ class StorageViewModel @Inject constructor(
         PlaceChoice(StoragePlaces.places(context), StoragePlaces.placeOf(context, kind), mover.bytesToMove(kind))
     }
 
-    // a folder from the folder picker as the place mochy would save into, or null when it isn't on the phone or a card
+    // a folder from the folder picker as the place moody would save into, or null when it isn't on the phone or a card
     suspend fun pickedFolder(tree: android.net.Uri): StoragePlace? = withContext(Dispatchers.IO) {
         StoragePlaces.folderFromTree(context, tree)?.let { StoragePlaces.folderPlace(context, StoragePlaces.rootForPicked(it)) }
     }
@@ -203,7 +203,7 @@ class StorageViewModel @Inject constructor(
             isPhone = true,
             total = stat.totalBytes,
             free = stat.availableBytes,
-            mochy = total - onCards.sumOf { it.second },
+            moody = total - onCards.sumOf { it.second },
         )
         // a card holding both downloads and the cache gets one card on the page, not two
         val cards = StoredKind.entries
@@ -216,7 +216,7 @@ class StorageViewModel @Inject constructor(
                     isPhone = false,
                     total = place.total,
                     free = place.free,
-                    mochy = onCards.filter { (dir, _) -> dir.parentFile == place.root }.sumOf { it.second },
+                    moody = onCards.filter { (dir, _) -> dir.parentFile == place.root }.sumOf { it.second },
                 )
             }
         return StorageUsage(

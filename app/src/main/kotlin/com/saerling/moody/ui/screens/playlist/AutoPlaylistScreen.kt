@@ -558,12 +558,12 @@ fun AutoPlaylistScreen(
             ) { index, song -> trackRow(index, song) }
         } else {
             filteredSections.forEach { section ->
-                item(key = "source_${section.source?.key ?: "mochy"}") {
+                item(key = "source_${section.source?.key ?: "moody"}") {
                     LikedSourceSeparator(
                         source = section.source,
                         modifier = Modifier
                             .animateItem()
-                            .revealOnAppear(key = "source_${section.source?.key ?: "mochy"}", seenState = revealSeen),
+                            .revealOnAppear(key = "source_${section.source?.key ?: "moody"}", seenState = revealSeen),
                     )
                 }
                 itemsIndexed(
@@ -597,7 +597,7 @@ fun AutoPlaylistScreen(
 
 /**
  * the small line above each service's songs in Liked songs' import order: its app icon, its name,
- * then a hairline across. the ones liked here get Mochy's own.
+ * then a hairline across. the ones liked here get Moody's own.
  */
 @Composable
 private fun LikedSourceSeparator(source: ImportSource?, modifier: Modifier = Modifier) {
@@ -618,7 +618,7 @@ private fun LikedSourceSeparator(source: ImportSource?, modifier: Modifier = Mod
                     .background(colorResource(R.color.ic_launcher_background)),
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_mochy_mark),
+                    painter = painterResource(R.drawable.ic_moody_mark),
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(9.dp),

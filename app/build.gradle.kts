@@ -54,7 +54,7 @@ extensions.configure<ApplicationExtension> {
         buildConfigField("String", "LIBREFM_API_KEY", "\"$libreFmKey\"")
         buildConfigField("String", "LIBREFM_SECRET", "\"$libreFmSecret\"")
 
-        // The Discord app Mochy signs in through (Developer Portal → your app → Application ID).
+        // The Discord app Moody signs in through (Developer Portal → your app → Application ID).
         // Discord sends the login back to discord-<id>:/authorize/callback, so the manifest needs it too.
         // Without one, the Discord page says so instead of opening a login that can't come back.
         val discordClientId = localProperties.getProperty("DISCORD_CLIENT_ID")
@@ -462,7 +462,7 @@ dependencies {
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.json)
-    // finds song streams first, with mochy's own client walk as the backup (YTPlayerUtils)
+    // finds song streams first, with moody's own client walk as the backup (YTPlayerUtils)
     implementation(libs.innertubex)
 
     // Protobuf for message serialization (lite version for Android)

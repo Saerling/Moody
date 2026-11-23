@@ -157,7 +157,7 @@ class Scrobbler @Inject constructor(
 
     // ---- signing in and out ----
 
-    /** signs in from mochy's own form and keeps only the session key, the password is never stored; gives back the account's name */
+    /** signs in from moody's own form and keeps only the session key, the password is never stored; gives back the account's name */
     suspend fun signIn(site: ScrobbleSite, username: String, password: String): String {
         val session = site.api.getMobileSession(username.trim(), password)
         context.dataStore.edit {
@@ -177,7 +177,7 @@ class Scrobbler @Inject constructor(
         queue.forget(site)
     }
 
-    /** The service took back Mochy's access, so the account is forgotten here too. */
+    /** The service took back Moody's access, so the account is forgotten here too. */
     private suspend fun signedOut(site: ScrobbleSite) {
         signOut(site)
         val message = context.getString(R.string.scrobble_signed_out, site.label)

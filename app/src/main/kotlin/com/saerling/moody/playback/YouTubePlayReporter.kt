@@ -32,7 +32,7 @@ class YouTubePlayReporter(
             if (!value) drop()
         }
 
-    // how long a song has to play before it counts, the same wait as mochy's own history
+    // how long a song has to play before it counts, the same wait as moody's own history
     var countAfterMs = DEFAULT_COUNT_AFTER_MS
 
     // its own scope so a song's last report still goes out while the service shuts down

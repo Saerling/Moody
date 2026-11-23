@@ -34,7 +34,7 @@ class CarPlayback(
 
     private var bound = false
 
-    // a paired phone steering this one needs a player even when mochy's own screen was never opened, like a phone in a pocket in the car
+    // a paired phone steering this one needs a player even when moody's own screen was never opened, like a phone in a pocket in the car
     private var standIn: PlayerConnection? = null
 
     private val connection = object : ServiceConnection {

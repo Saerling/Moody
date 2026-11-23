@@ -2,7 +2,7 @@ package com.saerling.moody.eq.audio
 
 import kotlin.math.pow
 
-/** how mochy's own volume maps onto gain: linear crowds everything audible into the top of the slider, a power curve spreads the quiet end out; limit caps the loudest the app plays */
+/** how moody's own volume maps onto gain: linear crowds everything audible into the top of the slider, a power curve spreads the quiet end out; limit caps the loudest the app plays */
 data class VolumeCurve(
     val enabled: Boolean = false,
     val exponent: Float = 2f,

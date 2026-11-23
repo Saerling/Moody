@@ -14,7 +14,7 @@ import com.saerling.moody.importer.ImportProgress
 import com.saerling.moody.importer.LinkImportException
 import com.saerling.moody.importer.LinkImporter
 import com.saerling.moody.importer.MusicImportService
-import com.saerling.moody.importer.MochyCsvExporter
+import com.saerling.moody.importer.MoodyCsvExporter
 import com.saerling.moody.importer.ParsedImport
 import com.saerling.moody.importer.YouTubeSyncManager
 import com.saerling.moody.importer.YtSyncState
@@ -131,7 +131,7 @@ class ImportSyncViewModel @Inject constructor(
         _exportMessage.value = "Exporting…"
         viewModelScope.launch(Dispatchers.IO) {
             _exportMessage.value = try {
-                val (csv, summary) = MochyCsvExporter.build(database)
+                val (csv, summary) = MoodyCsvExporter.build(database)
                 context.contentResolver.openOutputStream(uri)?.use { out ->
                     // the BOM makes Excel read names in any script correctly; our reader skips it
                     out.write(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte()))

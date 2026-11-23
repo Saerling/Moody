@@ -1,4 +1,4 @@
-// the first onboarding page: the mochy girl showing off her phone over drifting welcomes, a tap anywhere moves on
+// the first onboarding page: the moody girl showing off her phone over drifting welcomes, a tap anywhere moves on
 
 package com.saerling.moody.ui.screens.setup
 

@@ -33,14 +33,14 @@ import com.metrolist.innertubex.extraction.AudioQuality as XAudioQuality
 import com.metrolist.innertubex.extraction.PoTokenResult as XPoTokenResult
 import com.metrolist.innertubex.models.YouTubeLocale as XLocale
 
-// innertubex's stream finder, asked before mochy's own client walk; it rides the walk's okhttp, so the app proxy and ip version follow it
+// innertubex's stream finder, asked before moody's own client walk; it rides the walk's okhttp, so the app proxy and ip version follow it
 internal class InnerTubeXStreams(
     private val okHttp: OkHttpClient,
     private val mintToken: suspend (videoId: String, sessionId: String) -> PoTokenResult?,
 ) {
     private class Engine(val innerTube: InnerTubeX, val extractor: InnerTubeExtractor)
 
-    // mochy's sign-in, guest id and region as innertubex last saw them
+    // moody's sign-in, guest id and region as innertubex last saw them
     private data class Session(
         val cookie: String?,
         val visitorData: String?,
@@ -158,7 +158,7 @@ internal class InnerTubeXStreams(
         }
     }
 
-    // mochy's quality ladder in innertubex's words: medium is the 128k aac rung, the lossless tiers belong to modules
+    // moody's quality ladder in innertubex's words: medium is the 128k aac rung, the lossless tiers belong to modules
     private fun AudioQuality.toInnerTubeX(connectivityManager: ConnectivityManager): XAudioQuality {
         val metered = connectivityManager.isActiveNetworkMetered
         return when {

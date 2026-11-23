@@ -1,4 +1,4 @@
-// the module's side of the bridge, packed into its zip: makes the module from its own code and answers mochy's calls with it, in json
+// the module's side of the bridge, packed into its zip: makes the module from its own code and answers moody's calls with it, in json
 
 package com.saerling.moody.module.bridge
 
@@ -9,7 +9,7 @@ import com.saerling.moody.module.LicenseServer
 import com.saerling.moody.module.LookModule
 import com.saerling.moody.module.LyricsModule
 import com.saerling.moody.module.MetadataModule
-import com.saerling.moody.module.MochyModule
+import com.saerling.moody.module.MoodyModule
 import com.saerling.moody.module.ModuleFields
 import com.saerling.moody.module.ModuleHost
 import com.saerling.moody.module.ModuleStorage
@@ -39,25 +39,25 @@ import kotlin.io.encoding.Base64
 
 class ModuleSide : ModuleBridge {
 
-    private lateinit var module: MochyModule
+    private lateinit var module: MoodyModule
 
     private val work = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val calls = ConcurrentHashMap<Long, Job>()
 
-    // license servers handed out with streams, by the id mochy asks back with; only the latest few, a stream that old has long been replaced
+    // license servers handed out with streams, by the id moody asks back with; only the latest few, a stream that old has long been replaced
     private val licenses = object : LinkedHashMap<String, LicenseServer>() {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, LicenseServer>) = size > MaxLicenses
     }
     private val licenseIds = AtomicLong()
 
     override fun open(entry: String): String {
-        module = Class.forName(entry, true, javaClass.classLoader).getDeclaredConstructor().newInstance() as MochyModule
+        module = Class.forName(entry, true, javaClass.classLoader).getDeclaredConstructor().newInstance() as MoodyModule
         return Wire.aboutToJson(module).toString()
     }
 
     override fun attach(host: HostBridge) = module.attach(HostOverBridge(host))
 
-    // anything the module throws goes back as a plain java exception, so mochy never has to know a class from this side
+    // anything the module throws goes back as a plain java exception, so moody never has to know a class from this side
     override fun ask(method: String, args: String): String = try {
         answer(method, Wire.objectOf(args)).toString()
     } catch (e: Throwable) {
@@ -135,7 +135,7 @@ class ModuleSide : ModuleBridge {
     private fun licenseFor(id: String?): LicenseServer =
         synchronized(licenses) { licenses[id] } ?: throw IllegalStateException("That stream's license is gone, start it again")
 
-    // what the module sees as mochy: the same host every module gets, each call crossing the bridge
+    // what the module sees as moody: the same host every module gets, each call crossing the bridge
     private class HostOverBridge(private val bridge: HostBridge) : ModuleHost {
         override val storage = object : ModuleStorage {
             override fun get(key: String): String? = bridge.get(key)

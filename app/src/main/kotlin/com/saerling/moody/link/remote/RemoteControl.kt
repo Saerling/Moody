@@ -72,7 +72,7 @@ class RemoteControl @Inject constructor(
                     if (list.none { it.id == steered.id && it.remoteControl }) stop()
                 }
             }
-            // mochy may open after the device already turned up, which is an arrival too
+            // moody may open after the device already turned up, which is an arrival too
             host.liveDevices().firstOrNull { live -> autoControls(live.id) }?.let(::onArrival)
         }
     }
@@ -222,7 +222,7 @@ class RemoteControl @Inject constructor(
         if (answer != null) _now.value = RemoteNow.fromJson(answer, System.currentTimeMillis())
     }
 
-    // only while mochy is on screen, quick while a remote is open and slow otherwise, so the pill knows the device is still there
+    // only while moody is on screen, quick while a remote is open and slow otherwise, so the pill knows the device is still there
     private suspend fun poll() {
         combine(_target, host.foreground, watchers) { target, shown, open -> Triple(target, shown, open > 0) }
             .distinctUntilChanged()

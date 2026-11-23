@@ -74,7 +74,7 @@ internal fun openModuleTarget(context: Context, target: ActionTarget, song: Medi
     }
 }
 
-// the same look as the menu's own rows, with the module's picture in place of mochy's icon when it brings one
+// the same look as the menu's own rows, with the module's picture in place of moody's icon when it brings one
 @Composable
 private fun ModuleMenuRow(title: String, picture: Any?, enabled: Boolean, onClick: () -> Unit) {
     val alpha = if (enabled) 1f else 0.35f

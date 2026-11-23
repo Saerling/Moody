@@ -9,10 +9,10 @@ import com.saerling.moody.db.entities.PlaylistEntity
 import kotlinx.coroutines.flow.first
 import java.time.LocalDateTime
 
-/** what mochy remembers about an imported playlist on its service: where it lives and every song it had last time, so reading it again only brings in what is new */
+/** what moody remembers about an imported playlist on its service: where it lives and every song it had last time, so reading it again only brings in what is new */
 internal class PlaylistSourceRecord(private val database: MusicDatabase) {
 
-    /** the copy an earlier import made of this playlist: same place on source, or else one with its name (old imports, mochy backups), a copy tied to a different playlist is never it */
+    /** the copy an earlier import made of this playlist: same place on source, or else one with its name (old imports, moody backups), a copy tied to a different playlist is never it */
     suspend fun existingCopy(source: ImportSource, name: String, origin: PlaylistOrigin?): PlaylistEntity? {
         origin?.remoteId
             ?.let { database.importedPlaylistByRemoteId(source.key, it) }

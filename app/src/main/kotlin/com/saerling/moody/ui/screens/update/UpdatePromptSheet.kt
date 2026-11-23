@@ -112,7 +112,7 @@ fun UpdatePromptSheet(
                     .background(CardSurface)
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_mochy_mark),
+                    painter = painterResource(R.drawable.ic_moody_mark),
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(52.dp),

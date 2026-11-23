@@ -1,4 +1,4 @@
-// storage → export downloaded songs: copies them as plain files into a mochy-preserve folder, sorted by playlist or by album
+// storage → export downloaded songs: copies them as plain files into a moody-preserve folder, sorted by playlist or by album
 
 package com.saerling.moody.ui.screens.settings.storage
 

@@ -95,7 +95,7 @@ object SongEditSaver {
         true
     }
 
-    // the youtube video for the cover video and the video mode: a picked one, none at all, or both null to let mochy find it again
+    // the youtube video for the cover video and the video mode: a picked one, none at all, or both null to let moody find it again
     suspend fun setVideo(database: MusicDatabase, songId: String, videoId: String?, noVideo: Boolean) =
         withContext(Dispatchers.IO) {
             database.withTransaction {

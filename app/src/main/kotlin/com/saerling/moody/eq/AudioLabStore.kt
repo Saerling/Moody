@@ -98,7 +98,7 @@ data class SpatialSettings(
     val feedDb: Float = 4.5f,
     val speakerAngle: Float = 30f,
     val amount: Float = 1f,
-    /** dolby atmos / surround rendered binaurally by mochy rather than by the device */
+    /** dolby atmos / surround rendered binaurally by moody rather than by the device */
     val surround: Boolean = false,
     /** both ears hear the whole mix */
     val mono: Boolean = false,

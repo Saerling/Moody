@@ -1,4 +1,4 @@
-// every launcher icon mochy can wear, ready-made or on a custom colour, each an activity-alias in the manifest with exactly one switched on
+// every launcher icon moody can wear, ready-made or on a custom colour, each an activity-alias in the manifest with exactly one switched on
 
 package com.saerling.moody.utils
 

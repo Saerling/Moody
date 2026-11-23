@@ -206,7 +206,7 @@ import com.saerling.moody.ui.screens.DarkMode
 import com.saerling.moody.ui.screens.NavigationTab
 import com.saerling.moody.ui.theme.ColorSaver
 import com.saerling.moody.ui.theme.DefaultThemeColor
-import com.saerling.moody.ui.theme.MochyTheme
+import com.saerling.moody.ui.theme.MoodyTheme
 import com.saerling.moody.ui.theme.extractThemeColor
 import com.saerling.moody.ui.utils.appBarScrollBehavior
 import com.saerling.moody.ui.utils.resetHeightOffset
@@ -269,7 +269,7 @@ internal fun markOnboardedOnThisInstall(context: android.content.Context) {
 }
 
 // set once the redesign has cleared the old design choices
-private val MoodyRedesignKey = androidx.datastore.preferences.core.booleanPreferencesKey("moodyRedesignV2")
+private val MoodyRedesignKey = androidx.datastore.preferences.core.booleanPreferencesKey("moodyRedesignV3")
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -481,7 +481,7 @@ class MainActivity : ComponentActivity() {
             lifecycle,
         )
         setContent(parent = motionRecomposer) {
-            mochyApp(
+            moodyApp(
                 playerConnection = playerConnection,
                 database = database,
                 downloadUtil = downloadUtil,
@@ -493,7 +493,7 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @OptIn(ExperimentalMaterial3Api::class, androidx.compose.animation.ExperimentalSharedTransitionApi::class)
     @Composable
-    private fun mochyApp(
+    private fun moodyApp(
         playerConnection: PlayerConnection?,
         database: MusicDatabase,
         downloadUtil: DownloadUtil,
@@ -524,7 +524,7 @@ class MainActivity : ComponentActivity() {
         }
 
         // "Keep screen on" (the player's menu, or a chevron button): the phone doesn't sleep while
-        // Mochy is on screen. A window flag only holds while the app is in front, which is the point.
+        // Moody is on screen. A window flag only holds while the app is in front, which is the point.
         val keepScreenOn by rememberPreference(com.saerling.moody.constants.KeepScreenOn, defaultValue = false)
         val rootView = androidx.compose.ui.platform.LocalView.current
         DisposableEffect(keepScreenOn) {
@@ -625,7 +625,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        MochyTheme(
+        MoodyTheme(
             darkTheme = useDarkTheme,
             pureBlack = pureBlack,
         ) {
@@ -1562,6 +1562,8 @@ class MainActivity : ComponentActivity() {
                 prefs[com.saerling.moody.constants.AppFontKey] = "moody"
                 prefs[com.saerling.moody.constants.PureBlackKey] = true
                 prefs[com.saerling.moody.constants.HomeStyleKey] = com.saerling.moody.constants.HomeStyle.LISTEN_NOW.name
+                prefs[com.saerling.moody.constants.PlayerCoverStyleKey] = com.saerling.moody.constants.PlayerCoverStyle.SQUARED.name
+                prefs[com.saerling.moody.constants.PlayerBackgroundStyleKey] = com.saerling.moody.constants.PlayerBackgroundStyle.AMBIENT.name
                 prefs[MoodyRedesignKey] = true
             }
         }
@@ -1581,7 +1583,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** Audio files shared to Mochy from another app or a file manager are imported as local songs. */
+    /** Audio files shared to Moody from another app or a file manager are imported as local songs. */
     private fun importSharedAudio(intent: Intent): Boolean {
         if (intent.action != Intent.ACTION_SEND && intent.action != Intent.ACTION_SEND_MULTIPLE) return false
         val uris = if (intent.action == Intent.ACTION_SEND) {

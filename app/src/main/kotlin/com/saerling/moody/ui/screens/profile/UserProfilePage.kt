@@ -2,7 +2,7 @@
 //
 // The profile page from the mock: the photo, the name in big type with the card number on its
 // baseline, "Edit profile", then listening totals, what you've been playing, your playlists and the
-// artists you play most. It opens out of the ID card on the Mochy page (see ProfileMorph.kt), so
+// artists you play most. It opens out of the ID card on the Moody page (see ProfileMorph.kt), so
 // the photo, name and number stay hidden until the flying copies have landed on them.
 
 package com.saerling.moody.ui.screens.profile
@@ -83,7 +83,6 @@ import com.saerling.moody.ui.component.PlaylistThumbnail
 import com.saerling.moody.ui.component.homeCardSize
 import com.saerling.moody.ui.menu.ArtistMenu
 import com.saerling.moody.ui.menu.SongMenu
-import com.saerling.moody.ui.screens.settings.figureSp
 import com.saerling.moody.ui.screens.setup.onboarding.idCardName
 import com.saerling.moody.ui.theme.InterFontFamily
 import com.saerling.moody.ui.utils.stableSystemBars
@@ -544,3 +543,8 @@ private fun ArtistsSection(state: ProfileMorphState, viewModel: UserProfileViewM
         )
     }
 }
+
+
+/** A big figure's size in dp: it follows the card's width, not the font-size setting, so it never overflows. */
+@androidx.compose.runtime.Composable
+internal fun figureSp(dp: Float): androidx.compose.ui.unit.TextUnit = with(androidx.compose.ui.platform.LocalDensity.current) { dp.dp.toSp() }

@@ -22,16 +22,16 @@ import com.saerling.moody.R
 import com.saerling.moody.constants.FloatingLyricsKey
 import com.saerling.moody.utils.rememberPreference
 
-// the floating lyrics switch the player menu, customisation and app behaviour share; it only reads as on once android lets mochy show over other apps
+// the floating lyrics switch the player menu, customisation and app behaviour share; it only reads as on once android lets moody show over other apps
 @Composable
 fun rememberFloatingLyricsSwitch(): Pair<Boolean, (Boolean) -> Unit> {
     val context = LocalContext.current
     val (wanted, setWanted) = rememberPreference(FloatingLyricsKey, defaultValue = false)
     var allowed by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
-    // the switch slides on straight away while android asks, instead of sitting off until mochy comes back
+    // the switch slides on straight away while android asks, instead of sitting off until moody comes back
     var asking by remember { mutableStateOf(false) }
     val currentSetWanted by rememberUpdatedState(setWanted)
-    // the permission is given on android's own screen, so it's checked again whenever mochy comes back
+    // the permission is given on android's own screen, so it's checked again whenever moody comes back
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle) {
         val observer = LifecycleEventObserver { _, event ->

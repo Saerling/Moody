@@ -11,7 +11,7 @@ import com.saerling.moody.module.ItemProblem
 import com.saerling.moody.module.ItemsAdded
 import com.saerling.moody.module.LicenseServer
 import com.saerling.moody.module.MatchedTrack
-import com.saerling.moody.module.MochyModule
+import com.saerling.moody.module.MoodyModule
 import com.saerling.moody.module.ModuleArt
 import com.saerling.moody.module.ModuleChoice
 import com.saerling.moody.module.ModuleField
@@ -67,7 +67,7 @@ internal object Wire {
 
     // ---- the module itself ----
 
-    fun aboutToJson(module: MochyModule): JsonObject = buildJsonObject {
+    fun aboutToJson(module: MoodyModule): JsonObject = buildJsonObject {
         put("info", infoToJson(module.info))
         put("adds", strings(module.adds.map { it.name }))
         module.signIn?.let { put("signIn", signInToJson(it)) }
@@ -105,7 +105,7 @@ internal object Wire {
         put("author", info.author)
     }
 
-    // a module too old to say its api version reads as version 0, and mochy turns that away
+    // a module too old to say its api version reads as version 0, and moody turns that away
     private fun infoFrom(o: JsonObject) = ModuleInfo(
         id = o.text("id").orEmpty(),
         name = o.text("name").orEmpty(),
@@ -202,7 +202,7 @@ internal object Wire {
         },
     )
 
-    // a kind this mochy doesn't know yet reads as a line to type in, the one every value fits
+    // a kind this moody doesn't know yet reads as a line to type in, the one every value fits
     fun fieldsFrom(element: JsonElement): List<ModuleField> = element.objects().mapNotNull { o ->
         val id = o.text("id")?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
         ModuleField(
@@ -261,7 +261,7 @@ internal object Wire {
         isrc = o.text("isrc"),
     )
 
-    /** a stream's license server can't cross as json, so it goes as an id the module hands out and mochy asks back with */
+    /** a stream's license server can't cross as json, so it goes as an id the module hands out and moody asks back with */
     fun resultToJson(result: ResolveResult, licenseId: (LicenseServer) -> String) = buildJsonObject {
         when (result) {
             is ResolveResult.Found -> put("found", streamToJson(result.stream, licenseId))
@@ -346,7 +346,7 @@ internal object Wire {
 
     fun serversFrom(element: JsonElement) = element.objects().map { ModuleServer(it.text("url").orEmpty(), it.text("name").orEmpty(), it.bool("builtIn")) }
 
-    // a problem a newer module knows and this mochy doesn't still reads as one
+    // a problem a newer module knows and this moody doesn't still reads as one
     fun serverProblemFrom(element: JsonElement): ServerProblem? =
         (element as? JsonPrimitive)?.contentOrNull?.let { enumOrNull<ServerProblem>(it) ?: ServerProblem.NotAServer }
 
@@ -385,7 +385,7 @@ internal object Wire {
         return ItemsAdded.Problem(o.text("problem")?.let { enumOrNull<ItemProblem>(it) } ?: ItemProblem.Broken)
     }
 
-    // ---- what the module reaches through mochy ----
+    // ---- what the module reaches through moody ----
 
     fun requestToJson(request: HttpRequest) = buildJsonObject {
         put("url", request.url)

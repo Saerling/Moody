@@ -33,7 +33,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
-// turns a voice request into a queue mochy already plays, with the songs found before anything that's playing stops
+// turns a voice request into a queue moody already plays, with the songs found before anything that's playing stops
 class VoicePicker(
     private val context: Context,
     private val database: MusicDatabase,

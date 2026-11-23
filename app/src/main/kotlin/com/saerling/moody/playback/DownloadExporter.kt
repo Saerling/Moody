@@ -56,7 +56,7 @@ sealed interface ExportStep {
     data class Failed(val message: String) : ExportStep
 }
 
-// copies downloaded songs out as plain files into a folder the user picked; where mochy keeps its own downloads never changes
+// copies downloaded songs out as plain files into a folder the user picked; where moody keeps its own downloads never changes
 @Singleton
 class DownloadExporter @Inject constructor(
     @ApplicationContext private val context: Context,

@@ -2069,7 +2069,7 @@ interface DatabaseDao {
             current.copy(
                 name = playlistItem.title,
                 browseId = playlistItem.id,
-                // a cover made or picked in mochy stays, youtube's own picture went over it on every sync
+                // a cover made or picked in moody stays, youtube's own picture went over it on every sync
                 thumbnailUrl = current.thumbnailUrl.takeIf(PlaylistCoverStore::isManaged) ?: playlistItem.thumbnail,
                 isEditable = playlistItem.isEditable,
                 remoteSongCount = playlistItem.songCountText?.let { Regex("""\d+""").find(it)?.value?.toIntOrNull() },

@@ -96,9 +96,9 @@ fun ImportProvidersScreen(
             items =
                 listOf(
                     SettingsItem(
-                        title = { Text(stringResource(R.string.import_mochy_backup_title)) },
+                        title = { Text(stringResource(R.string.import_moody_backup_title)) },
                         highlightKey = "Moody backup",
-                        descriptionText = stringResource(R.string.import_mochy_backup_desc),
+                        descriptionText = stringResource(R.string.import_moody_backup_desc),
                         icon = painterResource(R.drawable.backup),
                         iconShape = CircleShape,
                         onClick = {

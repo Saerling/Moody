@@ -226,7 +226,7 @@ private fun ChooseFolderRow(onClick: () -> Unit) {
     }
 }
 
-// why mochy needs all files access for the picked folder, and the way to give it
+// why moody needs all files access for the picked folder, and the way to give it
 @Composable
 private fun AccessCard(folder: String, onAllow: () -> Unit) {
     Column(

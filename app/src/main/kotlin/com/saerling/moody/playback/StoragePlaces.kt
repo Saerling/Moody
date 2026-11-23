@@ -19,21 +19,21 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 
-// the two big folders mochy can keep on another drive, named after the folder they use on any drive
+// the two big folders moody can keep on another drive, named after the folder they use on any drive
 enum class StoredKind(val folder: String) {
     Downloads("download"),
     SongCache("exoplayer"),
 }
 
-// a place mochy can save onto: the phone, its own folder on a memory card, or a folder the user picked
+// a place moody can save onto: the phone, its own folder on a memory card, or a folder the user picked
 data class StoragePlace(
-    // mochy's own folder there, the kind's folder goes inside it
+    // moody's own folder there, the kind's folder goes inside it
     val root: File,
     val label: String,
     val isPhone: Boolean,
     val total: Long,
     val free: Long,
-    // picked with the folder picker, which needs all files access unless it's one of mochy's own
+    // picked with the folder picker, which needs all files access unless it's one of moody's own
     val isFolder: Boolean = false,
 )
 
@@ -46,7 +46,7 @@ object StoragePlaces {
 
     private fun markerOf(context: Context, kind: StoredKind) = File(context.noBackupFilesDir, "storage_place_${kind.folder}.txt")
 
-    // the folder [kind] lives in right now; a memory card that's been taken out, or a folder mochy may no longer reach, falls back to the phone so the app still opens
+    // the folder [kind] lives in right now; a memory card that's been taken out, or a folder moody may no longer reach, falls back to the phone so the app still opens
     fun dir(context: Context, kind: StoredKind): File {
         val phone = File(context.filesDir, kind.folder)
         val root = chosenRoot(context, kind) ?: return phone
@@ -68,7 +68,7 @@ object StoragePlaces {
         return all.firstOrNull { it.root == root } ?: root?.let { folderPlace(context, it) } ?: all.first()
     }
 
-    // the folder mochy saves into for one the user picked: its own "Moody" folder inside, since the player's cache deletes any file it doesn't know in its folder
+    // the folder moody saves into for one the user picked: its own "Moody" folder inside, since the player's cache deletes any file it doesn't know in its folder
     fun rootForPicked(picked: File): File = if (picked.name.equals(PickedFolderName, ignoreCase = true)) picked else File(picked, PickedFolderName)
 
     // a picked folder described like a drive: where it is, and that drive's room
@@ -79,7 +79,7 @@ object StoragePlaces {
         return StoragePlace(root, readablePath(context, root), isPhone = false, stat?.totalBytes ?: 0L, stat?.availableBytes ?: 0L, isFolder = true)
     }
 
-    // a folder from the folder picker as a path mochy can write to with plain files, or null for one that isn't on the phone or a card
+    // a folder from the folder picker as a path moody can write to with plain files, or null for one that isn't on the phone or a card
     fun folderFromTree(context: Context, tree: android.net.Uri): File? {
         if (tree.authority != ExternalStorageAuthority) return null
         val documentId = runCatching { android.provider.DocumentsContract.getTreeDocumentId(tree) }.getOrNull() ?: return null
@@ -94,7 +94,7 @@ object StoragePlaces {
         return if (relative.isEmpty()) volumeRoot else File(volumeRoot, relative)
     }
 
-    // whether mochy needs all files access (or the old storage permission) to write in [folder]: not for its own folders
+    // whether moody needs all files access (or the old storage permission) to write in [folder]: not for its own folders
     fun needsFolderAccess(context: Context, folder: File): Boolean = !isOwnFolder(context, folder) && !hasFolderAccess(context)
 
     // all files access on android 11+, the storage permission before it
@@ -110,7 +110,7 @@ object StoragePlaces {
             folder.path == own.path || folder.path.startsWith(own.path + File.separator)
         }
 
-    // a memory card's root by its id, from where android keeps mochy's own folder on it
+    // a memory card's root by its id, from where android keeps moody's own folder on it
     private fun cardRoot(context: Context, volumeId: String): File? {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             context.getSystemService<StorageManager>()?.storageVolumes
@@ -134,7 +134,7 @@ object StoragePlaces {
         return if (cardPath.isEmpty()) name else "$name/$cardPath"
     }
 
-    // the phone first, then every memory card or drive android gives mochy a folder on
+    // the phone first, then every memory card or drive android gives moody a folder on
     fun places(context: Context): List<StoragePlace> {
         val storage = context.getSystemService<StorageManager>()
         val phone = describe(context.filesDir, context.getString(R.string.storage_place_phone), isPhone = true, storage = null, context = context)

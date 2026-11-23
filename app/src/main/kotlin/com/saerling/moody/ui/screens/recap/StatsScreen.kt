@@ -98,8 +98,9 @@ import java.time.YearMonth
 import java.util.Locale
 import java.time.format.TextStyle as JavaTextStyle
 
-private val StatsCard = Color(0xFF0F0F0F)
-private val ChipBg = Color(0xFF2A2A2A)
+// moody: cards on the surface tone, chips on the raised one
+private val StatsCard = com.saerling.moody.ui.theme.Moody.Surface
+private val ChipBg = com.saerling.moody.ui.theme.Moody.Raised
 private val PagePadding = 20.dp
 
 private fun statsText(
@@ -219,7 +220,7 @@ fun StatsScreen(navController: NavController) {
                                 .padding(horizontal = PagePadding)
                                 .graphicsLayer { alpha = 1f - collapse },
                     ) {
-                        Text(stringResource(R.string.rc_stats_title), style = statsText(44f, tracking = -1.6f))
+                        Text("Replay", style = statsText(44f, tracking = -1.6f).copy(fontFamily = com.saerling.moody.ui.theme.MoodyDisplay, fontWeight = FontWeight.ExtraBold))
                         Spacer(Modifier.width(8.dp))
                         Text(
                             stringResource(R.string.rc_stats_year_recap_link, year),
@@ -363,7 +364,7 @@ fun StatsScreen(navController: NavController) {
         ) {
             Box(contentAlignment = Alignment.CenterStart) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_mochy_mark),
+                    painter = painterResource(R.drawable.ic_moody_mark),
                     contentDescription = "Moody",
                     tint = Color.White,
                     modifier =
@@ -407,7 +408,7 @@ fun StatsScreen(navController: NavController) {
                     Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFF2A2A2A)),
+                        .background(com.saerling.moody.ui.theme.Moody.Raised),
             )
         }
     }
@@ -555,7 +556,7 @@ private fun TotalCard(
             Text("m", style = unit, modifier = Modifier.padding(bottom = 8.dp))
         }
         Spacer(Modifier.height(10.dp))
-        Box(Modifier.fillMaxWidth().height(1.dp).background(Color(0xFF3A3A3A)))
+        Box(Modifier.fillMaxWidth().height(1.dp).background(com.saerling.moody.ui.theme.Moody.Line))
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Fact(pluralStringResource(R.plurals.rc_stats_fact_songs, s.songCount, s.songCount))
@@ -580,7 +581,7 @@ private fun TotalCard(
 @Composable
 private fun Fact(text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(11.dp).clip(RoundedCornerShape(3.dp)).background(Color(0xFFD9D9D9)))
+        Box(Modifier.size(11.dp).clip(RoundedCornerShape(3.dp)).background(com.saerling.moody.ui.theme.Moody.Green))
         Spacer(Modifier.width(5.dp))
         Text(text, style = statsText(13f, FontWeight.SemiBold, StatsInkSecondary, 0f), maxLines = 1)
     }
@@ -706,7 +707,7 @@ private fun ArtistCard(
                 model = top.thumbnailUrl?.resize(240, 240),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(80.dp).clip(CircleShape).background(Color(0xFF2A2A2A)),
+                modifier = Modifier.size(80.dp).clip(CircleShape).background(com.saerling.moody.ui.theme.Moody.Raised),
             )
             Spacer(Modifier.width(16.dp))
             Column {
@@ -758,7 +759,7 @@ private fun SongCard(
                 model = top.thumbnailUrl?.resize(240, 240),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(78.dp).clip(RoundedCornerShape(12.dp)).background(Color(0xFF2A2A2A)),
+                modifier = Modifier.size(78.dp).clip(RoundedCornerShape(12.dp)).background(com.saerling.moody.ui.theme.Moody.Raised),
             )
             Spacer(Modifier.width(16.dp))
             Column {
@@ -922,7 +923,7 @@ private fun ColumnScope.StatsPicker(
                         .padding(vertical = 5.dp)
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
-                        .background(if (on) Color(0xFF4A4A4A) else Color(0xFF2A2A2A))
+                        .background(if (on) Color(0xFF4A4A4A) else com.saerling.moody.ui.theme.Moody.Raised)
                         .then(
                             if (on) {
                                 Modifier.border(
@@ -936,7 +937,7 @@ private fun ColumnScope.StatsPicker(
                         .padding(horizontal = 16.dp, vertical = 12.dp),
             ) {
                 Box(Modifier.size(28.dp).clip(CircleShape).background(Color(0xFFD9D9D9)), contentAlignment = Alignment.Center) {
-                    if (on) Box(Modifier.size(12.dp).clip(CircleShape).background(Color(0xFF2A2A2A)))
+                    if (on) Box(Modifier.size(12.dp).clip(CircleShape).background(com.saerling.moody.ui.theme.Moody.Raised))
                 }
                 Spacer(Modifier.width(14.dp))
                 Text(label, style = statsText(18f), modifier = Modifier.weight(1f))

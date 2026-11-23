@@ -103,7 +103,7 @@ object LabColors {
     val Faint = Color(0xFF5C5C63)
     val Ink = Color(0xFF8A8A92)
 
-    /** the equalizer's node colours, soft enough to sit on mochy's greys and apart enough to tell */
+    /** the equalizer's node colours, soft enough to sit on moody's greys and apart enough to tell */
     val Nodes = listOf(
         Color(0xFFF28BA8), Color(0xFFF2A46B), Color(0xFFF2D46B), Color(0xFF8FD98B),
         Color(0xFF6BD9C4), Color(0xFF6BBAF2), Color(0xFF8C9EF2), Color(0xFFB98CF2),
@@ -421,7 +421,7 @@ fun LabSegmented(
     }
 }
 
-/** the 32dp light circle with a dark glyph that mochy's settings rows lead with */
+/** the 32dp light circle with a dark glyph that moody's settings rows lead with */
 @Composable
 fun LabGlyph(iconRes: Int, modifier: Modifier = Modifier, size: Dp = 32.dp) {
     Box(

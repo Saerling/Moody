@@ -166,7 +166,7 @@ internal fun PlayerStylePreview(style: PlayerStyle) {
 internal fun HomeStylePreview(style: HomeStyle, coverRadius: Dp) {
     val radius = RoundedCornerShape(scaledRadius(coverRadius, 0.2f))
     when (style) {
-        HomeStyle.MOCHYY -> Column(Modifier.fillMaxSize()) {
+        HomeStyle.MOODY -> Column(Modifier.fillMaxSize()) {
             Box(Modifier.fillMaxWidth().height(108.dp).background(ArtFill)) {
                 TitleBars(Modifier.align(Alignment.BottomStart).padding(start = 12.dp, bottom = 12.dp))
             }

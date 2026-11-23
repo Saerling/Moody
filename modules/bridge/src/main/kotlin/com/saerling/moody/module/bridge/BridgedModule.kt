@@ -1,4 +1,4 @@
-// mochy's side of the bridge: a module that came with its own code, every call crossing as json and coming back the same way
+// moody's side of the bridge: a module that came with its own code, every call crossing as json and coming back the same way
 
 package com.saerling.moody.module.bridge
 
@@ -149,7 +149,7 @@ open class BridgedModule private constructor(private val bridge: ModuleBridge, a
         Base64.decode((answer as? JsonPrimitive)?.contentOrNull ?: throw IOException("The module gave no license"))
     }
 
-    // mochy's host as the module reaches it, one call at a time across the bridge
+    // moody's host as the module reaches it, one call at a time across the bridge
     private class HostEnd(private val host: ModuleHost) : HostBridge {
         override fun get(key: String): String? = host.storage.get(key)
 
@@ -172,10 +172,10 @@ open class BridgedModule private constructor(private val bridge: ModuleBridge, a
     private class WithBoth(bridge: ModuleBridge, about: Wire.About) : BridgedModule(bridge, about), ServerListModule, ItemListModule
 
     companion object {
-        /** the class mochy makes from a zip's code, the module's side of the bridge */
+        /** the class moody makes from a zip's code, the module's side of the bridge */
         const val ModuleSideClass = "com.saerling.moody.module.bridge.ModuleSide"
 
-        /** makes the module named [entry] on the far side of [bridge]; throws when it can't run in this mochy */
+        /** makes the module named [entry] on the far side of [bridge]; throws when it can't run in this moody */
         fun open(bridge: ModuleBridge, entry: String): BridgedModule {
             val about = Wire.aboutFrom(Wire.objectOf(bridge.open(entry)))
             val version = about.info.apiVersion
@@ -191,10 +191,10 @@ open class BridgedModule private constructor(private val bridge: ModuleBridge, a
     }
 }
 
-/** the parent of a zip module's class loader: the phone's own java and android classes and the bridge's shared package, nothing else of mochy's */
-class BridgeOnlyParent(private val mochy: ClassLoader) : ClassLoader(String::class.java.classLoader) {
+/** the parent of a zip module's class loader: the phone's own java and android classes and the bridge's shared package, nothing else of moody's */
+class BridgeOnlyParent(private val moody: ClassLoader) : ClassLoader(String::class.java.classLoader) {
     override fun loadClass(name: String, resolve: Boolean): Class<*> =
-        if (name.startsWith(SharedPackage)) mochy.loadClass(name) else super.loadClass(name, resolve)
+        if (name.startsWith(SharedPackage)) moody.loadClass(name) else super.loadClass(name, resolve)
 
     private companion object {
         val SharedPackage = ModuleBridge::class.java.name.substringBeforeLast('.') + "."

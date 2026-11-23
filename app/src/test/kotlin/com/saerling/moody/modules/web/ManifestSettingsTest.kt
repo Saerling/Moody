@@ -71,7 +71,7 @@ class ManifestSettingsTest {
         assertEquals("glass.agsl", glass.shader)
         assertEquals(7f, glass.blurDp)
         assertEquals(22f, glass.marginDp)
-        // mochy's own uniforms, bad names and words are left out
+        // moody's own uniforms, bad names and words are left out
         assertEquals(mapOf("tintAlpha" to 0.42f, "spread" to 0f), glass.uniforms)
         assertTrue(skin()!!.restyles)
     }

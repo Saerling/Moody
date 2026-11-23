@@ -224,7 +224,7 @@ fun AppNavigationBar(
     val selectedIndex = navigationItems.indexOfFirst { it.route == selectedTabRoute }
     val tabCount = navigationItems.size
     val pill = rememberNavPill(selectedIndex)
-    // a look's glass can draw its own edge and its own pill, and then mochy leaves its hairline, shadow or highlight out
+    // a look's glass can draw its own edge and its own pill, and then moody leaves its hairline, shadow or highlight out
     val moduleGlass = rememberChromeModuleGlass()
     val density = LocalDensity.current
     val glassPill = remember(pill, tabCount, density) {
@@ -337,10 +337,31 @@ internal fun RowScope.NavTab(
             ),
         contentAlignment = Alignment.Center
     ) {
-        if (screen == Screens.Library) {
-            LibraryDownloadIcon { TabIcons(screen, unlitIcon, litIcon, iconSize) { lit.value } }
-        } else {
-            TabIcons(screen, unlitIcon, litIcon, iconSize) { lit.value }
+        // moody: the lit tab shows its name beside the icon, dark on the white pill
+        androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
+            if (screen == Screens.Library) {
+                LibraryDownloadIcon { TabIcons(screen, unlitIcon, litIcon, iconSize) { lit.value } }
+            } else {
+                TabIcons(screen, unlitIcon, litIcon, iconSize) { lit.value }
+            }
+            androidx.compose.animation.AnimatedVisibility(
+                visible = isSelected,
+                enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandHorizontally(),
+                exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.shrinkHorizontally(),
+            ) {
+                androidx.compose.material3.Text(
+                    text = stringResource(screen.titleId),
+                    style = androidx.compose.ui.text.TextStyle(
+                        fontFamily = com.saerling.moody.ui.theme.MoodyText,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        fontSize = androidx.compose.ui.unit.TextUnit(12f, androidx.compose.ui.unit.TextUnitType.Sp),
+                        color = com.saerling.moody.ui.theme.Moody.Night,
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                    modifier = Modifier.padding(start = 5.dp),
+                )
+            }
         }
     }
 }

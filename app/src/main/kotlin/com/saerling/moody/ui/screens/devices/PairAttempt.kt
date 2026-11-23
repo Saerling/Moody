@@ -18,7 +18,7 @@ sealed interface PairUi {
     data object WrongCode : PairUi
     data object Full : PairUi
     data object Failed : PairUi
-    // the device found runs an older mochy that pairs the old, unsafe way
+    // the device found runs an older moody that pairs the old, unsafe way
     data object Outdated : PairUi
     data object NoneFound : PairUi
     data class Done(val name: String) : PairUi

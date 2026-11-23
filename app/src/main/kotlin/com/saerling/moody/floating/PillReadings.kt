@@ -42,7 +42,7 @@ internal fun readingSettings(context: Context): Flow<ReadingSettings> = context.
     }
     .distinctUntilChanged()
 
-// every line's romanisation, worked out the way the lyrics page does it; null when the song is in nothing mochy romanises
+// every line's romanisation, worked out the way the lyrics page does it; null when the song is in nothing moody romanises
 internal suspend fun romanizedLines(lines: List<LyricsEntry>, settings: ReadingSettings): List<LineReading?>? {
     val out = arrayOfNulls<LineReading>(lines.size)
     readSong(lines, allowed = { settings.romanize[it] != false }) { index, reading -> out[index] = reading }

@@ -57,7 +57,7 @@ val SwipeLeftActionKey = stringPreferencesKey("swipeLeftAction")
 // the top layout of the home tab, picked in customisation settings
 enum class HomeStyle(val displayName: String) {
     // the old hero carousel, kept as an option; moody opens on "listen now"
-    MOCHYY("Carousel"),
+    MOODY("Carousel"),
     LISTEN_NOW("Listen now"),
     HOP_IN("Hop in"),
 }
@@ -138,7 +138,7 @@ val SelectedYtmPlaylistsKey = stringPreferencesKey("selectedYtmPlaylists")
 val YtSyncNewPlaylistsKey = booleanPreferencesKey("ytSyncNewPlaylists")
 /** Plays long enough to count go to the signed-in account's YouTube history. */
 val YtReportPlaysKey = booleanPreferencesKey("ytReportPlays")
-/** YouTube Music history is copied into Mochy's own listening history. */
+/** YouTube Music history is copied into Moody's own listening history. */
 val YtPullHistoryKey = booleanPreferencesKey("ytPullHistory")
 /** Newest YouTube history entry already copied, so the next pull stops there. */
 val YtHistoryLastSeenKey = stringPreferencesKey("ytHistoryLastSeen")
@@ -165,7 +165,7 @@ val DataSaverKey = booleanPreferencesKey("dataSaver")
 val DataSaverMobileOnlyKey = booleanPreferencesKey("dataSaverMobileOnly")
 val IpVersionKey = stringPreferencesKey("ipVersion")
 
-// who finds a youtube song's stream: innertubex first with mochy's own client walk behind it, or only the walk
+// who finds a youtube song's stream: innertubex first with moody's own client walk behind it, or only the walk
 val StreamBackendKey = stringPreferencesKey("streamBackend")
 
 enum class StreamBackend {
@@ -223,11 +223,11 @@ enum class AudioPassMode(val minSdk: Int) {
     EXCLUSIVE_DAC(27),
     ;
 
-    /** whether songs go to an output only mochy plays to, instead of through android's mixer */
+    /** whether songs go to an output only moody plays to, instead of through android's mixer */
     val exclusive: Boolean get() = this != SONG_RATE
 
     companion object {
-        /** android 14 brought the dac's own mixer; before it only mochy's own driver reaches the dac */
+        /** android 14 brought the dac's own mixer; before it only moody's own driver reaches the dac */
         val Default: AudioPassMode
             get() = if (android.os.Build.VERSION.SDK_INT >= 34) SONG_RATE else DIRECT_USB
     }
@@ -348,14 +348,14 @@ val PauseListenHistoryKey = booleanPreferencesKey("pauseListenHistory")
 val PauseSearchHistoryKey = booleanPreferencesKey("pauseSearchHistory")
 val DisableScreenshotKey = booleanPreferencesKey("disableScreenshot")
 
-// Discord: signed in on Discord's own page in the browser (OAuth), so Mochy only ever holds a
+// Discord: signed in on Discord's own page in the browser (OAuth), so Moody only ever holds a
 // token Discord gave it for this, never the account's password or login token
 val DiscordAccessTokenKey = stringPreferencesKey("discordAccessToken")
 val DiscordRefreshTokenKey = stringPreferencesKey("discordRefreshToken")
 val DiscordTokenExpiresAtKey = longPreferencesKey("discordTokenExpiresAt")
 /** the signed-in account's name, picture, banner and bio, as JSON, for the profile preview */
 val DiscordProfileKey = stringPreferencesKey("discordProfile")
-/** a login started in the browser, kept on disk in case Android closes Mochy meanwhile */
+/** a login started in the browser, kept on disk in case Android closes Moody meanwhile */
 val DiscordLoginStateKey = stringPreferencesKey("discordLoginState")
 val DiscordLoginVerifierKey = stringPreferencesKey("discordLoginVerifier")
 
@@ -369,7 +369,7 @@ val DiscordLargeTextKey = stringPreferencesKey("discordPresenceLargeText")
 val DiscordSmallTextKey = stringPreferencesKey("discordPresenceSmallText")
 val DiscordLargeImageKey = stringPreferencesKey("discordPresenceLargeImage")
 val DiscordSmallImageKey = stringPreferencesKey("discordPresenceSmallImage")
-// the pictures picked for "your own picture", kept as files in mochy's own folder
+// the pictures picked for "your own picture", kept as files in moody's own folder
 val DiscordLargeCustomImageKey = stringPreferencesKey("discordPresenceLargeCustomImage")
 val DiscordSmallCustomImageKey = stringPreferencesKey("discordPresenceSmallCustomImage")
 val DiscordSpinSecondsKey = intPreferencesKey("discordPresenceSpinSeconds")
@@ -862,12 +862,9 @@ val PlayerCoverStyleKey = stringPreferencesKey("playerCoverStyle")
  * nothing softening it, so squared reads far better there. This is only the *default* - an
  * explicit choice in Player customise still wins on every device.
  */
+// moody: the cover is a rounded card over the cover-tinted ground, as in the redesign
 val DefaultPlayerCoverStyle: PlayerCoverStyle
-    get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        PlayerCoverStyle.EDGE_TO_EDGE
-    } else {
-        PlayerCoverStyle.SQUARED
-    }
+    get() = PlayerCoverStyle.SQUARED
 
 val ShowBigDiscStylesKey = booleanPreferencesKey("showBigDiscStyles")
 
@@ -982,7 +979,7 @@ enum class LyricsAnimationStyle {
     KARAOKE,
     APPLE,
     APPLE_V2,
-    MOCHY_1,
+    MOODY_1,
     LYRICS_V2,
     METRO_LYRICS,
 }
@@ -1328,7 +1325,7 @@ val BlurQualityKey = stringPreferencesKey("blurQuality")
 
 enum class BlurQuality { LOW, HIGH }
 
-// the glass of the nav bar and the mini player; a look module can swap mochy's frost for a glass shader it brings itself
+// the glass of the nav bar and the mini player; a look module can swap moody's frost for a glass shader it brings itself
 val ChromeGlassStyleKey = stringPreferencesKey("chromeGlassStyle")
 
 enum class ChromeGlassStyle {

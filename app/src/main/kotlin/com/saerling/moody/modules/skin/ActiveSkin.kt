@@ -163,7 +163,7 @@ object ActiveSkin {
 
     // the shader's text, compiled once per file; a broken one gives the compiler's first line back for the module's page
     private fun compile(skin: ModuleSkin, look: SkinGlass): Compiled {
-        // runtime shaders are android 13+, older phones keep mochy's frost and that's not a fault of the module's
+        // runtime shaders are android 13+, older phones keep moody's frost and that's not a fault of the module's
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return Compiled(null, null)
         val file = skin.fontFile(look.shader)?.takeIf { it.isFile } ?: return Compiled(null, "its shader file ${look.shader} isn't in the module")
         if (file.length() > MaxShaderBytes) return Compiled(null, "its shader is bigger than ${MaxShaderBytes / 1024} KB")
@@ -174,7 +174,7 @@ object ActiveSkin {
             val made = createAgslShader(source)
             shaderKey = key
             shader = made
-            // a glass that takes the lit tab's place draws it itself, and mochy leaves its own highlight out
+            // a glass that takes the lit tab's place draws it itself, and moody leaves its own highlight out
             shaderDrawsPill = DeclaredUniform.findAll(source).any { it.groupValues[1] == "pill" }
             Compiled(made, null, shaderDrawsPill)
         } catch (e: Exception) {

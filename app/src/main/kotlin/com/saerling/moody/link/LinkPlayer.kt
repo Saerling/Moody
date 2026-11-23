@@ -8,7 +8,7 @@ import com.saerling.moody.playback.PlayerConnection
 object LinkPlayer {
     @Volatile var connection: PlayerConnection? = null
 
-    // a quiet stand-in from android auto, for a phone in the car whose own mochy screen was never opened
+    // a quiet stand-in from android auto, for a phone in the car whose own moody screen was never opened
     @Volatile var background: PlayerConnection? = null
 
     // the screen's player when there is one, otherwise the car's

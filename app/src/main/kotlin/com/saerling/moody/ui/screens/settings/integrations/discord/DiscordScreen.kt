@@ -1,4 +1,4 @@
-// mochy → settings → integrations → discord: log in in the browser, then shape the status friends see with a live preview
+// moody → settings → integrations → discord: log in in the browser, then shape the status friends see with a live preview
 
 package com.saerling.moody.ui.screens.settings.integrations.discord
 
@@ -225,7 +225,7 @@ private fun AccountButton(
     }
     if (inviting) {
         LoginNote(stringResource(R.string.discord_login_note), Modifier.padding(top = 8.dp))
-        // discord's consent page lists the whole presence bundle, so say up front what mochy really uses
+        // discord's consent page lists the whole presence bundle, so say up front what moody really uses
         LoginNote(stringResource(R.string.discord_permissions_note), Modifier.padding(top = 4.dp, bottom = 8.dp))
     }
 }

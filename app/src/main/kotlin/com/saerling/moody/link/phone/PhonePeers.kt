@@ -19,7 +19,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
-// while mochy is on screen, a phone says hello to the other phones and tablets it's paired with, so each knows the other is there to steer
+// while moody is on screen, a phone says hello to the other phones and tablets it's paired with, so each knows the other is there to steer
 internal class PhonePeers(
     private val context: Context,
     private val host: PhoneLinkHost,

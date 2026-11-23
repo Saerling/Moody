@@ -249,7 +249,7 @@ internal fun Modifier.fromCoverSide(end: Boolean, x: Density.() -> Float, y: Den
     }
 }
 
-// the song's cover in a circle; a tap opens the controls, a hold opens mochy
+// the song's cover in a circle; a tap opens the controls, a hold opens moody
 @Composable
 private fun CoverDisc(
     state: PillState,

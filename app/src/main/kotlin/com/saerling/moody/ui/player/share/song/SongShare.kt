@@ -235,7 +235,7 @@ private fun SongPreviewAudio(session: SongShareSession) {
     }
 }
 
-// the share's song stops the moment you leave mochy, say for instagram, so it never loops on under the app you post from
+// the share's song stops the moment you leave moody, say for instagram, so it never loops on under the app you post from
 @Composable
 private fun WatchesTheApp(session: SongShareSession) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle

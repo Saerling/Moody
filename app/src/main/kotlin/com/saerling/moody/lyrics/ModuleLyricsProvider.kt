@@ -1,4 +1,4 @@
-// a lyrics module as one of mochy's lyrics sources, the module registry only hands these out while the module is on
+// a lyrics module as one of moody's lyrics sources, the module registry only hands these out while the module is on
 
 package com.saerling.moody.lyrics
 

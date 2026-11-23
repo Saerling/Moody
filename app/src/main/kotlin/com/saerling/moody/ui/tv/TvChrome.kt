@@ -55,11 +55,11 @@ import com.saerling.moody.extensions.togglePlayPause
 import com.saerling.moody.extensions.toggleRepeatMode
 import com.saerling.moody.playback.PlayerConnection
 
-// the mochy mark at the top left, as on every concept page
+// the moody mark at the top left, as on every concept page
 @Composable
 internal fun TvLogo(modifier: Modifier = Modifier) {
     Icon(
-        painter = painterResource(R.drawable.ic_mochy_mark),
+        painter = painterResource(R.drawable.ic_moody_mark),
         contentDescription = null,
         tint = Color.White,
         modifier = modifier.size(22.dp),
@@ -168,11 +168,11 @@ internal fun TvNowPlayingPill(
 
 // the places down the right edge, playlists gets its own stop so you can reach it straight from the rail
 internal enum class TvTab(val route: String, val icon: Any, val label: Int) {
-    Home(TvRoutes.Home, R.drawable.nav_mochy_outline, R.string.home),
+    Home(TvRoutes.Home, R.drawable.nav_moody_outline, R.string.home),
     Search(TvRoutes.Search, R.raw.search, R.string.search),
     Library(TvRoutes.Library, R.raw.lib, R.string.your_library),
     Playlists("${TvRoutes.Grid}/playlists", R.drawable.queue_music, R.string.playlists),
-    Mochy(TvRoutes.Mochy, R.drawable.nav_mochy_outline, R.string.tv_mochy),
+    Moody(TvRoutes.Moody, R.drawable.nav_moody_outline, R.string.tv_moody),
 }
 
 @Composable
@@ -228,6 +228,6 @@ internal fun tabOf(route: String?): TvTab? = when {
     route.startsWith(TvRoutes.Search) || route.startsWith(TvRoutes.Browse) -> TvTab.Search
     route.startsWith("${TvRoutes.Grid}/playlists") || route.startsWith("local_playlist") || route.startsWith("online_playlist") -> TvTab.Playlists
     route.startsWith(TvRoutes.Library) || route.startsWith(TvRoutes.Songs) || route.startsWith(TvRoutes.Grid) -> TvTab.Library
-    route.startsWith(TvRoutes.Mochy) || route.startsWith(TvRoutes.Phone) -> TvTab.Mochy
+    route.startsWith(TvRoutes.Moody) || route.startsWith(TvRoutes.Phone) -> TvTab.Moody
     else -> null
 }
