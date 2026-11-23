@@ -160,6 +160,15 @@ class ModuleRegistry @Inject constructor(
         if (on && module != null && restyles(module)) raise(id) else refresh()
     }
 
+    /** switches off every look that restyles the app, so moody's own design shows; returns how many it turned off */
+    fun turnOffLooks(): Int {
+        val on = modules.map { it.first }.filter { restyles(it) && isEnabled(it.info.id) }
+        if (on.isEmpty()) return 0
+        prefs.edit { on.forEach { putBoolean("enabled_${it.info.id}", false) } }
+        refresh()
+        return on.size
+    }
+
     /** puts a look above the others, so its settings, player, font and glass win where they meet */
     fun raise(id: String) = setOrder(listOf(id))
 

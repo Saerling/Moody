@@ -255,7 +255,7 @@ private fun PlayerSection() {
     val context = LocalContext.current
     val playerConnection = LocalPlayerConnection.current
     val playerSheetState = LocalPlayerBottomSheetState.current
-    val playerStyle by rememberEnumPreference(PlayerStyleKey, defaultValue = PlayerStyle.FLAGSHIP)
+    val playerStyle by rememberEnumPreference(PlayerStyleKey, defaultValue = PlayerStyle.CLASSIC)
     val playFirst = stringResource(R.string.customise_play_first)
     Column {
     PlayerStyleCard(

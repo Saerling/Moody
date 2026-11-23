@@ -369,7 +369,7 @@ private fun TvControlStrip(
     onSwitchLyricsSource: () -> Unit,
     onInfo: (TvInfoStart) -> Unit,
 ) {
-    var style by rememberEnumPreference(PlayerStyleKey, PlayerStyle.FLAGSHIP)
+    var style by rememberEnumPreference(PlayerStyleKey, PlayerStyle.CLASSIC)
     var square by rememberPreference(TvFlagshipSquareKey, false)
     var videoReturn by rememberPreference(VideoModeReturnStyleKey, "")
     val squareLabel = stringResource(R.string.tv_flagship_square)

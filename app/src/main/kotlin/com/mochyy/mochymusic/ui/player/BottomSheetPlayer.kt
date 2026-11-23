@@ -330,7 +330,8 @@ private fun PlayerSheet(
     var coverStyle by rememberEnumPreference(PlayerCoverStyleKey, DefaultPlayerCoverStyle)
     val (savedPlayerStyle, savePlayerStyle) = rememberEnumPreference(
         com.mochyy.mochymusic.constants.PlayerStyleKey,
-        com.mochyy.mochymusic.constants.PlayerStyle.FLAGSHIP,
+        // moody: the classic player carries the redesign (hardware keys, action pill)
+        com.mochyy.mochymusic.constants.PlayerStyle.CLASSIC,
     )
     // A style picked in the studio shows at once. The saved one only comes back after the
     // settings file is written, which landed in the middle of the player growing back out of its
@@ -467,7 +468,7 @@ private fun PlayerSheet(
     val exitVideoMode = androidx.compose.runtime.rememberUpdatedState {
         val back = PlayerStyle.entries.firstOrNull { it.name == videoModeReturn && it != PlayerStyle.VIDEO }
             ?: PlayerStyle.fromStored(videoModeReturn)
-        onPlayerStyleChange(back ?: PlayerStyle.FLAGSHIP)
+        onPlayerStyleChange(back ?: PlayerStyle.CLASSIC)
     }
     // the song's whole lyrics, opened over an alternate style from its ••• menu
     var styleLyricsOpen by remember { mutableStateOf(false) }

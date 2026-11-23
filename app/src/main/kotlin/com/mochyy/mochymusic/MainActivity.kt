@@ -268,6 +268,9 @@ internal fun markOnboardedOnThisInstall(context: android.content.Context) {
     runCatching { java.io.File(context.noBackupFilesDir, SETUP_MARKER_FILE).createNewFile() }
 }
 
+// set once the redesign has cleared the old design choices
+private val MoodyRedesignKey = androidx.datastore.preferences.core.booleanPreferencesKey("moodyRedesignV1")
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun attachBaseContext(newBase: Context) {
@@ -286,6 +289,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var syncUtils: SyncUtils
+
+    @Inject
+    lateinit var moduleRegistry: com.mochyy.mochymusic.modules.ModuleRegistry
 
     // made only when first used, so a phone with nothing paired never builds it on the way in
     @Inject
@@ -450,6 +456,7 @@ class MainActivity : ComponentActivity() {
         }
         systemScaleObserver = com.mochyy.mochymusic.ui.utils.AppMotion.followSystemScale(this)
         moveOffOldLyricsShaderSwitch()
+        applyMoodyRedesign()
         followLookSettings()
 
         lifecycleScope.launch {
@@ -1447,7 +1454,7 @@ class MainActivity : ComponentActivity() {
         // the full video mode fills the screen sideways, a status bar down one side of it would cut into the picture
         val (playerStyle) = com.mochyy.mochymusic.utils.rememberEnumPreference(
             com.mochyy.mochymusic.constants.PlayerStyleKey,
-            com.mochyy.mochymusic.constants.PlayerStyle.FLAGSHIP,
+            com.mochyy.mochymusic.constants.PlayerStyle.CLASSIC,
         )
         // and the bedside is a clock on the nightstand, a row of notifications over it would only glow in the dark
         val portrait = LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT
@@ -1536,6 +1543,29 @@ class MainActivity : ComponentActivity() {
     private data class LookSettings(val animations: Boolean, val speed: Float, val elementBlur: Boolean, val coverRadius: Float, val font: String)
 
     // people who had the old lyrics shader switch off land on the matching shaderless lyric style, once
+    /**
+     * Once, on the first launch of the "vinilo nocturno" redesign: the design choices saved by the old app
+     * (its flagship player, button and bottom bar styles, theme colour, font, and any look modules) would
+     * otherwise keep drawing the old design over the new one, so they go back to moody's defaults.
+     * Nothing else is touched: library, accounts, servers, downloads and other settings stay as they were.
+     */
+    private fun applyMoodyRedesign() {
+        if (dataStore[MoodyRedesignKey] == true) return
+        lifecycleScope.launch(Dispatchers.IO) {
+            runCatching { moduleRegistry.turnOffLooks() }
+            dataStore.edit { prefs ->
+                if (prefs[MoodyRedesignKey] == true) return@edit
+                prefs[com.mochyy.mochymusic.constants.PlayerStyleKey] = com.mochyy.mochymusic.constants.PlayerStyle.CLASSIC.name
+                prefs[com.mochyy.mochymusic.constants.PlayerBottomBarStyleKey] = com.mochyy.mochymusic.constants.PlayerBottomBarStyle.VOLUME.name
+                prefs.remove(com.mochyy.mochymusic.constants.ButtonStyleKey)
+                prefs.remove(com.mochyy.mochymusic.constants.SelectedThemeColorKey)
+                prefs[com.mochyy.mochymusic.constants.AppFontKey] = "moody"
+                prefs[com.mochyy.mochymusic.constants.PureBlackKey] = true
+                prefs[MoodyRedesignKey] = true
+            }
+        }
+    }
+
     private fun moveOffOldLyricsShaderSwitch() {
         if (dataStore[com.mochyy.mochymusic.constants.LyricsWaveAnimationKey] != false) return
         lifecycleScope.launch(Dispatchers.IO) {
