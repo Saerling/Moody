@@ -40,7 +40,8 @@ fun AppSwitch(
     val animSpec = tween<Color>(150)
 
     val trackColor by animateColorAsState(
-        targetValue = if (checked) Grey.copy(alpha = alpha) else Color.Transparent,
+        // moody: on is green with a dark thumb, like the mockup
+        targetValue = if (checked) com.mochyy.mochymusic.ui.theme.Moody.Green.copy(alpha = alpha) else Color.Transparent,
         animationSpec = animSpec,
         label = "trackColor"
     )
@@ -50,7 +51,7 @@ fun AppSwitch(
         label = "borderColor"
     )
     val thumbColor by animateColorAsState(
-        targetValue = if (checked) Color.White.copy(alpha = alpha) else Grey.copy(alpha = alpha),
+        targetValue = if (checked) com.mochyy.mochymusic.ui.theme.Moody.Night.copy(alpha = alpha) else Grey.copy(alpha = alpha),
         animationSpec = animSpec,
         label = "thumbColor"
     )

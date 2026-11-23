@@ -66,11 +66,12 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-internal val StatsAccent = Color(0xFF88FF76)
-internal val StatsInk = Color.White
-internal val StatsInkSecondary = Color(0xFFB8B8B8)
-internal val StatsInkMuted = Color(0xFF7A7A7A)
-private val Grid = Color(0xFF242424)
+// moody: green for what you listened to, on the black and white base
+internal val StatsAccent = com.mochyy.mochymusic.ui.theme.Moody.Green
+internal val StatsInk = com.mochyy.mochymusic.ui.theme.Moody.Ink
+internal val StatsInkSecondary = com.mochyy.mochymusic.ui.theme.Moody.Ink2
+internal val StatsInkMuted = com.mochyy.mochymusic.ui.theme.Moody.Ink3
+private val Grid = com.mochyy.mochymusic.ui.theme.Moody.Raised
 private val BarRest = Color(0xFF3A3A3A)
 private val TooltipBg = Color(0xFF2C2C2C)
 
