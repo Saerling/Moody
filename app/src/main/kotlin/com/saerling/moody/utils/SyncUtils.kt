@@ -13,6 +13,7 @@ import com.music.innertube.utils.completed
 import com.music.innertube.utils.parseCookieString
 import com.saerling.moody.constants.InnerTubeCookieKey
 import com.saerling.moody.constants.LastFullSyncKey
+import com.saerling.moody.constants.YtmSyncKey
 import com.saerling.moody.constants.SYNC_COOLDOWN
 import com.saerling.moody.constants.SelectedYtmPlaylistsKey
 import com.saerling.moody.constants.YtExcludeImportsKey
@@ -132,6 +133,28 @@ class SyncUtils @Inject constructor(
 
     init {
         watchNetwork()
+        watchSignIn()
+    }
+
+    // signing in to YouTube Music brings the whole account in at once (playlists, likes, albums, artists), with no
+    // import step and no cooldown; the first value is the sign-in the app opened with, so only a new one counts
+    private fun watchSignIn() {
+        syncScope.launch {
+            var previous: String? = null
+            var first = true
+            context.dataStore.data
+                .map { prefs -> prefs[InnerTubeCookieKey]?.let { c -> parseCookieString(c)["SAPISID"] } }
+                .distinctUntilChanged()
+                .collect { account ->
+                    if (!first && account != null && account != previous && context.dataStore.get(YtmSyncKey, true)) {
+                        Timber.d("new YouTube Music sign-in: syncing the account now")
+                        syncChannel.send(SyncOperation.FullSync)
+                        context.dataStore.edit { it[LastFullSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) }
+                    }
+                    previous = account
+                    first = false
+                }
+        }
     }
 
     private fun keepForLater(songId: String, liked: Boolean) = synchronized(outbox) {

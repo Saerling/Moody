@@ -10,7 +10,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +19,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,7 +31,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -139,6 +139,29 @@ fun MoodyHome(navController: NavController, viewModel: HomeViewModel = hiltViewM
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val bottom = LocalPlayerAwareWindowInsets.current.asPaddingValues().calculateBottomPadding()
 
+    val localPlaylists by viewModel.localPlaylists.collectAsState()
+    val accountPlaylists by viewModel.accountPlaylists.collectAsState()
+    val made by viewModel.dailyDiscover.collectAsState()
+    val screenWidth = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp.dp
+
+    // prism's shortcuts: liked and downloads first, then your playlists (here and on your accounts) and the albums
+    // you played last, two to a row
+    val tiles = buildList {
+        add(HomeTile(stringResource(R.string.liked_songs), R.drawable.favorite, null, Moody.DeepRed) { navController.navigate("auto_playlist/liked") })
+        add(HomeTile(stringResource(R.string.offline), R.drawable.offline, null, Moody.Raised) { navController.navigate("auto_playlist/downloaded") })
+        localPlaylists.orEmpty().take(2).forEach { pl ->
+            add(HomeTile(pl.playlist.name, R.drawable.queue_music, pl.thumbnails.firstOrNull(), Moody.Raised) { navController.navigate("local_playlist/${pl.id}") })
+        }
+        accountPlaylists.orEmpty().take(2).forEach { pl ->
+            add(HomeTile(pl.title, R.drawable.queue_music, pl.thumbnail, Moody.Raised) { navController.navigate("online_playlist/${pl.id}") })
+        }
+        history.orEmpty().distinctBy { it.song.albumId ?: it.id }.take(8 - size).forEach { s ->
+            add(HomeTile(s.song.albumName ?: s.song.title, R.drawable.album, s.song.thumbnailUrl, Moody.Raised) {
+                s.song.albumId?.let { navController.navigate("album/$it") } ?: playSongs(listOf(s), 0, keepTitle)
+            })
+        }
+    }.take(8)
+
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(Moody.Night),
         contentPadding = PaddingValues(top = top + 16.dp, bottom = bottom + 24.dp),
@@ -147,85 +170,74 @@ fun MoodyHome(navController: NavController, viewModel: HomeViewModel = hiltViewM
         item(key = "header") {
             Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text(now.format(DateTimeFormatter.ofPattern("EEE · d MMM · HH:mm", Locale.getDefault())).uppercase(), style = MoodyLabel)
+                    Text(now.format(DateTimeFormatter.ofPattern("EEE · d MMM", Locale.getDefault())).uppercase(), style = MoodyLabel)
                     Text(stringResource(greeting), style = TextStyle(fontFamily = MoodyDisplay, fontWeight = FontWeight.ExtraBold, fontSize = 32.sp, color = Moody.Ink))
                 }
                 RoundIcon(R.drawable.settings, stringResource(R.string.settings)) { navController.navigate("settings") }
             }
         }
-        item(key = "moments") {
+        // the replay teaser on top, as prism opens: this week's listening against the last, a tap opens replay
+        item(key = "replay") {
+            val (thisWeek, lastWeek) = week
+            val ratio = if (lastWeek > 0) (thisWeek.toFloat() / lastWeek).coerceIn(0f, 1f) else if (thisWeek > 0) 1f else 0f
+            val source = rememberBounceSource()
             Row(
-                Modifier.padding(horizontal = 20.dp).clip(RoundedCornerShape(22.dp)).background(Moody.Surface).horizontalScroll(rememberScrollState()).padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                Modifier.padding(horizontal = 20.dp).fillMaxWidth().pressBounce(source).clip(RoundedCornerShape(Moody.RadiusL))
+                    .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(Moody.DeepBlue, Moody.Surface)))
+                    .clickable(interactionSource = source, indication = null) { navController.navigate("stats") }
+                    .padding(18.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Moment.entries.forEach { m ->
-                    val on = m == Moment.ForYou
-                    val source = rememberBounceSource()
-                    Box(
-                        Modifier.pressBounce(source).height(36.dp).clip(CircleShape).background(if (on) Moody.Ink else Moody.Surface)
-                            .clickable(interactionSource = source, indication = null) {
-                                m.sleepMinutes?.let { playerConnection.service.sleepTimer.start(it) }
-                                m.query?.let { navController.navigate(searchRoute(it)) }
-                            }.padding(horizontal = 14.dp),
-                        contentAlignment = Alignment.Center,
-                    ) { Text(stringResource(m.label), style = MoodyBody.copy(fontSize = 14.sp, color = if (on) Moody.Night else Moody.Ink2)) }
+                Column(Modifier.weight(1f)) {
+                    Text("REPLAY", style = MoodyLabel.copy(color = Moody.Blue))
+                    Text(stringResource(R.string.moody_replay_teaser), style = TextStyle(fontFamily = MoodyDisplay, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Moody.Ink))
+                    Spacer(Modifier.height(6.dp))
+                    Text("${thisWeek / 3_600_000}h ${(thisWeek / 60_000) % 60}m", style = TextStyle(fontFamily = MoodyMono, fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Moody.Ink))
+                    Text(stringResource(R.string.moody_last_week, "${lastWeek / 3_600_000}h"), style = MoodyMeta.copy(fontSize = 12.sp))
                 }
+                Ring(ratio, Moody.Green, 72.dp)
             }
         }
-        item(key = "bento") {
-            Column(Modifier.padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                history?.firstOrNull()?.let { song ->
-                    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(Moody.RadiusL)).background(Moody.Surface).padding(14.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                        AsyncImage(song.song.thumbnailUrl, null, contentScale = ContentScale.Crop, modifier = Modifier.size(112.dp).clip(RoundedCornerShape(Moody.RadiusM)).background(Moody.Raised))
-                        Column(Modifier.weight(1f).height(112.dp), verticalArrangement = Arrangement.SpaceBetween) {
-                            Column {
-                                Text(keepTitle.uppercase(), style = MoodyLabel)
-                                Text(song.song.title, style = TextStyle(fontFamily = MoodyDisplay, fontWeight = FontWeight.Bold, fontSize = 19.sp, color = Moody.Ink), maxLines = 2, overflow = TextOverflow.Ellipsis)
-                                Text(song.artists.joinToString { it.name }, style = MoodyMeta, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            }
-                            PlayKey(stringResource(R.string.play)) { playSongs(history.orEmpty(), 0, keepTitle) }
-                        }
-                    }
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Column(
-                        Modifier.weight(1f).clip(RoundedCornerShape(Moody.RadiusL)).background(Moody.Surface).clickable { navController.navigate("stats") }.padding(14.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        Text(stringResource(R.string.moody_this_week).uppercase(), style = MoodyLabel)
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            val (thisWeek, lastWeek) = week
-                            val ratio = if (lastWeek > 0) (thisWeek.toFloat() / lastWeek).coerceIn(0f, 1f) else if (thisWeek > 0) 1f else 0f
-                            Ring(ratio, Moody.Green, 54.dp)
-                            Column {
-                                Text("${thisWeek / 3_600_000}h ${(thisWeek / 60_000) % 60}m", style = TextStyle(fontFamily = MoodyMono, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Moody.Ink))
-                                Text(stringResource(R.string.moody_last_week, "${lastWeek / 3_600_000}h"), style = MoodyMeta.copy(fontSize = 12.sp))
-                            }
-                        }
-                    }
-                    Column(
-                        Modifier.weight(1f).height(118.dp).clip(RoundedCornerShape(Moody.RadiusL)).background(Moody.DeepBlue)
-                            .clickable {
-                                playerConnection.service.sleepTimer.start(30)
-                                navController.navigate(searchRoute("ambient sleep music"))
-                            }.padding(14.dp),
-                        verticalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text(stringResource(R.string.inspo_mode_sleep).uppercase(), style = MoodyLabel.copy(color = Moody.Ink2))
-                        Column {
-                            Text(stringResource(R.string.moody_sleep_title), style = TextStyle(fontFamily = MoodyDisplay, fontWeight = FontWeight.Bold, fontSize = 17.sp, color = Moody.Ink))
-                            Text(stringResource(R.string.moody_sleep_detail), style = MoodyMeta.copy(fontFamily = MoodyMono, fontSize = 12.sp))
-                        }
+        if (tiles.isNotEmpty()) item(key = "tiles") {
+            Column(Modifier.padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                tiles.chunked(2).forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        row.forEach { t -> Tile(t, Modifier.weight(1f)) }
+                        if (row.size == 1) Spacer(Modifier.weight(1f))
                     }
                 }
             }
         }
         if (quickSongs.isNotEmpty()) {
-            item(key = "quick_title") { SectionTitle(stringResource(R.string.moody_for_you_now)) }
+            item(key = "quick_title") { SectionTitle(stringResource(R.string.quick_picks)) }
+            // columns of four songs that swipe sideways and stop on each column, like prism's (and youtube music's) quick picks
             item(key = "quick") {
-                Column(Modifier.padding(horizontal = 20.dp)) {
-                    quickSongs.take(6).forEachIndexed { i, song ->
-                        SongRow(song, divider = i > 0) { playSongs(quickSongs, i, keepTitle) }
+                val state = androidx.compose.foundation.lazy.rememberLazyListState()
+                val columns = quickSongs.take(20).chunked(4)
+                LazyRow(
+                    state = state,
+                    flingBehavior = androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior(state),
+                    contentPadding = PaddingValues(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    itemsIndexed(columns, key = { i, _ -> "qp_$i" }) { c, column ->
+                        Column(Modifier.width(screenWidth - 64.dp)) {
+                            column.forEachIndexed { i, song ->
+                                SongRow(song, divider = i > 0) { playSongs(quickSongs, c * 4 + i, keepTitle) }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        made?.takeIf { it.isNotEmpty() }?.let { mixes ->
+            item(key = "made_title") { SectionTitle(stringResource(R.string.moody_made_for_you)) }
+            item(key = "made") {
+                LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(mixes.take(12)) { mix ->
+                        val item = mix.recommendation
+                        Cover(item.thumbnail, item.title, mix.seed.song.title) { openYt(item) }
                     }
                 }
             }
@@ -248,6 +260,34 @@ fun MoodyHome(navController: NavController, viewModel: HomeViewModel = hiltViewM
                 }
             }
         }
+        // moods as a grid of tiles, each with its accent; sleep also starts a 30 minute timer
+        item(key = "moods_title") { SectionTitle(stringResource(R.string.moody_moods)) }
+        item(key = "moods") {
+            val moods = Moment.entries.filter { it.query != null }
+            val accents = listOf(Moody.Blue, Moody.Green, Moody.Red, Moody.Ink2)
+            Column(Modifier.padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                moods.chunked(2).forEachIndexed { r, row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        row.forEachIndexed { i, m ->
+                            val accent = accents[(r * 2 + i) % accents.size]
+                            val source = rememberBounceSource()
+                            Row(
+                                Modifier.weight(1f).height(64.dp).pressBounce(source).clip(RoundedCornerShape(Moody.RadiusM)).background(Moody.Surface)
+                                    .clickable(interactionSource = source, indication = null) {
+                                        m.sleepMinutes?.let { playerConnection.service.sleepTimer.start(it) }
+                                        m.query?.let { navController.navigate(searchRoute(it)) }
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Box(Modifier.width(6.dp).fillMaxHeight().background(accent))
+                                Text(stringResource(m.label), style = MoodyBody.copy(fontSize = 16.sp), modifier = Modifier.padding(horizontal = 14.dp))
+                            }
+                        }
+                        if (row.size == 1) Spacer(Modifier.weight(1f))
+                    }
+                }
+            }
+        }
         homePage?.sections.orEmpty().forEachIndexed { index, section ->
             if (section.items.isEmpty()) return@forEachIndexed
             item(key = "yt_title_$index") { SectionTitle(section.title) }
@@ -265,6 +305,28 @@ fun MoodyHome(navController: NavController, viewModel: HomeViewModel = hiltViewM
                 }
             }
         }
+    }
+}
+
+private class HomeTile(val title: String, val icon: Int, val image: String?, val ground: Color, val onClick: () -> Unit)
+
+// a shortcut: square art (or an icon on its tint) at the left, the name beside it
+@Composable
+private fun Tile(tile: HomeTile, modifier: Modifier) {
+    val source = rememberBounceSource()
+    Row(
+        modifier.height(56.dp).pressBounce(source).clip(RoundedCornerShape(Moody.RadiusM)).background(Moody.Surface)
+            .clickable(interactionSource = source, indication = null, onClick = tile.onClick),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (tile.image != null) {
+            AsyncImage(tile.image, null, contentScale = ContentScale.Crop, modifier = Modifier.size(56.dp).background(Moody.Raised))
+        } else {
+            Box(Modifier.size(56.dp).background(tile.ground), contentAlignment = Alignment.Center) {
+                Icon(painterResource(tile.icon), null, tint = Moody.Ink, modifier = Modifier.size(22.dp))
+            }
+        }
+        Text(tile.title, style = MoodyBody.copy(fontSize = 13.sp), maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(horizontal = 10.dp))
     }
 }
 

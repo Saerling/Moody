@@ -80,4 +80,7 @@
     <string name="moody_your_profile">Your profile</string>
     <string name="moody_profile_desc">Your listening, Replay and profile</string>
     <string name="moody_search_settings">Search a setting</string>
+    <string name="moody_made_for_you">Made for you</string>
+    <string name="moody_replay_teaser">Your week in music</string>
+    <string name="moody_moods">Moods</string>
 </resources>
