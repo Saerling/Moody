@@ -44,7 +44,7 @@ sealed interface AutoSyncStatus {
     data class Done(val at: Long, val added: Int) : AutoSyncStatus
     /** the service's page opened without a session: sign in again from Import */
     data object NeedsSignIn : AutoSyncStatus
-    data object Failed : AutoSyncStatus
+    data class Failed(val reason: String) : AutoSyncStatus
 }
 
 /** The switches, the last runs and what each service's sync is doing, kept across launches. */
@@ -157,7 +157,7 @@ class AccountAutoSyncViewModel @Inject constructor(
         s.start()
         val result = withTimeoutOrNull(PassTimeoutMs) { syncWith(service, s) } ?: run {
             // the page never handed over a signed-in session in time
-            if (s.library == null) AutoSyncStatus.NeedsSignIn else AutoSyncStatus.Failed
+            if (s.library == null) AutoSyncStatus.NeedsSignIn else AutoSyncStatus.Failed("took too long (${s.state.value::class.simpleName})")
         }
         Timber.tag(Tag).d("${service.label}: $result")
         _running.value = null
@@ -169,7 +169,7 @@ class AccountAutoSyncViewModel @Inject constructor(
     private suspend fun syncWith(service: AccountService, s: AccountImportSession): AutoSyncStatus {
         val targets = playlistResync.accountTargets(service)
         val listed = s.state.first { it is AccountImportState.Choosing || it is AccountImportState.Failed }
-        if (listed is AccountImportState.Failed) return if (listed.signedOut) AutoSyncStatus.NeedsSignIn else AutoSyncStatus.Failed
+        if (listed is AccountImportState.Failed) return if (listed.signedOut) AutoSyncStatus.NeedsSignIn else AutoSyncStatus.Failed(listed.message)
         listed as AccountImportState.Choosing
 
         // what's new on the account: playlists not imported yet, and liked songs the first time

@@ -44,7 +44,7 @@ done
 
 sleep 20
 shot home
-tap_text "$OUT/home.xml" 'Library|Biblioteca' && sleep 8 && shot library
+tap_text "$OUT/home.xml" 'Your Library|Library|Tu biblioteca|Biblioteca' && sleep 8 && shot library
 tap_text "$OUT/library.xml" 'Playlists' && sleep 6 && shot playlists
 adb shell input keyevent KEYCODE_BACK; sleep 3
 tap_text "$OUT/home.xml" 'Settings|Ajustes' && sleep 6 && shot settings

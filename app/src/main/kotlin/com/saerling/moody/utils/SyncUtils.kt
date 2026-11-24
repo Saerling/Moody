@@ -454,7 +454,10 @@ class SyncUtils @Inject constructor(
 
             executeSyncAutoSyncPlaylists()
 
-            context.dataStore.edit { it[YtSyncSourcesTaggedKey] = true }
+            context.dataStore.edit {
+                it[YtSyncSourcesTaggedKey] = true
+                it[LastFullSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+            }
             updateState { copy(overallStatus = SyncStatus.Completed, currentOperation = "") }
             Timber.d("Full sync completed successfully")
         } catch (e: CancellationException) {

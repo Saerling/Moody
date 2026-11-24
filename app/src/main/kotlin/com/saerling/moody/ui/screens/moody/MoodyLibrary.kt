@@ -98,6 +98,7 @@ fun MoodyLibrary(navController: NavController, viewModel: LibraryHomeViewModel =
     val context = androidx.compose.ui.platform.LocalContext.current
     val autoStatus by AutoSyncStore.status.collectAsState()
     val autoChanged by AutoSyncStore.changed.collectAsState()
+    val ytSignedIn = com.saerling.moody.ui.screens.settings.importsync.rememberYouTubeSignedIn()
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val bottom = LocalPlayerAwareWindowInsets.current.asPaddingValues().calculateBottomPadding()
 
@@ -142,13 +143,14 @@ fun MoodyLibrary(navController: NavController, viewModel: LibraryHomeViewModel =
         val autoServices = AutoSyncStore.Services.filter { svc ->
             AutoSyncStore.connected(context, svc, imported.any { it.source.key == svc.route })
         }
-        if (autoServices.isNotEmpty()) {
+        if (autoServices.isNotEmpty() || ytSignedIn) {
             item(key = "auto_title") {
                 Text(stringResource(R.string.moody_autosync_title).uppercase(), style = MoodyLabel, modifier = Modifier.padding(start = 20.dp, top = 24.dp, bottom = 4.dp))
             }
+            if (ytSignedIn) item(key = "auto_youtube") { YouTubeSyncRow() }
             items(autoServices.size, key = { "auto_${autoServices[it].route}" }) { i ->
                 val svc = autoServices[i]
-                AutoSyncRow(svc, autoStatus[svc], divider = i > 0, changed = autoChanged)
+                AutoSyncRow(svc, autoStatus[svc], divider = i > 0 || ytSignedIn, changed = autoChanged)
             }
         }
         if (playlists.isNotEmpty()) {
@@ -178,6 +180,38 @@ fun MoodyLibrary(navController: NavController, viewModel: LibraryHomeViewModel =
     }
 }
 
+// youtube music syncs through the app's own account (SyncUtils): its state, when it last finished, tap to sync now
+@Composable
+private fun YouTubeSyncRow() {
+    val sync = com.saerling.moody.LocalSyncUtils.current
+    val state by sync.syncState.collectAsState()
+    val (last) = com.saerling.moody.utils.rememberPreference(com.saerling.moody.constants.LastFullSyncKey, 0L)
+    val ago = if (last > 0) android.text.format.DateUtils.getRelativeTimeSpanString(last * 1000, System.currentTimeMillis(), android.text.format.DateUtils.MINUTE_IN_MILLIS).toString() else ""
+    val overall = state.overallStatus
+    val line = when (overall) {
+        is com.saerling.moody.utils.SyncStatus.Syncing -> state.currentOperation.ifBlank { stringResource(R.string.moody_autosync_syncing) }
+        is com.saerling.moody.utils.SyncStatus.Error -> stringResource(R.string.moody_autosync_failed) + " · " + overall.message
+        else -> if (last > 0) stringResource(R.string.moody_autosync_done, ago) else stringResource(R.string.moody_autosync_waiting)
+    }
+    val dot = when (overall) {
+        is com.saerling.moody.utils.SyncStatus.Syncing -> Moody.Blue
+        is com.saerling.moody.utils.SyncStatus.Error -> Moody.Red
+        else -> Moody.Green
+    }
+    Row(
+        Modifier.fillMaxWidth().clickable { sync.performFullSync() }.height(62.dp).padding(horizontal = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) { Box(Modifier.size(10.dp).clip(CircleShape).background(dot)) }
+        Column(Modifier.weight(1f)) {
+            Text("YouTube Music", style = MoodyBody.copy(fontSize = 17.sp, fontWeight = FontWeight.Normal), maxLines = 1)
+            Text(line, style = MoodyMeta.copy(fontSize = 12.sp), maxLines = 2, overflow = TextOverflow.Ellipsis)
+        }
+        Icon(painterResource(R.drawable.sync), null, tint = Moody.Ink3, modifier = Modifier.size(20.dp))
+    }
+}
+
 @Composable
 private fun AutoSyncRow(service: AccountService, status: AutoSyncStatus?, divider: Boolean, changed: Int) {
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -188,7 +222,7 @@ private fun AutoSyncRow(service: AccountService, status: AutoSyncStatus?, divide
         !on -> stringResource(R.string.moody_autosync_off)
         status is AutoSyncStatus.Syncing -> stringResource(R.string.moody_autosync_syncing)
         status is AutoSyncStatus.NeedsSignIn -> stringResource(R.string.moody_autosync_signin)
-        status is AutoSyncStatus.Failed -> stringResource(R.string.moody_autosync_failed)
+        status is AutoSyncStatus.Failed -> stringResource(R.string.moody_autosync_failed) + " · " + status.reason
         last > 0 -> stringResource(R.string.moody_autosync_done, ago)
         else -> stringResource(R.string.moody_autosync_waiting)
     }
@@ -208,7 +242,7 @@ private fun AutoSyncRow(service: AccountService, status: AutoSyncStatus?, divide
             Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) { Box(Modifier.size(10.dp).clip(CircleShape).background(dot)) }
             Column(Modifier.weight(1f)) {
                 Text(service.label, style = MoodyBody.copy(fontSize = 17.sp, fontWeight = FontWeight.Normal), maxLines = 1)
-                Text(line, style = MoodyMeta.copy(fontSize = 12.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(line, style = MoodyMeta.copy(fontSize = 12.sp), maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
             com.saerling.moody.ui.component.AppSwitch(checked = on, onCheckedChange = { AutoSyncStore.setOn(context, service, it) })
         }
