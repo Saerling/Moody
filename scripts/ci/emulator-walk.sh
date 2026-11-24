@@ -23,8 +23,8 @@ shot() {
 tap_text() {
   local xml="$1" pattern="$2"
   local bounds
-  bounds=$(grep -oE "text=\"($pattern)\"[^>]*bounds=\"\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]\"" "$xml" | head -1 | grep -oE '\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]')
-  [ -z "$bounds" ] && bounds=$(grep -oE "content-desc=\"($pattern)\"[^>]*bounds=\"\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]\"" "$xml" | head -1 | grep -oE '\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]')
+  bounds=$(grep -ioE "text=\"($pattern)\"[^>]*bounds=\"\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]\"" "$xml" | head -1 | grep -oE '\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]')
+  [ -z "$bounds" ] && bounds=$(grep -ioE "content-desc=\"($pattern)\"[^>]*bounds=\"\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]\"" "$xml" | head -1 | grep -oE '\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]')
   [ -z "$bounds" ] && return 1
   local n; n=($(echo "$bounds" | grep -oE '[0-9]+'))
   adb shell input tap $(( (n[0]+n[2])/2 )) $(( (n[1]+n[3])/2 ))
