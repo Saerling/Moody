@@ -34,6 +34,10 @@ NEXT='Continue|Next|Skip|Get started|Done|Start|Not now|Later|Allow|OK|Continuar
 for i in $(seq 1 14); do
   shot "setup_$i"
   if grep -qE 'text="(Home|Inicio|Library|Biblioteca)"' "$OUT/setup_$i.xml" 2>/dev/null && ! grep -qiE 'text="(Continue|Continuar|Next|Siguiente)"' "$OUT/setup_$i.xml"; then break; fi
+  # the profile step wants a name before Next does anything
+  if grep -q 'text="username"' "$OUT/setup_$i.xml" 2>/dev/null; then
+    tap_text "$OUT/setup_$i.xml" 'username' && sleep 1 && adb shell input text moodyci && adb shell input keyevent KEYCODE_BACK && sleep 1
+  fi
   tap_text "$OUT/setup_$i.xml" "$NEXT" || adb shell input tap 540 1200
   sleep 5
 done

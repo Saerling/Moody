@@ -13,6 +13,11 @@ import org.junit.Test
 class LiveSmokeTest {
     private val live = System.getenv("LIVE") == "1"
 
+    init {
+        // the ci machine's java has no country, and an empty gl is refused; the phone always has one
+        YouTube.locale = com.music.innertube.models.YouTubeLocale(gl = "CO", hl = "es-419")
+    }
+
     private fun report(step: String, result: Result<*>, detail: (Any?) -> String) {
         result.fold(
             onSuccess = { println("OK   $step: ${detail(it)}") },
