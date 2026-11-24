@@ -73,6 +73,9 @@ import com.saerling.moody.ui.theme.MoodyMono
 import com.saerling.moody.ui.utils.pressBounce
 import com.saerling.moody.ui.utils.rememberBounceSource
 import com.saerling.moody.viewmodels.LibraryHomeViewModel
+import com.saerling.moody.importer.account.AccountService
+import com.saerling.moody.importer.account.AutoSyncStatus
+import com.saerling.moody.importer.account.AutoSyncStore
 
 /** where a song comes from, as the dot on its cover */
 internal fun sourceDot(song: Song): Color = when {
@@ -92,6 +95,9 @@ fun MoodyLibrary(navController: NavController, viewModel: LibraryHomeViewModel =
     val liked by viewModel.likedSongs.collectAsState()
     val imported by viewModel.importedSources.collectAsState()
     val downloaded = remember(songs) { songs.count { it.song.isDownloaded } }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val autoStatus by AutoSyncStore.status.collectAsState()
+    val autoChanged by AutoSyncStore.changed.collectAsState()
     val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val bottom = LocalPlayerAwareWindowInsets.current.asPaddingValues().calculateBottomPadding()
 
@@ -132,6 +138,19 @@ fun MoodyLibrary(navController: NavController, viewModel: LibraryHomeViewModel =
                 }
             }
         }
+        // spotify, apple music and tidal: kept in step on their own once you've signed in (AccountAutoSync)
+        val autoServices = AutoSyncStore.Services.filter { svc ->
+            AutoSyncStore.connected(context, svc, imported.any { it.source.key == svc.route })
+        }
+        if (autoServices.isNotEmpty()) {
+            item(key = "auto_title") {
+                Text(stringResource(R.string.moody_autosync_title).uppercase(), style = MoodyLabel, modifier = Modifier.padding(start = 20.dp, top = 24.dp, bottom = 4.dp))
+            }
+            items(autoServices.size, key = { "auto_${autoServices[it].route}" }) { i ->
+                val svc = autoServices[i]
+                AutoSyncRow(svc, autoStatus[svc], divider = i > 0, changed = autoChanged)
+            }
+        }
         if (playlists.isNotEmpty()) {
             item(key = "pl_title") { ShelfTitle(stringResource(R.string.playlists)) { navController.navigate("library/playlists") } }
             item(key = "pl_row") {
@@ -155,6 +174,43 @@ fun MoodyLibrary(navController: NavController, viewModel: LibraryHomeViewModel =
                     if (rows[r].size == 1) Spacer(Modifier.weight(1f))
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun AutoSyncRow(service: AccountService, status: AutoSyncStatus?, divider: Boolean, changed: Int) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val on = remember(changed) { AutoSyncStore.isOn(context, service) }
+    val last = remember(changed, status) { AutoSyncStore.lastDone(context, service) }
+    val ago = if (last > 0) android.text.format.DateUtils.getRelativeTimeSpanString(last, System.currentTimeMillis(), android.text.format.DateUtils.MINUTE_IN_MILLIS).toString() else ""
+    val line = when {
+        !on -> stringResource(R.string.moody_autosync_off)
+        status is AutoSyncStatus.Syncing -> stringResource(R.string.moody_autosync_syncing)
+        status is AutoSyncStatus.NeedsSignIn -> stringResource(R.string.moody_autosync_signin)
+        status is AutoSyncStatus.Failed -> stringResource(R.string.moody_autosync_failed)
+        last > 0 -> stringResource(R.string.moody_autosync_done, ago)
+        else -> stringResource(R.string.moody_autosync_waiting)
+    }
+    val dot = when {
+        !on -> Moody.Ink3
+        status is AutoSyncStatus.NeedsSignIn || status is AutoSyncStatus.Failed -> Moody.Red
+        status is AutoSyncStatus.Syncing -> Moody.Blue
+        else -> Moody.Green
+    }
+    Column(Modifier.fillMaxWidth().clickable { AutoSyncStore.runSoon(context, service) }) {
+        if (divider) Box(Modifier.padding(start = 60.dp).fillMaxWidth().height(1.dp).background(Moody.Line))
+        Row(
+            Modifier.fillMaxWidth().height(62.dp).padding(horizontal = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) { Box(Modifier.size(10.dp).clip(CircleShape).background(dot)) }
+            Column(Modifier.weight(1f)) {
+                Text(service.label, style = MoodyBody.copy(fontSize = 17.sp, fontWeight = FontWeight.Normal), maxLines = 1)
+                Text(line, style = MoodyMeta.copy(fontSize = 12.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            com.saerling.moody.ui.component.AppSwitch(checked = on, onCheckedChange = { AutoSyncStore.setOn(context, service, it) })
         }
     }
 }

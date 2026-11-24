@@ -975,6 +975,8 @@ class MainActivity : ComponentActivity() {
                     // a phone paired before android 17 can't reach its devices until it's allowed on the wi-fi again
                     val linkPaired = remember { !isTelevision() && com.saerling.moody.link.phone.PhoneLinkHost.hasPairedDevices(this@MainActivity) }
                     com.saerling.moody.link.AskForLocalNetwork(wanted = linkPaired, onGranted = { phoneLink.get().advertiseAgain() })
+                    // spotify, apple music and tidal libraries kept in step on their own, through a page nobody sees
+                    if (setupCompleted && onboardedHere) com.saerling.moody.ui.screens.settings.importsync.AccountAutoSyncHost()
                     com.saerling.moody.ui.screens.update.UpdateNotificationOpener(
                         requests = openUpdateRequests,
                         onOpenDevSpace = { personIndex ->

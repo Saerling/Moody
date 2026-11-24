@@ -231,6 +231,17 @@ class AccountImportSession(
 
     fun selectNone() = updateChoosing { it.copy(selected = emptySet()) }
 
+    /** For the automatic sync: pick exactly these playlists, with no one at the screen. */
+    fun selectOnly(ids: Set<String>) = updateChoosing { it.copy(selected = ids) }
+
+    /** For the automatic sync: read [targets] again on the session already signed in, without signing in anew. */
+    fun resyncNow(targets: List<ResyncTarget>) {
+        resyncTargets = targets
+        _resyncReads.value = null
+        workJob?.cancel()
+        workJob = scope.launch(Dispatchers.IO) { afterConnect() }
+    }
+
     private fun updateChoosing(change: (AccountImportState.Choosing) -> AccountImportState.Choosing) {
         _state.update { current ->
             if (current is AccountImportState.Choosing) change(current).also { lastChoosing = it } else current

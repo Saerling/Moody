@@ -83,4 +83,11 @@
     <string name="moody_made_for_you">Hecho para ti</string>
     <string name="moody_replay_teaser">Tu semana en música</string>
     <string name="moody_moods">Estados de ánimo</string>
+    <string name="moody_autosync_title">Se sincronizan solas</string>
+    <string name="moody_autosync_syncing">Sincronizando…</string>
+    <string name="moody_autosync_done">Al día · %1$s</string>
+    <string name="moody_autosync_signin">Inicia sesión otra vez en Importar</string>
+    <string name="moody_autosync_off">Sincronización automática apagada</string>
+    <string name="moody_autosync_failed">Se intentará más tarde</string>
+    <string name="moody_autosync_waiting">En espera de la próxima pasada</string>
 </resources>

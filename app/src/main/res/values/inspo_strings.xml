@@ -83,4 +83,11 @@
     <string name="moody_made_for_you">Made for you</string>
     <string name="moody_replay_teaser">Your week in music</string>
     <string name="moody_moods">Moods</string>
+    <string name="moody_autosync_title">Kept in sync on their own</string>
+    <string name="moody_autosync_syncing">Syncing…</string>
+    <string name="moody_autosync_done">Up to date · %1$s</string>
+    <string name="moody_autosync_signin">Sign in again from Import</string>
+    <string name="moody_autosync_off">Automatic sync off</string>
+    <string name="moody_autosync_failed">Will try again later</string>
+    <string name="moody_autosync_waiting">Waiting for the next pass</string>
 </resources>
