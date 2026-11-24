@@ -11,6 +11,18 @@ android {
         minSdk = 24
     }
 
+    // the live smoke test (LiveSmokeTest) prints what youtube answered; android calls in a jvm test just return defaults
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+        unitTests.all {
+            it.testLogging {
+                showStandardStreams = true
+                events("passed", "failed", "skipped")
+            }
+            it.outputs.upToDateWhen { false }
+        }
+    }
+
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_21
