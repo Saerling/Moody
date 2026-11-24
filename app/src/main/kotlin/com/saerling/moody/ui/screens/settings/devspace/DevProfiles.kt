@@ -48,9 +48,7 @@ import coil3.request.ImageRequest
 import coil3.request.transformations
 import com.saerling.moody.R
 import com.saerling.moody.core.updater.GithubRepoUrl
-import com.saerling.moody.ui.component.LocalZoomOutOverlayState
 import com.saerling.moody.ui.component.pressBounce
-import com.saerling.moody.ui.screens.donate.showDonateSheet
 import com.saerling.moody.ui.utils.SoftBlurTransformation
 import com.saerling.moody.ui.component.RemoteFocus
 import com.saerling.moody.ui.component.rememberResourcePainter
@@ -62,7 +60,6 @@ internal data class DevPerson(
     val bio: String,
     @DrawableRes val avatar: Int,
     /** the main dev takes donations, the donate section only shows for them */
-    val takesDonations: Boolean = false,
     val socials: List<DevSocial> = emptyList(),
 )
 
@@ -71,7 +68,6 @@ internal val DevPeople = listOf(
         name = "Saerling",
         bio = "Creador de Moody: un reproductor que te deja elegir de dónde suena cada canción.",
         avatar = R.drawable.ic_launcher_mark,
-        takesDonations = false,
         socials = listOf(DevSocial("GitHub", GithubRepoUrl)),
     ),
 )
@@ -129,14 +125,8 @@ internal fun DevProfilePage(
                 Rule()
             }
 
-            if (person.takesDonations || person.socials.isNotEmpty()) {
+            if (person.socials.isNotEmpty()) {
                 Column(Modifier.rise(2).padding(top = 22.dp)) {
-                    if (person.takesDonations) {
-                        val popup = LocalZoomOutOverlayState.current
-                        SectionTitle("Donate")
-                        DevLinkRow("Donate me!") { popup.showDonateSheet() }
-                        Spacer(Modifier.height(14.dp))
-                    }
                     if (person.socials.isNotEmpty()) {
                         val context = LocalContext.current
                         SectionTitle("Socials")

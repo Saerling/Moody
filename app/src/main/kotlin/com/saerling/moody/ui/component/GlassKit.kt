@@ -447,8 +447,11 @@ fun GlassPillBackground(
 ) {
     var position by remember { mutableStateOf(Offset.Zero) }
 
-    val (disableBlur) = rememberPreference(DisableBlurKey, defaultValue = false)
+    val (blurOff) = rememberPreference(DisableBlurKey, defaultValue = false)
     val (blurStrengthPx) = rememberPreference(com.saerling.moody.constants.BlurStrengthPxKey, defaultValue = 25f)
+    // battery saver: no live blur, a near-solid night panel instead so text stays readable (WaveBits' saver policy)
+    val saver = com.saerling.moody.ui.utils.rememberPowerSaveMode()
+    val disableBlur = blurOff || saver
 
     val currentBlurRadius by rememberUpdatedState(blurRadius)
 
@@ -479,6 +482,9 @@ fun GlassPillBackground(
     ) { fullSize ->
         if (foundationColor != null) {
             drawRect(color = foundationColor, size = fullSize)
+        }
+        if (saver && !blurOff) {
+            drawRect(color = com.saerling.moody.ui.theme.Moody.Surface.copy(alpha = 0.92f), size = fullSize)
         }
         if (!disableBlur) {
             val node = state.renderNode

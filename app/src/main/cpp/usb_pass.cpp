@@ -1,6 +1,6 @@
 // usb_pass.cpp
 
-// mochy's own usb audio driver: android hands over the dac's file descriptor, this takes the dac from the kernel's driver
+// moody's own usb audio driver: android hands over the dac's file descriptor, this takes the dac from the kernel's driver
 // and streams isochronous packets at the song's own rate, nothing mixed or scaled on the way
 
 #include <jni.h>

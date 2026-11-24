@@ -1,4 +1,4 @@
-// the first onboarding page: the moody girl showing off her phone over drifting welcomes, a tap anywhere moves on
+// the first onboarding page: moody's record turning under drifting welcomes, a tap anywhere moves on
 
 package com.saerling.moody.ui.screens.setup
 
@@ -44,13 +44,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.saerling.moody.LocalAppContentObscured
 import com.saerling.moody.R
+import com.saerling.moody.ui.component.MoodyRecord
 import com.saerling.moody.ui.component.damageBoundary
 import com.saerling.moody.ui.screens.setup.onboarding.OnbTitleTracking
-import com.saerling.moody.ui.screens.setup.welcome.GirlArt
-import com.saerling.moody.ui.screens.setup.welcome.GirlMotion
 import com.saerling.moody.ui.screens.setup.welcome.WelcomeColors
 import com.saerling.moody.ui.screens.setup.welcome.WelcomeDots
-import com.saerling.moody.ui.screens.setup.welcome.WelcomeGirl
 import com.saerling.moody.ui.screens.setup.welcome.WelcomeWords
 import com.saerling.moody.ui.utils.AppMotion
 import com.saerling.moody.ui.utils.HighRefreshWhile
@@ -91,12 +89,12 @@ fun WelcomeStep(isHiding: Boolean, onNext: () -> Unit) {
         WelcomeDots(layout.dots)
         WelcomeWords(clock.seconds, layout.wordsSize, layout.wordsTop)
 
-        WelcomeGirl(
-            motion = clock.girl,
-            seconds = clock.seconds,
+        // moody's record turns slowly under the title, a third of a turn every ten seconds
+        MoodyRecord(
+            degrees = { clock.seconds.floatValue * 12f },
             modifier = Modifier
-                .offset(x = layout.girlLeft, y = layout.girlTop)
-                .size(layout.girlWidth, layout.girlHeight)
+                .offset(x = layout.artLeft, y = layout.artTop)
+                .size(layout.artSize)
                 .graphicsLayer {
                     translationY = leave * 56.dp.toPx()
                     alpha = 1f - leave
@@ -170,10 +168,9 @@ fun WelcomeStep(isHiding: Boolean, onNext: () -> Unit) {
     }
 }
 
-// the page's one clock: each frame it moves the girl, then the rings and words read the same time
+// the page's one clock: the record, the rings and the words all read the same time
 private class WelcomeClock {
     val seconds = mutableFloatStateOf(0f)
-    val girl = GirlMotion()
     var running by mutableStateOf(false)
         private set
 
@@ -187,7 +184,6 @@ private class WelcomeClock {
                     // a stall only counts as a short step, so nothing leaps forward after a hitch
                     if (last >= 0L) t += ((now - last) / 1_000_000_000f).coerceAtMost(0.05f)
                     last = now
-                    girl.update(t)
                     seconds.floatValue = t
                 }
             }
@@ -220,36 +216,32 @@ private class WelcomeLayout(
     val unit: Float,
     val titleStart: Dp,
     val titleTop: Dp,
-    val girlLeft: Dp,
-    val girlTop: Dp,
-    val girlWidth: Dp,
-    val girlHeight: Dp,
+    val artLeft: Dp,
+    val artTop: Dp,
+    val artSize: Dp,
     val wordsSize: Dp,
     val wordsTop: Dp,
     val dots: Dp,
     val fadeHeight: Dp,
 )
 
-// tall windows get the phone design; wide ones (tablets, foldables, landscape) put the girl on the right
+// tall windows get the phone design; wide ones (tablets, foldables, landscape) put the record on the right
 private fun welcomeLayout(width: Dp, height: Dp): WelcomeLayout {
     val w = width.value
     val h = height.value
-    val shape = GirlArt.FrameWidth / GirlArt.FrameHeight
     if (w / h < 0.9f) {
         val u = min(w / 393f, h / 820f).coerceIn(0.8f, 1.9f)
         val titleTop = max(64f, 76f * u)
-        // big like a wallpaper: she spans the width and is cropped at the hips, under the title
-        val girlTop = max(titleTop + 98f * u, h * 0.25f)
-        val girlHeight = min(w * 1.08f / shape, (h - girlTop) * 1.12f)
-        val girlWidth = girlHeight * shape
+        // big like a wallpaper: the record runs off the right edge, under the title
+        val artTop = max(titleTop + 120f * u, h * 0.3f)
+        val artSize = min(w * 1.15f, (h - artTop) * 1.05f)
         return WelcomeLayout(
             unit = u,
             titleStart = max(24f, 36f * u).dp,
             titleTop = titleTop.dp,
-            girlLeft = (w * 0.985f - girlWidth * GirlArt.FingertipsAcross).dp,
-            girlTop = girlTop.dp,
-            girlWidth = girlWidth.dp,
-            girlHeight = girlHeight.dp,
+            artLeft = (w - artSize * 0.82f).dp,
+            artTop = artTop.dp,
+            artSize = artSize.dp,
             wordsSize = (128f * u).dp,
             wordsTop = (h * 0.235f).dp,
             dots = (17.5f * u).dp,
@@ -257,15 +249,14 @@ private fun welcomeLayout(width: Dp, height: Dp): WelcomeLayout {
         )
     }
     val u = min(w / 900f, h / 520f).coerceIn(0.7f, 1.8f)
-    val girlWidth = min(h * 1.16f * shape, w * 0.62f)
+    val artSize = min(h * 0.92f, w * 0.5f)
     return WelcomeLayout(
         unit = u,
         titleStart = (48f * u).dp,
         titleTop = max(56f, h * 0.16f).dp,
-        girlLeft = (w * 0.975f - girlWidth * GirlArt.FingertipsAcross).coerceAtLeast(w * 0.4f).dp,
-        girlTop = max(8f, h * 0.02f).dp,
-        girlWidth = girlWidth.dp,
-        girlHeight = (girlWidth / shape).dp,
+        artLeft = (w - artSize * 1.02f).coerceAtLeast(w * 0.45f).dp,
+        artTop = ((h - artSize) / 2f).dp,
+        artSize = artSize.dp,
         wordsSize = (128f * u).dp,
         wordsTop = (h * 0.06f).dp,
         dots = (17.5f * u).dp,

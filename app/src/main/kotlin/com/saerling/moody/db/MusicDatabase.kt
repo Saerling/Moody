@@ -152,13 +152,13 @@ abstract class InternalDatabase : RoomDatabase() {
     abstract val speedDialDao: SpeedDialDao
 
     companion object {
-        const val DB_NAME = "mochy.db"
+        const val DB_NAME = "moody.db"
 
         fun newInstance(context: Context): MusicDatabase =
             MusicDatabase(
                 delegate =
                 Room
-                    .databaseBuilder(context, InternalDatabase::class.java, DB_NAME)
+                    .databaseBuilder(context.also(com.saerling.moody.utils.LegacyData::migrate), InternalDatabase::class.java, DB_NAME)
                     .addMigrations(*AllMigrations)
                     .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
                     .setTransactionExecutor(java.util.concurrent.Executors.newFixedThreadPool(4))

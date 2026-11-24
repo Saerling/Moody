@@ -47,7 +47,7 @@ object SpotifyCanvasProvider {
     private const val SignedInCookie = "sp_dc"
     private const val UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     private const val APP_UA = "Spotify/9.0.34.593 iOS/18.4 (iPhone15,3)"
-    private const val BRIDGE = "MochySpotifyBridge"
+    private const val BRIDGE = "MoodySpotifyBridge"
     // last hash that worked, used when we cant find a newer one
     private const val KNOWN_HASH = "575138ab27cd5c1b3e54da54d0a7cc8d85485402de26340c2145f0f6bb5e7a9f"
     private const val SEARCH_HASH = "bc1ca2fcd0ba1013a0fc88e6cc4f190af501851e3dafd3e1ef85840297694428"

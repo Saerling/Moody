@@ -981,9 +981,6 @@ class MainActivity : ComponentActivity() {
                             navController.navigate("developer_space?person=$personIndex")
                         },
                     )
-                    com.saerling.moody.ui.screens.donate.DonatePromptScheduler(
-                        enabled = setupCompleted && onboardedHere && !forceShowSetup,
-                    )
                         SetupWizardContainer(
                             isVisible = !setupCompleted || !onboardedHere || forceShowSetup,
                             onSetupCompleted = { username, uri ->
@@ -1720,7 +1717,7 @@ val SubSettingsRoutes = setOf(
     "experimental_settings",
     "cipher_settings",
     "playback_diagnostics",
-    "mochy_settings",
+    "moody_settings",
     "import_sync",
     "import_providers",
     "import_tunemymusic",

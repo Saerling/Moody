@@ -1,9 +1,9 @@
 #!/bin/zsh
 # records one perfetto trace while a scenario script drives the device
 # usage: tools/perf/run.sh <trace-name> <scenario>   (scenario = a file in tools/perf/scen without .sh)
-# traces land in $PERF_OUT (default: $TMPDIR/mochy-perf)
+# traces land in $PERF_OUT (default: $TMPDIR/moody-perf)
 HERE=${0:A:h}
-OUT=${PERF_OUT:-${TMPDIR:-/tmp}/mochy-perf}
+OUT=${PERF_OUT:-${TMPDIR:-/tmp}/moody-perf}
 PKG=${PERF_PKG:-com.saerling.moody.profileable}
 mkdir -p $OUT
 adb push $HERE/trace.cfg /data/local/tmp/mtrace.cfg >/dev/null

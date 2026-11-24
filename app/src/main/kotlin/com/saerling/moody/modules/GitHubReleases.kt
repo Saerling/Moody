@@ -122,7 +122,7 @@ internal object GitHubReleases {
     }
 
     /** what a release file's name has to have in it for moody to take it */
-    const val Marker = "mochyymodule"
+    const val Marker = "moodymodule"
     private const val MaxZipBytes = 40L * 1024 * 1024
     private val Name = Regex("[A-Za-z0-9._-]{1,100}")
     private val FileViews = setOf("blob", "raw", "issues", "pulls", "actions", "wiki")

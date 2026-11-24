@@ -84,12 +84,12 @@ internal const val ApplePageProbeJs = """
 internal const val AppleAutoSignInJs = """
 (function() {
   try {
-    if (window.__mochySignInPressed) return 'pressed';
+    if (window.__moodySignInPressed) return 'pressed';
     var m = window.MusicKit && MusicKit.getInstance && MusicKit.getInstance();
     if (m && m.isAuthorized) return 'authorized';
     var button = document.querySelector('[data-testid="sign-in-button"]');
     if (!button) return 'waiting';
-    window.__mochySignInPressed = true;
+    window.__moodySignInPressed = true;
     button.click();
     return 'pressed';
   } catch (e) { return 'error'; }
@@ -106,9 +106,9 @@ private const val SpotifySignedInCookie = "sp_dc"
 private val SpotifyFindQueriesJs = """
 (function() {
   try {
-    if (window.__mochyQueriesFound) return 'done';
-    if (window.__mochyFinding) return 'finding';
-    var scanned = window.__mochyScanned = window.__mochyScanned || {};
+    if (window.__moodyQueriesFound) return 'done';
+    if (window.__moodyFinding) return 'finding';
+    var scanned = window.__moodyScanned = window.__moodyScanned || {};
     var sources = [];
     [].forEach.call(document.scripts, function(s) { if (s.src) sources.push(s.src); });
     (performance.getEntriesByType('resource') || []).forEach(function(e) { sources.push(e.name); });
@@ -116,7 +116,7 @@ private val SpotifyFindQueriesJs = """
       return /spotifycdn\.com\/cdn\/build\/web-player\/.*\.js/.test(src) && !scanned[src] && sources.indexOf(src) === i;
     });
     if (!sources.length) return 'waiting';
-    window.__mochyFinding = true;
+    window.__moodyFinding = true;
     var found = {};
     Promise.all(sources.map(function(src) {
       scanned[src] = true;
@@ -130,8 +130,8 @@ private val SpotifyFindQueriesJs = """
         var query = { name: name, hash: found[name], url: 'https://api-partner.spotify.com/pathfinder/v2/query', post: true, guessed: true };
         window.$BRIDGE_NAME.onHeader('$WEB_PLAYER_QUERY_HEADER', JSON.stringify(query), location.href);
       });
-      if (found.fetchLibraryTracks) window.__mochyQueriesFound = true;
-      window.__mochyFinding = false;
+      if (found.fetchLibraryTracks) window.__moodyQueriesFound = true;
+      window.__moodyFinding = false;
     });
     return 'finding';
   } catch (e) { return 'error'; }

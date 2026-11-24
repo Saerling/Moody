@@ -48,7 +48,7 @@ data class LiveDevice(
 // paired devices as json in shared preferences (the keys sealed), so the boot receiver can read them without hilt
 internal object PairedDeviceStore {
     // the names are from when only tvs could pair, kept so nobody has to pair again
-    const val Prefs = "mochy_link_tvs"
+    const val Prefs = "moody_link_tvs"
     private const val ListKey = "tvs"
 
     fun read(prefs: SharedPreferences): List<PairedDevice> {

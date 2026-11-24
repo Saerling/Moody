@@ -25,7 +25,7 @@ half4 main(float2 p) {
     float r = min(radius, min(box.x, box.y));
     float2 local = p - c;
     float d = roundedBox(local, box, r);
-    // past the bar's edge: mochy clips it away, it only had to be there to be read
+    // past the bar's edge: moody clips it away, it only had to be there to be read
     if (d > 0.0) { return content.eval(p); }
 
     // 1. the lens: flat in the middle, bending more toward the rim
@@ -53,7 +53,7 @@ half4 main(float2 p) {
     float luma = dot(color.rgb, float3(0.2126, 0.7152, 0.0722));
     color.rgb = mix(float3(luma), color.rgb, saturation);
 
-    // 4. mochy's bar colour as the tint, a bit deeper with pure black on
+    // 4. moody's bar colour as the tint, a bit deeper with pure black on
     float4 tint = float4(chrome);
     float deeper = (tint.r + tint.g + tint.b) < 0.01 ? 0.15 : 0.0;
     color.rgb = mix(color.rgb, tint.rgb * color.a, clamp(tintAlpha + deeper, 0.0, 0.95));

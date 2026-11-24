@@ -44,7 +44,7 @@ class CustomDownloadManager {
 
                 val downloadDir = File(
                     context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
-                    "mochy_updates"
+                    "moody_updates"
                 )
                 if (!downloadDir.exists()) {
                     downloadDir.mkdirs()

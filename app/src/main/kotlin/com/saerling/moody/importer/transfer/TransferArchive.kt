@@ -42,7 +42,7 @@ import java.io.File
 
 /** the layout of a transfer zip, written by the export and read back by the import, so both sides agree on every name */
 internal object TransferArchive {
-    const val Format = "mochy-transfer"
+    const val Format = "moody-transfer"
     const val FormatVersion = 1
 
     // the manifest is always the first entry, so the import can check the zip before unpacking gigabytes
@@ -65,7 +65,7 @@ internal object TransferArchive {
         "listening_signals" to "listening_signals",
         "not_recommended" to com.saerling.moody.utils.NotRecommended.PREFS_NAME,
         "source_modules" to "source_modules",
-        "display" to "mochy_settings",
+        "display" to "moody_settings",
     )
 
     // sign-ins and tokens stay behind, the new app signs in again instead of carrying them around in a zip
@@ -237,7 +237,7 @@ data class TransferManifest(
     companion object {
         /** null when the json isn't a transfer manifest at all */
         fun fromJson(json: JSONObject): TransferManifest? {
-            if (json.optString("format") != TransferArchive.Format) return null
+            if (com.saerling.moody.utils.LegacyData.renamed(json.optString("format")) != TransferArchive.Format) return null
             return TransferManifest(
                 formatVersion = json.optInt("version"),
                 createdAt = json.optLong("createdAt"),

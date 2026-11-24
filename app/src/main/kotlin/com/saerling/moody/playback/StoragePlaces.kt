@@ -41,7 +41,7 @@ data class StoragePlace(
 object StoragePlaces {
     private const val Tag = "StoragePlaces"
     private const val LeftoversName = "storage_leftovers.json"
-    private const val PickedFolderName = "Mochy"
+    private const val PickedFolderName = "Moody"
     private const val ExternalStorageAuthority = "com.android.externalstorage.documents"
 
     private fun markerOf(context: Context, kind: StoredKind) = File(context.noBackupFilesDir, "storage_place_${kind.folder}.txt")
@@ -55,7 +55,7 @@ object StoragePlaces {
             return phone
         }
         if (needsFolderAccess(context, root)) {
-            Log.w(Tag, "${kind.folder} lives in a folder mochy lost access to, using the phone for now")
+            Log.w(Tag, "${kind.folder} lives in a folder moody lost access to, using the phone for now")
             return phone
         }
         return File(root, kind.folder)
@@ -123,7 +123,7 @@ object StoragePlaces {
             ?.let(::File)
     }
 
-    // "Music/Mochy" on the phone, "card name/Music/Mochy" on a card
+    // "Music/Moody" on the phone, "card name/Music/Moody" on a card
     private fun readablePath(context: Context, folder: File): String {
         @Suppress("DEPRECATION")
         val phoneRoot = Environment.getExternalStorageDirectory().path

@@ -1367,8 +1367,6 @@ val LastDonateShownTimeKey = longPreferencesKey("lastDonateShownTime")
 // Donate auto-prompt (ui/screens/donate/DonatePrompt.kt)
 val DonatePlaytimeMsKey = longPreferencesKey("donatePlaytimeMs")
 val DonateFirstPromptShownKey = booleanPreferencesKey("donateFirstPromptShown")
-val DonatePromptWindowStartKey = longPreferencesKey("donatePromptWindowStart")
-val DonatePromptSlotsKey = stringPreferencesKey("donatePromptSlots")
 val DonateOpenPromptAtKey = longPreferencesKey("donateOpenPromptAt")
 
 // one-off lyrics cache clears (App.kt). raise LyricsCacheWipeGeneration to clear it again in a later release

@@ -15,7 +15,7 @@ internal object TvRoutes {
     const val Search = "tv_search"
     const val Library = "tv_library"
     const val Phone = "tv_phone"
-    const val Moody = "tv_mochy"
+    const val Moody = "tv_moody"
     const val Recap = "tv_recap"
     const val Browse = "tv_browse"
     const val Songs = "tv_songs"

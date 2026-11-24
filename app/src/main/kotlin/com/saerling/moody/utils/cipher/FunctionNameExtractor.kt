@@ -5,7 +5,7 @@ package com.saerling.moody.utils.cipher
 import timber.log.Timber
 
 object FunctionNameExtractor {
-    private const val TAG = "mochy_CipherFnExtract"
+    private const val TAG = "moody_CipherFnExtract"
 
     private val SIG_FUNCTION_PATTERNS = listOf(
 

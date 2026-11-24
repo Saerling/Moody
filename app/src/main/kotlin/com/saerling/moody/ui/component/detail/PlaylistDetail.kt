@@ -136,7 +136,10 @@ import com.saerling.moody.ui.component.pressBounce
 import com.saerling.moody.ui.component.rememberElementBlurAvailable
 import com.saerling.moody.ui.component.smoothstep
 import com.saerling.moody.ui.player.BackdropBlurTransformation
-import com.saerling.moody.ui.theme.InterFontFamily
+import com.saerling.moody.ui.theme.Moody
+import com.saerling.moody.ui.theme.MoodyDisplay
+import com.saerling.moody.ui.theme.MoodyMono
+import com.saerling.moody.ui.theme.MoodyText
 import com.saerling.moody.ui.theme.rememberCoverThemeColor
 import com.saerling.moody.ui.utils.SoftBlurTransformation
 import com.saerling.moody.ui.utils.resize
@@ -152,72 +155,75 @@ import com.saerling.moody.ui.utils.stableStatusBars
 import com.saerling.moody.ui.utils.stableStatusBarsPadding
 import com.saerling.moody.ui.component.RemoteFocus
 
-// geometry and type from the Figma playlist frames (16:1162 open, 16:1354 scrolled). internal so
-// the album, artist and generated pages line up on the same inset and type
+// moody's detail pages: one inset and one set of type for playlists, albums, artists and generated
+// pages. bricolage for titles, atkinson for reading, mono for counts; the play pill is the page's one
+// blue action, every other round button is a dark key with a hairline
 internal val PlaylistInset = 36.dp
 internal val PlaylistTracking = (-0.06).em
-internal val PillContent = Color(0xFF2F2F2F)
-internal val PillFill = Color.White.copy(alpha = 0.64f)
-internal val TrackShape = RoundedCornerShape(9.dp)
+internal val PillContent = Moody.OnBlue
+internal val PillFill = Moody.Blue
+internal val CircleFill = Moody.Surface.copy(alpha = 0.82f)
+internal val CircleContent = Moody.Ink
+internal val TrackShape = RoundedCornerShape(Moody.RadiusS)
 
 // a pressed track lights a pill from one side of the screen to the other, like the swipe slab
 private val TrackHighlight = RoundedHighlight(cornerRadius = 100.dp, spillX = (-10).dp)
 
 internal val PlaylistTitleStyle = TextStyle(
-    fontFamily = InterFontFamily,
+    fontFamily = MoodyDisplay,
     fontWeight = FontWeight.Bold,
     fontSize = 24.sp,
     lineHeight = 28.sp,
     letterSpacing = PlaylistTracking,
 )
 internal val PlaylistCreatorStyle = TextStyle(
-    fontFamily = InterFontFamily,
+    fontFamily = MoodyText,
     fontWeight = FontWeight.Bold,
     fontSize = 15.sp,
     lineHeight = 18.sp,
     letterSpacing = (-0.04).em,
 )
 internal val PlaylistStatsStyle = TextStyle(
-    fontFamily = InterFontFamily,
+    fontFamily = MoodyMono,
     fontWeight = FontWeight.SemiBold,
     fontSize = 11.sp,
     lineHeight = 14.sp,
     letterSpacing = (-0.02).em,
 )
 internal val PillLabelStyle = TextStyle(
-    fontFamily = InterFontFamily,
+    fontFamily = MoodyText,
     fontWeight = FontWeight.Bold,
     fontSize = 16.sp,
     letterSpacing = PlaylistTracking,
 )
 internal val TrackTitleStyle = TextStyle(
-    fontFamily = InterFontFamily,
+    fontFamily = MoodyText,
     fontWeight = FontWeight.SemiBold,
     fontSize = 14.sp,
     lineHeight = 17.sp,
     letterSpacing = (-0.03).em,
 )
 internal val TrackSubtitleStyle = TextStyle(
-    fontFamily = InterFontFamily,
+    fontFamily = MoodyText,
     fontWeight = FontWeight.Medium,
     fontSize = 11.5.sp,
     lineHeight = 14.sp,
     letterSpacing = (-0.02).em,
 )
 internal val SectionTitleStyle = TextStyle(
-    fontFamily = InterFontFamily,
+    fontFamily = MoodyDisplay,
     fontWeight = FontWeight.Bold,
     fontSize = 16.sp,
     letterSpacing = PlaylistTracking,
 )
 internal val ReceiptSmallStyle = TextStyle(
-    fontFamily = FontFamily.Monospace,
+    fontFamily = MoodyMono,
     fontWeight = FontWeight.Medium,
     fontSize = 8.5.sp,
     letterSpacing = 0.04.em,
 )
 internal val ReceiptCenterStyle = TextStyle(
-    fontFamily = FontFamily.Monospace,
+    fontFamily = MoodyMono,
     fontWeight = FontWeight.Medium,
     fontSize = 10.sp,
     letterSpacing = 0.42.em,
@@ -1122,7 +1128,7 @@ private fun playlistClassicCoverSize(): Dp = (LocalConfiguration.current.screenW
 private fun playlistClassicHeaderHeight(): Dp = playlistCompactHeaderTop() + playlistClassicCoverSize() + 22.dp + 120.dp
 
 internal val PlaylistCompactTitleStyle = TextStyle(
-    fontFamily = InterFontFamily,
+    fontFamily = MoodyDisplay,
     fontWeight = FontWeight.Bold,
     fontSize = 32.sp,
     lineHeight = 36.sp,
@@ -1226,7 +1232,8 @@ internal fun CircleAction(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(PillFill),
+                .background(CircleFill)
+                .border(1.dp, Moody.Line, CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             AnimatedContent(
@@ -1237,7 +1244,7 @@ internal fun CircleAction(
                 Icon(
                     painter = painterResource(res),
                     contentDescription = contentDescription,
-                    tint = PillContent,
+                    tint = CircleContent,
                     modifier = Modifier
                         .size(17.dp)
                         .graphicsLayer { rotationZ = spin.value * 360f },
@@ -1372,7 +1379,7 @@ fun <T : Enum<T>> PlaylistSortControl(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             shape = RoundedCornerShape(18.dp),
-            containerColor = Color(0xFF1E1F23),
+            containerColor = Moody.Raised,
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
@@ -1470,14 +1477,14 @@ fun PlaylistTrackRow(
             Text(
                 text = title,
                 style = TrackTitleStyle,
-                color = Color.White.copy(alpha = if (isActive) 1f else 0.94f),
+                color = if (isActive) Moody.Blue else Moody.Ink,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = subtitle,
                 style = TrackSubtitleStyle,
-                color = Color.White.copy(alpha = 0.55f),
+                color = Moody.Ink3,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -1494,7 +1501,7 @@ fun PlaylistTrackRow(
                 Icon(
                     painter = painterResource(if (liked) R.drawable.favorite else R.drawable.favorite_border),
                     contentDescription = stringResource(if (liked) R.string.action_remove_like else R.string.action_like),
-                    tint = if (liked) MaterialTheme.colorScheme.error else Color.White.copy(alpha = 0.65f),
+                    tint = if (liked) Moody.Red else Color.White.copy(alpha = 0.65f),
                     modifier = Modifier.size(20.dp),
                 )
             }

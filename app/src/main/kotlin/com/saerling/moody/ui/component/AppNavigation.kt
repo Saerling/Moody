@@ -114,7 +114,7 @@ private val RouteOwners: List<Pair<String, String>> = listOf(
     "library/" to "library",
     "cipher_settings" to "settings",
     "playback_diagnostics" to "settings",
-    "mochy_settings" to "settings",
+    "moody_settings" to "settings",
     "general_settings" to "settings",
     "playback_settings" to "settings",
     "now_playing_settings" to "settings",

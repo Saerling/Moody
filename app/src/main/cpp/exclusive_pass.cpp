@@ -1,6 +1,6 @@
 // exclusive_pass.cpp
 
-// an aaudio stream only mochy plays to: exclusive is only a request, so the stream is kept only when android granted
+// an aaudio stream only moody plays to: exclusive is only a request, so the stream is kept only when android granted
 // exactly the rate, format and channels asked for. aaudio is looked up at runtime, so this library still loads on android 7
 
 #include <jni.h>

@@ -61,7 +61,7 @@ extensions.configure<ApplicationExtension> {
             ?: System.getenv("DISCORD_CLIENT_ID") ?: ""
         buildConfigField("String", "DISCORD_CLIENT_ID", "\"$discordClientId\"")
         manifestPlaceholders["discordRedirectScheme"] =
-            if (discordClientId.isNotBlank()) "discord-$discordClientId" else "mochy-discord-unset"
+            if (discordClientId.isNotBlank()) "discord-$discordClientId" else "moody-discord-unset"
 
 //add nightly build label support
         val isNightly = project.hasProperty("nightly") && project.property("nightly") == "true"

@@ -9,13 +9,14 @@ class DensityScaler : BaseLifecycleContentProvider() {
 
     override fun onCreate(): Boolean {
         val context = context ?: return false
+        com.saerling.moody.utils.LegacyData.migrate(context)
         val scaleFactor = getScaleFactorFromPreferences(context)
         DensityConfiguration(scaleFactor).applyDensityScaling(context)
         return true
     }
 
     companion object {
-        private const val PREFS_NAME = "mochy_settings"
+        private const val PREFS_NAME = "moody_settings"
         private const val KEY_DENSITY_SCALE = "density_scale_factor"
         private const val DEFAULT_SCALE_FACTOR = 1.0f
 

@@ -4,16 +4,17 @@ package com.saerling.moody.ui.tv
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -52,29 +53,24 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImagePainter
-import coil3.compose.rememberAsyncImagePainter
 import com.saerling.moody.R
+import com.saerling.moody.ui.component.MoodyRecord
 import com.saerling.moody.link.tv.PairTarget
 import com.saerling.moody.link.tv.TvPairing
 import com.saerling.moody.link.tv.TvProfile
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 // the light off her phone's screen, the blue of her hair
-private val MascotGlow = Color(0xFF8FD0FF)
 
 // the first thing every start shows: a quick "hii!" that pops up while the library opens behind it
 @Composable
@@ -144,46 +140,25 @@ internal fun TvWelcome(onNext: () -> Unit) {
     }
 }
 
-// she swings in from the right with a little overshoot, then floats and sways while her phone glows
+// moody's record rolls in from the right with a little overshoot, then keeps turning slowly
 @Composable
 private fun TvMascot(leave: () -> Float, modifier: Modifier = Modifier) {
-    // decoded off the main thread, and she only swings in once the picture is ready, so she never pops in halfway
-    val painter = rememberAsyncImagePainter(R.drawable.tv_mascot)
     val arrive = remember { Animatable(0f) }
-    LaunchedEffect(painter) {
-        painter.state.first { it is AsyncImagePainter.State.Success || it is AsyncImagePainter.State.Error }
+    LaunchedEffect(Unit) {
         delay(120)
         arrive.animateTo(1f, spring(dampingRatio = 0.58f, stiffness = 110f))
     }
-    val idle = rememberInfiniteTransition(label = "mascotIdle")
-    val bob by idle.animateFloat(-1f, 1f, infiniteRepeatable(tween(2600, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "bob")
-    val sway by idle.animateFloat(-1f, 1f, infiniteRepeatable(tween(3700, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "sway")
-    val glow by idle.animateFloat(0.55f, 1f, infiniteRepeatable(tween(1900, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "glow")
-    Image(
-        painter = painter,
-        contentDescription = null,
-        contentScale = ContentScale.Fit,
-        alignment = Alignment.BottomEnd,
+    val idle = rememberInfiniteTransition(label = "recordIdle")
+    val turn by idle.animateFloat(0f, 360f, infiniteRepeatable(tween(30_000, easing = LinearEasing)), label = "turn")
+    MoodyRecord(
+        degrees = { turn - (1f - arrive.value) * 120f },
         modifier = modifier
+            .aspectRatio(1f)
             .graphicsLayer {
                 val p = arrive.value
                 val gone = leave()
-                // she pivots from her feet, so the sway reads as a lean and not a wobble
-                transformOrigin = TransformOrigin(0.5f, 1f)
                 translationX = (1f - p) * 240.dp.toPx() + gone * 280.dp.toPx()
-                translationY = (1f - p) * 36.dp.toPx() + bob * 5.dp.toPx()
-                rotationZ = (1f - p) * 8f + sway * 1.3f
                 alpha = p.coerceIn(0f, 1f) * (1f - gone)
-            }
-            // the screen she's holding up gives off a soft light, read while drawing so it never recomposes
-            .drawBehind {
-                val center = Offset(size.width - size.height * 0.2f, size.height * 0.36f)
-                val radius = size.height * 0.26f
-                drawCircle(
-                    Brush.radialGradient(listOf(MascotGlow.copy(alpha = 0.3f * glow), Color.Transparent), center, radius),
-                    radius = radius,
-                    center = center,
-                )
             },
     )
 }

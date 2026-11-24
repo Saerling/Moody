@@ -708,7 +708,7 @@ suspend fun checkForUpdate(
                 changelogList.add(ChangelogSection(context.getString(R.string.changelog), listOf(subjectLine)))
 
                 val formattedReleaseDate = formatGitHubDate(runUpdatedAt)
-                val apkDownloadUrl = "https://nightly.link/Saerling/moody/workflows/nightly.yml/main/mochy-gms-nightly.zip"
+                val apkDownloadUrl = "https://nightly.link/Saerling/moody/workflows/nightly.yml/main/moody-gms-nightly.zip"
 
                 withContext(Dispatchers.Main) {
                     onSuccess(displayTag, true, changelogList, "~30", formattedReleaseDate, "Bleeding-edge nightly build from main branch.", null, apkDownloadUrl)

@@ -99,14 +99,6 @@
     <string name="suggestion_selected_desc">Đã chọn</string>
 
     <!-- Donate Sheet -->
-    <string name="donate_dismiss_button">thôi mình không muốn đâu</string>
-    <string name="donate_thank_you_title">Arigatou! :3</string>
-    <string name="donate_subtitle">Dưới đây là các kênh để ủng hộ và đóng góp cho chúng mình!</string>
-    <string name="donate_kofi">Ủng hộ qua Ko-fi</string>
-    <string name="donate_sociabuzz">Ủng hộ qua SociaBuzz</string>
-    <string name="donate_sociabuzz_desc">Khuyên dùng cho một số quốc gia ĐNÁ và Mỹ Latinh</string>
-    <string name="donate_buymeacoffee">Ủng hộ qua Buy Me a Coffee</string>
-    <string name="donate_note">mỗi khoản ủng hộ, dù nhỏ đến đâu, cũng luôn vô cùng ý nghĩa đối với chúng mình :3</string>
 
     <!-- Album Screen -->
     <string name="album_more_by_artist">Thêm từ %1$s</string>

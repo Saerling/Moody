@@ -35,7 +35,7 @@ import com.saerling.moody.ui.screens.settings.storage.StorageRoute
 import com.saerling.moody.ui.theme.InterFontFamily
 
 // the settings list's own route; on a wide screen it stays at the left while its pages open beside it
-const val SettingsListRoute = "mochy_settings"
+const val SettingsListRoute = "moody_settings"
 
 // the pages that open beside the list on a wide screen; anything else (an artist, the player's equalizer from home) takes the whole width
 val SettingsPaneRoutes = setOf(

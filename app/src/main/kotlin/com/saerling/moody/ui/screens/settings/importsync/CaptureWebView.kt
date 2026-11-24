@@ -62,7 +62,7 @@ import timber.log.Timber
 import com.saerling.moody.ui.utils.stableStatusBarsPadding
 
 /** the page-side name of CaptureBridge, scripts the app runs in the page report through it too */
-internal const val BRIDGE_NAME = "MochyCapture"
+internal const val BRIDGE_NAME = "MoodyCapture"
 
 /** headers the web players send with their session: the token itself and spotify's client details */
 /** a sign-in that ends on a loopback redirect (oauth for native apps) reaches the module as this header, its value the whole link */
@@ -75,9 +75,9 @@ private val SESSION_HEADERS = setOf("authorization", "media-user-token", "client
 /** wraps fetch and xhr so the session headers and spotify's library queries the web player sends reach the app */
 private val HOOK_JS = """
 (function() {
-  if (window.__mochyHooked) return;
-  window.__mochyHooked = true;
-  window.__mochyQueries = window.__mochyQueries || {};
+  if (window.__moodyHooked) return;
+  window.__moodyHooked = true;
+  window.__moodyQueries = window.__moodyQueries || {};
   var wanted = { 'authorization': 1, 'media-user-token': 1, 'client-token': 1, 'app-platform': 1, 'spotify-app-version': 1 };
   var seen = {};
   var seenCount = 0;
@@ -114,7 +114,7 @@ private val HOOK_JS = """
         post = false;
       }
       if (!name || !hash) return;
-      window.__mochyQueries[name] = 1;
+      window.__moodyQueries[name] = 1;
       address.search = '';
       var key = 'query|' + name + '|' + hash;
       if (seen[key]) return;
@@ -153,16 +153,16 @@ private val HOOK_JS = """
     var originalOpen = XMLHttpRequest.prototype.open;
     var originalSet = XMLHttpRequest.prototype.setRequestHeader;
     XMLHttpRequest.prototype.open = function(method, url) {
-      try { this.__mochyUrl = url; } catch (e) {}
+      try { this.__moodyUrl = url; } catch (e) {}
       return originalOpen.apply(this, arguments);
     };
     XMLHttpRequest.prototype.setRequestHeader = function(name, value) {
-      report(name, value, this.__mochyUrl);
+      report(name, value, this.__moodyUrl);
       return originalSet.apply(this, arguments);
     };
     var originalSend = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.send = function(body) {
-      reportQuery(this.__mochyUrl, body);
+      reportQuery(this.__moodyUrl, body);
       return originalSend.apply(this, arguments);
     };
   } catch (e) {}

@@ -22,7 +22,7 @@ jobs:
         run: |
           VERSION=$(python3 -c "import json;print(json.load(open('modules/liquid-glass/module/manifest.json'))['version'])")
           TAG="liquid-glass-v$VERSION"
-          ZIP=modules/liquid-glass/build/liquid-glass.mochyymodule.zip
+          ZIP=modules/liquid-glass/build/liquid-glass.moodymodule.zip
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$ZIP" --clobber
           else

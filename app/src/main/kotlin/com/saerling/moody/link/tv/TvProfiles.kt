@@ -96,7 +96,7 @@ object TvProfiles {
             id = id,
             name = name.trim().ifBlank { "You" },
             avatarPath = avatarPath,
-            dbName = if (dbTaken) "mochy_profile_$id.db" else InternalDatabase.DB_NAME,
+            dbName = if (dbTaken) "moody_profile_$id.db" else InternalDatabase.DB_NAME,
             phone = phone,
             createdAt = System.currentTimeMillis(),
         )
@@ -168,7 +168,7 @@ object TvProfiles {
                 id = json.optString("id").ifBlank { return@mapNotNull null },
                 name = json.optString("name"),
                 avatarPath = json.optString("avatar").takeIf { it.isNotBlank() },
-                dbName = json.optString("db").ifBlank { InternalDatabase.DB_NAME },
+                dbName = json.optString("db").ifBlank { InternalDatabase.DB_NAME }.let(com.saerling.moody.utils.LegacyData::renamed),
                 phone = phone,
                 createdAt = json.optLong("createdAt"),
                 phoneAvatar = json.opt("phoneAvatar") as? String,

@@ -15,7 +15,7 @@ import javax.crypto.spec.GCMParameterSpec
 
 // seals the app's secrets (sign-in cookies, api keys, the link keys) with a key that lives in the phone's keystore and never leaves it
 object SecretVault {
-    private const val Alias = "mochy_secrets"
+    private const val Alias = "moody_secrets"
     private const val Prefix = "enc1:"
     private const val IvBytes = 12
     private const val TagBits = 128
@@ -79,6 +79,7 @@ object SecretVault {
     private fun loadOrMake(): SecretKey {
         val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
         (store.getKey(Alias, null) as? SecretKey)?.let { return it }
+        (store.getKey(LegacyData.OldVaultAlias, null) as? SecretKey)?.let { return it }
         val generator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
         generator.init(
             KeyGenParameterSpec.Builder(Alias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)

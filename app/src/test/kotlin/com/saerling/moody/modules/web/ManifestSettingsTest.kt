@@ -28,7 +28,7 @@ class ManifestSettingsTest {
             { "key": "style", "label": "Glass", "type": "select", "default": "liquid", "options": [
               { "value": "liquid", "label": "Liquid glass", "glass": { "blur": 7, "uniforms": { "tintAlpha": 0.42 } } },
               { "value": "clear", "label": "Clear glass", "glass": { "blur": 2.5, "uniforms": { "tintAlpha": 0.16 } } },
-              { "value": "frost", "label": "Mochy's frost", "look": { "bottomBar": "FROSTED" } }
+              { "value": "frost", "label": "Moody's frost", "look": { "bottomBar": "FROSTED" } }
             ] },
             { "key": "fringe", "label": "Colour fringe", "default": true, "glass": { "uniforms": { "spread": 0.06 } } },
             { "key": "black", "label": "Pure black", "default": false, "look": { "pureBlack": "true" } },
@@ -57,7 +57,7 @@ class ManifestSettingsTest {
         val fields = ManifestSettings(glassy).fields
         assertEquals(listOf("style", "fringe", "black", "token"), fields.map { it.id })
         assertEquals(listOf(FieldKind.Select, FieldKind.Toggle, FieldKind.Toggle, FieldKind.Text), fields.map { it.kind })
-        assertEquals(listOf("Liquid glass", "Clear glass", "Mochy's frost"), fields[0].options.map { it.label })
+        assertEquals(listOf("Liquid glass", "Clear glass", "Moody's frost"), fields[0].options.map { it.label })
         assertEquals("liquid", fields[0].default)
         assertEquals("true", fields[1].default)
         assertEquals("Token", fields[3].label)
