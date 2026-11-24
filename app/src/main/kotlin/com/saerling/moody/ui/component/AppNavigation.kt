@@ -220,7 +220,6 @@ fun AppNavigationBar(
     onSearchDoubleTap: (() -> Unit)? = null
 ) {
     val glassState = LocalGlassState.current ?: remember { GlassState() }
-    val accentWash = rememberChromeAccentWash()
     val selectedIndex = navigationItems.indexOfFirst { it.route == selectedTabRoute }
     val tabCount = navigationItems.size
     val pill = rememberNavPill(selectedIndex)
@@ -236,10 +235,9 @@ fun AppNavigationBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
-                .padding(horizontal = 24.dp, vertical = 8.dp)
+                .padding(horizontal = 20.dp, vertical = 8.dp)
                 .align(Alignment.TopCenter)
                 .height(NavBarHeight)
-                .press3D(maxTilt = 4f, pressedScale = 0.985f)
                 .then(if (moduleGlass?.shadow == false) Modifier else Modifier.dropShadow(NavBarShape, ChromeShadow))
                 .clip(NavBarShape)
                 .drawWithContent {
@@ -250,7 +248,8 @@ fun AppNavigationBar(
             FrostedChromeGlass(
                 state = glassState,
                 pureBlack = pureBlack,
-                accentWash = accentWash,
+                // no colour wash from the cover: the bar stays black and white, only the lit tab is lit
+                accentWash = null,
                 modifier = Modifier.fillMaxSize(),
                 pill = glassPill,
             )
@@ -319,7 +318,7 @@ internal fun RowScope.NavTab(
     // Both icons stay loaded, so lighting a tab never shows an empty frame while its filled icon loads.
     val unlitIcon = coil3.compose.rememberAsyncImagePainter(model = screen.iconIdInactive)
     val litIcon = coil3.compose.rememberAsyncImagePainter(model = screen.iconIdActive)
-    val iconSize = if (screen == Screens.Home || screen == Screens.Search) 22.dp else 24.dp
+    val iconSize = if (screen == Screens.Home || screen == Screens.Search) 20.dp else 22.dp
 
     Box(
         modifier = Modifier
@@ -337,31 +336,32 @@ internal fun RowScope.NavTab(
             ),
         contentAlignment = Alignment.Center
     ) {
-        // moody: the lit tab shows its name beside the icon, dark on the white pill
-        androidx.compose.foundation.layout.Row(verticalAlignment = Alignment.CenterVertically) {
+        // every tab carries its name under the icon, so the slots stay equal and nothing spills past the pill;
+        // the lit one turns dark on the ink pill
+        androidx.compose.foundation.layout.Column(horizontalAlignment = Alignment.CenterHorizontally) {
             if (screen == Screens.Library) {
                 LibraryDownloadIcon { TabIcons(screen, unlitIcon, litIcon, iconSize) { lit.value } }
             } else {
                 TabIcons(screen, unlitIcon, litIcon, iconSize) { lit.value }
             }
-            androidx.compose.animation.AnimatedVisibility(
-                visible = isSelected,
-                enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandHorizontally(),
-                exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.shrinkHorizontally(),
-            ) {
-                androidx.compose.material3.Text(
-                    text = stringResource(screen.titleId),
-                    style = androidx.compose.ui.text.TextStyle(
-                        fontFamily = com.saerling.moody.ui.theme.MoodyText,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                        fontSize = androidx.compose.ui.unit.TextUnit(12f, androidx.compose.ui.unit.TextUnitType.Sp),
-                        color = com.saerling.moody.ui.theme.Moody.Night,
-                    ),
-                    maxLines = 1,
-                    softWrap = false,
-                    modifier = Modifier.padding(start = 5.dp),
-                )
-            }
+            androidx.compose.material3.Text(
+                text = stringResource(screen.titleId),
+                style = androidx.compose.ui.text.TextStyle(
+                    fontFamily = com.saerling.moody.ui.theme.MoodyText,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    fontSize = androidx.compose.ui.unit.TextUnit(10f, androidx.compose.ui.unit.TextUnitType.Sp),
+                    letterSpacing = androidx.compose.ui.unit.TextUnit(0.2f, androidx.compose.ui.unit.TextUnitType.Sp),
+                ),
+                color = androidx.compose.ui.graphics.lerp(
+                    com.saerling.moody.ui.theme.Moody.Ink2,
+                    com.saerling.moody.ui.theme.Moody.Night,
+                    lit.value,
+                ),
+                maxLines = 1,
+                softWrap = false,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 2.dp, start = 4.dp, end = 4.dp),
+            )
         }
     }
 }

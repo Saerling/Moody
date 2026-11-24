@@ -126,6 +126,51 @@ class SyncUtils @Inject constructor(
         startProcessingQueue()
     }
 
+    // like WaveBits: a like or unlike made while YouTube can't be reached waits here (the last tap on a song wins)
+    // instead of being dropped, and goes out, oldest first, as soon as the phone is back online
+    private val outbox by lazy { context.getSharedPreferences("like_outbox", Context.MODE_PRIVATE) }
+
+    init {
+        watchNetwork()
+    }
+
+    private fun keepForLater(songId: String, liked: Boolean) = synchronized(outbox) {
+        outbox.edit().remove(songId).putBoolean(songId, liked).apply()
+    }
+
+    private fun sentLike(songId: String, liked: Boolean) = synchronized(outbox) {
+        if (outbox.contains(songId) && outbox.getBoolean(songId, !liked) == liked) outbox.edit().remove(songId).apply()
+    }
+
+    /** likes still waiting for YouTube */
+    val waitingLikes: Int get() = outbox.all.size
+
+    private suspend fun flushOutbox() {
+        if (!isLoggedIn()) return
+        val pending = synchronized(outbox) { outbox.all.mapNotNull { (id, v) -> (v as? Boolean)?.let { id to it } } }
+        for ((id, liked) in pending) {
+            if (id in excludedFromYouTube()) { sentLike(id, liked); continue }
+            val ok = runCatching { YouTube.likeVideo(id, liked) }.isSuccess
+            if (!ok) return
+            sentLike(id, liked)
+        }
+    }
+
+    // back online: send what waited, then bring every connected library up to date (the cooldown still applies)
+    private fun watchNetwork() {
+        val manager = context.getSystemService(android.net.ConnectivityManager::class.java) ?: return
+        runCatching {
+            manager.registerDefaultNetworkCallback(object : android.net.ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: android.net.Network) {
+                    syncScope.launch {
+                        flushOutbox()
+                        tryAutoSync()
+                    }
+                }
+            })
+        }.onFailure { Timber.w(it, "can't watch the network for the like outbox") }
+    }
+
     private fun startProcessingQueue() {
         processingJob = syncScope.launch {
             for (operation in syncChannel) {
@@ -421,10 +466,17 @@ class SyncUtils @Inject constructor(
         }
         if (s.id in excludedFromYouTube()) return@withContext
 
+        if (!context.isInternetConnected()) {
+            keepForLater(s.id, s.liked)
+            return@withContext
+        }
         withRetry {
             YouTube.likeVideo(s.id, s.liked)
+        }.onSuccess {
+            sentLike(s.id, s.liked)
         }.onFailure { e ->
-            Timber.e(e, "Failed to like song on YouTube: ${s.id}")
+            Timber.e(e, "Failed to like song on YouTube, kept for later: ${s.id}")
+            keepForLater(s.id, s.liked)
         }
 
     }
